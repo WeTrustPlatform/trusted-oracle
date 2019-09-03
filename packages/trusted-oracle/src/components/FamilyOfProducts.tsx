@@ -23,8 +23,8 @@ export const FamilyOfProducts = () => {
   const { getResponsiveValue } = useLayout();
 
   const paddingBottom = getResponsiveValue({
-    large: 0,
-    xsmall: 16,
+    xsmall: '16px',
+    xlarge: '0px',
   });
 
   return (
