@@ -1,21 +1,24 @@
+import { LayoutProvider, ThemeProvider, ToastProvider } from 'paramount-ui';
 import React from 'react';
+import { Route, Switch } from 'react-router';
+import { BrowserRouter } from 'react-router-dom';
+
+import { NavigationBar } from './components/NavigationBar';
+import { Home } from './pages/Home';
 
 export const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <ThemeProvider>
+        <LayoutProvider>
+          <ToastProvider>
+            <NavigationBar />
+            <Switch>
+              <Route exact path="/" component={Home} />
+            </Switch>
+          </ToastProvider>
+        </LayoutProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 };
