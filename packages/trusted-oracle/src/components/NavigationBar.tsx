@@ -11,11 +11,11 @@ import {
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 
+import { BlockchainAccountStatus } from './BlockchainAccountStatus';
 import { FamilyOfProducts } from './FamilyOfProducts';
 import { Link, LinkProps } from './Link';
 import { Logo } from './Logo';
 
-// import { BlockchainAccountStatus } from './BlockchainAccountStatus';
 const DesktopNavigationBarDivider = () => (
   <Divider
     position="vertical"
@@ -81,7 +81,9 @@ const DesktopNavigationBar = () => {
           >
             How it works
           </DesktopNavigationBarLink>
-          <Box paddingLeft={16}>{/* <BlockchainAccountStatus /> */}</Box>
+          <Box paddingLeft={16}>
+            <BlockchainAccountStatus />
+          </Box>
         </Box>
       </Box>
       <Divider />
@@ -157,7 +159,7 @@ const MobileNavigationBar = () => {
         >
           <Logo />
           <Box flexDirection="row" alignItems="center">
-            {/* <BlockchainAccountStatus /> */}
+            <BlockchainAccountStatus />
             <TouchableOpacity onPress={() => setIsMenuOpen(true)}>
               <View style={{ padding: 16 }}>
                 <Icon name="menu" size={24} />

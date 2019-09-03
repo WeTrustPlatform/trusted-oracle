@@ -1,3 +1,7 @@
+import {
+  WalletDialogsProvider,
+  WalletProvider,
+} from '@wetrustplatform/paramount-blockchain';
 import { LayoutProvider, ThemeProvider, ToastProvider } from 'paramount-ui';
 import React from 'react';
 import { Route, Switch } from 'react-router';
@@ -12,10 +16,14 @@ export const App = () => {
       <ThemeProvider>
         <LayoutProvider>
           <ToastProvider>
-            <NavigationBar />
-            <Switch>
-              <Route exact path="/" component={Home} />
-            </Switch>
+            <WalletProvider>
+              <WalletDialogsProvider>
+                <NavigationBar />
+                <Switch>
+                  <Route exact path="/" component={Home} />
+                </Switch>
+              </WalletDialogsProvider>
+            </WalletProvider>
           </ToastProvider>
         </LayoutProvider>
       </ThemeProvider>
