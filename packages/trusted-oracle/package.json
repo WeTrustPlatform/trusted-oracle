@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@wetrustplatform/paramount-blockchain": "1.0.0",
-    "paramount-ui": "^1.76.1",
+    "paramount-ui": "^1.76.2",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-outside-click-handler": "^1.2.4",

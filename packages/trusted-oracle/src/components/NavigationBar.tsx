@@ -37,7 +37,7 @@ const DesktopNavigationBarLink = (props: LinkProps) => {
       style={{ textDecoration: 'none', height: '100%' }}
     >
       <Box justifyContent="center" height="100%" paddingHorizontal={16}>
-        <Text color="primary">{children}</Text>
+        <Text color="link">{children}</Text>
       </Box>
     </Link>
   );
@@ -67,19 +67,23 @@ const DesktopNavigationBar = () => {
         <Box flexDirection="row" alignItems="center">
           <DesktopNavigationBarLink to="/">Home</DesktopNavigationBarLink>
           <DesktopNavigationBarDivider />
-          <DesktopNavigationBarLink to="/explore">
-            Explore
+          <DesktopNavigationBarLink to="/ask-a-question">
+            Ask a Question
           </DesktopNavigationBarLink>
           <DesktopNavigationBarDivider />
-          <DesktopNavigationBarLink to="/campaign/new/basic-info">
-            Create Campaign
+          <DesktopNavigationBarLink to="/how-it-works">
+            How it works
           </DesktopNavigationBarLink>
           <DesktopNavigationBarDivider />
           <DesktopNavigationBarLink
             to="https://blog.wetrust.io/cryptounlocked-oracle-upgrade-5c8b22e3375b"
             isExternal
           >
-            How it works
+            Get TRST
+          </DesktopNavigationBarLink>
+          <DesktopNavigationBarDivider />
+          <DesktopNavigationBarLink to="https://blog.wetrust.io/" isExternal>
+            Our Blog
           </DesktopNavigationBarLink>
           <Box paddingLeft={16}>
             <BlockchainAccountStatus />
@@ -118,28 +122,25 @@ const MobileNavigationMenu = (props: MobileNavigationMenuProps) => {
       <MobileNavigationMenuLink onClick={onClick} to="/">
         Home
       </MobileNavigationMenuLink>
-      <MobileNavigationMenuLink onClick={onClick} to="/explore">
-        Explore
+      <MobileNavigationMenuLink onClick={onClick} to="/ask-a-question">
+        Ask a Question
       </MobileNavigationMenuLink>
-      <MobileNavigationMenuLink onClick={onClick} to="/my-contributions">
-        My Contributions
-      </MobileNavigationMenuLink>
-      <MobileNavigationMenuLink
-        onClick={onClick}
-        to="/campaign/new/basic-info"
-        isExternal
-      >
-        Create Campaign
-      </MobileNavigationMenuLink>
-      <MobileNavigationMenuLink onClick={onClick} to="/campaign/my-campaigns">
-        My Campaigns
+      <MobileNavigationMenuLink onClick={onClick} to="/how-it-works" isExternal>
+        How it works
       </MobileNavigationMenuLink>
       <MobileNavigationMenuLink
         onClick={onClick}
         to="https://blog.wetrust.io/cryptounlocked-oracle-upgrade-5c8b22e3375b"
         isExternal
       >
-        How it works
+        Get TRST
+      </MobileNavigationMenuLink>
+      <MobileNavigationMenuLink
+        onClick={onClick}
+        to="https://blog.wetrust.io/"
+        isExternal
+      >
+        Our Blog
       </MobileNavigationMenuLink>
     </>
   );

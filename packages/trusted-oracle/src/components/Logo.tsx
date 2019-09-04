@@ -1,7 +1,7 @@
-import { Heading } from 'paramount-ui';
 import React from 'react';
 
 import { Link } from './Link';
+import { WebImage } from './WebImage';
 
 export const Logo = () => {
   return (
@@ -13,15 +13,7 @@ export const Logo = () => {
         textDecoration: 'none',
       }}
     >
-      <Heading
-        style={{
-          fontSize: 24,
-          fontWeight: '900',
-          color: '#67c6bb',
-        }}
-      >
-        Trusted Oracle
-      </Heading>
+      <WebImage src={require('../images/logo.svg')} />
     </Link>
   );
 };

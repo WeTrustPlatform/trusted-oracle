@@ -11,3 +11,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@font-face {
+  font-family: 'MicrobrewSoftOne';
+  src: url(./fonts/MicrobrewSoftOne.otf) format('opentype');
+}
+
+@font-face {
+  font-family: 'MicrobrewSoftOneHatch';
+  src: url(./fonts/MicrobrewSoftOneHatch.otf) format('opentype');
+}

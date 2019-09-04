@@ -89,3 +89,5 @@ typings/
 
 # Build files
 dist
+
+.DS_STORE

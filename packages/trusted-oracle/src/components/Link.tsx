@@ -1,4 +1,4 @@
-import { ThemeContext } from 'paramount-ui';
+import { useTheme } from 'paramount-ui';
 import React from 'react';
 import { Link as RRLink } from 'react-router-dom';
 
@@ -12,21 +12,43 @@ export interface LinkProps {
 }
 
 export const Link = (props: LinkProps) => {
-  const { testID, to, children, style, onClick } = props;
-  const theme = React.useContext(ThemeContext);
+  const { testID, to, children, style, onClick, isExternal } = props;
+  const theme = useTheme();
+
+  const {
+    fontVariant,
+    fontWeight,
+    textAlign,
+    transform,
+    lineHeight,
+    ...validStyle
+  } = theme.textSizes.medium;
+
+  const linkStyle = {
+    color: theme.colors.text.link,
+    fontFamily: theme.fontFamilies.text,
+    textDecoration: 'none',
+    lineHeight: `${lineHeight}px`,
+    ...validStyle,
+    ...style,
+  };
+
+  if (isExternal) {
+    return (
+      <a
+        style={linkStyle}
+        data-testid={testID}
+        href={to}
+        onClick={onClick}
+        target="_blank"
+      >
+        {children}
+      </a>
+    );
+  }
 
   return (
-    <RRLink
-      style={{
-        color: theme.colors.text.link,
-        fontFamily: theme.fontFamilies.text,
-        textDecoration: 'none',
-        ...style,
-      }}
-      data-testid={testID}
-      to={to}
-      onClick={onClick}
-    >
+    <RRLink style={linkStyle} data-testid={testID} to={to} onClick={onClick}>
       {children}
     </RRLink>
   );
