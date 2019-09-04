@@ -6,7 +6,6 @@ import {
   Paragraph,
   Row,
   Text,
-  useTheme,
 } from 'paramount-ui';
 import React from 'react';
 import { ImageBackground } from 'react-native';
@@ -40,7 +39,7 @@ const parseBlogPosts = (feed: Feed) => {
   const imageSrcRegex = /<img.*?src="(.*?)"/i;
   let coverImageTag;
   let tmpDiv;
-  for (let item of feed.items) {
+  for (const item of feed.items) {
     coverImageTag = imageSrcRegex.exec(item['content:encoded']);
     tmpDiv = document.createElement('div');
     tmpDiv.innerHTML = item['content:encoded'];
@@ -60,9 +59,9 @@ const parseBlogPosts = (feed: Feed) => {
 };
 
 const timeSince = (date: number) => {
-  var seconds = Math.floor((new Date().getTime() - date) / 1000);
+  const seconds = Math.floor((new Date().getTime() - date) / 1000);
 
-  var interval = Math.floor(seconds / 31536000);
+  let interval = Math.floor(seconds / 31536000);
 
   if (interval > 1) {
     return interval + ' years';
@@ -91,8 +90,6 @@ interface BlogPostProps {
 }
 
 const BlogPost = ({ blog }: BlogPostProps) => {
-  const theme = useTheme();
-
   const {
     link,
     coverImageUrl,

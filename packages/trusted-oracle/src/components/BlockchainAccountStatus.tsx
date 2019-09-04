@@ -1,9 +1,9 @@
 import {
   networkIdToNameMap,
   trimAddress,
-  useWallet,
-  useWalletDialogs,
-} from '@wetrustplatform/paramount-blockchain';
+  useWeb3,
+  useWeb3Dialogs,
+} from '@wetrustplatform/paramount-ethereum';
 import { Box, Text, ThemeContext } from 'paramount-ui';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -11,11 +11,11 @@ import { TouchableOpacity } from 'react-native';
 import { config } from '../config';
 
 export const BlockchainAccountStatus = () => {
-  const { account, hasWallet, networkId } = useWallet();
+  const { account, hasWallet, networkId } = useWeb3();
   const {
-    setShowRequireWalletSetup,
+    setShowRequireMetamaskSetup,
     setShowRequireWalletSignIn,
-  } = useWalletDialogs();
+  } = useWeb3Dialogs();
   const isConnected = account && networkId === config.networkId && hasWallet;
   const theme = React.useContext(ThemeContext);
 
@@ -27,16 +27,15 @@ export const BlockchainAccountStatus = () => {
 
   const handlePress = React.useCallback(() => {
     if (!hasWallet) {
-      setShowRequireWalletSetup(true);
+      setShowRequireMetamaskSetup(true);
     } else if (!account) {
       setShowRequireWalletSignIn(true);
     }
   }, [
-    isConnected,
     hasWallet,
     account,
     setShowRequireWalletSignIn,
-    setShowRequireWalletSetup,
+    setShowRequireMetamaskSetup,
   ]);
 
   return (

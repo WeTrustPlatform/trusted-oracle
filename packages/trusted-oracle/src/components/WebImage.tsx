@@ -1,10 +1,14 @@
 import React from 'react';
 
-export const WebImage = (
-  props: React.DetailedHTMLProps<
+export interface WebImageProps
+  extends React.DetailedHTMLProps<
     React.ImgHTMLAttributes<HTMLImageElement>,
     HTMLImageElement
-  >,
-) => {
-  return <img style={{ maxWidth: '100%' }} {...props} />;
+  > {
+  alt: string;
+}
+export const WebImage = (props: WebImageProps) => {
+  const { alt, ...restProps } = props;
+
+  return <img style={{ maxWidth: '100%' }} alt={alt} {...restProps} />;
 };

@@ -1,7 +1,7 @@
 import {
-  WalletDialogsProvider,
-  WalletProvider,
-} from '@wetrustplatform/paramount-blockchain';
+  Web3DialogsProvider,
+  Web3Provider,
+} from '@wetrustplatform/paramount-ethereum';
 import { LayoutProvider, ThemeProvider, ToastProvider } from 'paramount-ui';
 import React from 'react';
 import { Route } from 'react-router';
@@ -9,6 +9,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import { NavigationBar } from './components/NavigationBar';
 import { Home } from './pages/Home';
+import { RealitioProvider } from './realitio/RealitioProvider';
 
 export const App = () => {
   return (
@@ -55,12 +56,14 @@ export const App = () => {
           }}
         >
           <ToastProvider>
-            <WalletProvider>
-              <WalletDialogsProvider>
-                <NavigationBar />
-                <Route path="/" component={Home} />
-              </WalletDialogsProvider>
-            </WalletProvider>
+            <Web3Provider>
+              <Web3DialogsProvider>
+                <RealitioProvider>
+                  <NavigationBar />
+                  <Route path="/" component={Home} />
+                </RealitioProvider>
+              </Web3DialogsProvider>
+            </Web3Provider>
           </ToastProvider>
         </LayoutProvider>
       </ThemeProvider>

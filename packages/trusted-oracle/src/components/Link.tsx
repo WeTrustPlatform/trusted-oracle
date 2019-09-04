@@ -41,6 +41,7 @@ export const Link = (props: LinkProps) => {
         href={to}
         onClick={onClick}
         target="_blank"
+        rel="noopener noreferrer"
       >
         {children}
       </a>

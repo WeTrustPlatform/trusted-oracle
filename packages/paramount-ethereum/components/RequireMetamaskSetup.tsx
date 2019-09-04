@@ -7,7 +7,7 @@ const METAMASK_CHROME_LINK =
 const METAMASK_FIREFOX_LINK =
   'https://addons.mozilla.org/en-US/firefox/addon/ether-metamask/';
 
-export const RequireWalletSetup = () => {
+export const RequireMetamaskSetup = () => {
   const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
   return (

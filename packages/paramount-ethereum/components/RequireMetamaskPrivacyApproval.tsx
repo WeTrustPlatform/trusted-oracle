@@ -3,7 +3,7 @@ import React from 'react';
 
 import { FindMetamaskInstructions } from './FindMetamaskInstructions';
 
-export const RequireWalletPrivacyApproval = () => {
+export const RequireMetamaskPrivacyApproval = () => {
   return (
     <Box padding={48} alignItems="center">
       <Heading size="xxxlarge" color="secondary">

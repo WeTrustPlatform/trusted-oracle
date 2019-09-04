@@ -7,6 +7,7 @@ import { CTAButton } from '../components/CTAButton';
 import { Footer } from '../components/Footer';
 import { Link } from '../components/Link';
 import { WebImage } from '../components/WebImage';
+import { QuestionList } from '../realitio/QuestionList';
 
 const HeroSection = () => {
   return (
@@ -30,7 +31,10 @@ const HeroSection = () => {
             </Box>
           </Column>
           <Column medium={6}>
-            <WebImage src={require('../images/oracle-hero.png')} />
+            <WebImage
+              alt="trusted-oracle hero"
+              src={require('../images/oracle-hero.png')}
+            />
           </Column>
         </Row>
       </Container>
@@ -89,7 +93,10 @@ const HowItWorksSection = () => {
           <Row>
             <Column>
               <Box paddingBottom={60}>
-                <WebImage src={require('../images/how-it-works.png')} />
+                <WebImage
+                  alt="trusted-oracle how it works"
+                  src={require('../images/how-it-works.png')}
+                />
               </Box>
             </Column>
           </Row>
@@ -130,11 +137,21 @@ const GetTRSTSection = () => {
               >
                 <CTAButton
                   appearance="outline"
-                  icon={<WebImage src={require('../images/banchor.png')} />}
+                  icon={
+                    <WebImage
+                      alt="get trst via banchor"
+                      src={require('../images/banchor.png')}
+                    />
+                  }
                 />
                 <CTAButton
                   appearance="outline"
-                  icon={<WebImage src={require('../images/uniswap.png')} />}
+                  icon={
+                    <WebImage
+                      alt="get trst via uniswap"
+                      src={require('../images/uniswap.png')}
+                    />
+                  }
                 />
               </Box>
             </Column>
@@ -149,6 +166,7 @@ export const Home = () => {
   return (
     <Box>
       <HeroSection />
+      <QuestionList />
       <AskAQuestionSection />
       <HowItWorksSection />
       <GetTRSTSection />
