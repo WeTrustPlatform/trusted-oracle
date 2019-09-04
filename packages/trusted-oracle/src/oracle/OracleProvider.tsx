@@ -10,33 +10,33 @@ import { useRealitioContract } from './useRealitioContract';
 // import ArbitratorTRSTList from '@realitio/realitio-contracts/config/arbitrators.TRST.json';
 // import TEMPLATE_CONFIG from '@realitio/realitio-contracts/config/templates.json';
 
-interface RealitioProviderProps {
+interface OracleProviderProps {
   children?: React.ReactNode;
 }
 
 export type Currency = 'ETH' | 'TRST';
 
-export interface RealitioContext {
+export interface OracleContext {
   currency: Currency;
   realitioContract: any;
   arbitratorContract: any;
   loading: boolean;
 }
 
-const RealitioContext = React.createContext<RealitioContext>({
+const OracleContext = React.createContext<OracleContext>({
   currency: 'TRST',
   realitioContract: null,
   arbitratorContract: null,
   loading: true,
 });
 
-export const useRealitio = () => {
-  return React.useContext(RealitioContext);
+export const useOracle = () => {
+  return React.useContext(OracleContext);
 };
 
-export const RealitioProvider = (props: RealitioProviderProps) => {
+export const OracleProvider = (props: OracleProviderProps) => {
   const { children } = props;
-  const { currency } = useRealitio();
+  const { currency } = useOracle();
   const {
     contract: realitioContract,
     loading: realitioContractLoading,
@@ -47,7 +47,7 @@ export const RealitioProvider = (props: RealitioProviderProps) => {
   } = useArbitratorContract(currency);
 
   return (
-    <RealitioContext.Provider
+    <OracleContext.Provider
       value={{
         currency,
         realitioContract,
@@ -56,6 +56,6 @@ export const RealitioProvider = (props: RealitioProviderProps) => {
       }}
     >
       {children}
-    </RealitioContext.Provider>
+    </OracleContext.Provider>
   );
 };

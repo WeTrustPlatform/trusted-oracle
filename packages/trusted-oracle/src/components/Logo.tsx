@@ -13,7 +13,10 @@ export const Logo = () => {
         textDecoration: 'none',
       }}
     >
-      <WebImage alt="trusted-oracle-logo" src={require('../images/logo.svg')} />
+      <WebImage
+        alt="trusted-oracle-logo"
+        src={require('../assets/images/logo.svg')}
+      />
     </Link>
   );
 };

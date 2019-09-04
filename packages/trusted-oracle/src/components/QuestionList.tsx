@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAsync } from 'react-use';
 
-import { useRealitio } from './RealitioProvider';
+import { useOracle } from '../oracle/OracleProvider';
 
 export const useFetchQuestions = () => {
-  const { loading, realitioContract } = useRealitio();
+  const { loading, realitioContract } = useOracle();
 
   const state = useAsync(async () => {
     if (!realitioContract) return [];

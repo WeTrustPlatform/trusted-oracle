@@ -2,7 +2,7 @@ import { useWeb3 } from '@wetrustplatform/paramount-ethereum';
 import { useAsync } from 'react-use';
 import makeTruffleContract from 'truffle-contract';
 
-import { Currency } from './RealitioProvider';
+import { Currency } from './OracleProvider';
 
 // TODO: Support ETH
 export const useSmartContract = (currency: Currency, contractData: any) => {

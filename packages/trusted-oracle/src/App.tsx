@@ -8,8 +8,8 @@ import { Route } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 
 import { NavigationBar } from './components/NavigationBar';
+import { OracleProvider } from './oracle/OracleProvider';
 import { Home } from './pages/Home';
-import { RealitioProvider } from './realitio/RealitioProvider';
 
 export const App = () => {
   return (
@@ -58,10 +58,10 @@ export const App = () => {
           <ToastProvider>
             <Web3Provider>
               <Web3DialogsProvider>
-                <RealitioProvider>
+                <OracleProvider>
                   <NavigationBar />
                   <Route path="/" component={Home} />
-                </RealitioProvider>
+                </OracleProvider>
               </Web3DialogsProvider>
             </Web3Provider>
           </ToastProvider>

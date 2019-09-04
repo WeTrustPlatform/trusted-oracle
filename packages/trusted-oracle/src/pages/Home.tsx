@@ -6,8 +6,8 @@ import { BlogSection } from '../components/BlogSection';
 import { CTAButton } from '../components/CTAButton';
 import { Footer } from '../components/Footer';
 import { Link } from '../components/Link';
+import { QuestionList } from '../components/QuestionList';
 import { WebImage } from '../components/WebImage';
-import { QuestionList } from '../realitio/QuestionList';
 
 const HeroSection = () => {
   return (
@@ -33,7 +33,7 @@ const HeroSection = () => {
           <Column medium={6}>
             <WebImage
               alt="trusted-oracle hero"
-              src={require('../images/oracle-hero.png')}
+              src={require('../assets/images/oracle-hero.png')}
             />
           </Column>
         </Row>
@@ -44,7 +44,9 @@ const HeroSection = () => {
 
 const AskAQuestionSection = () => {
   return (
-    <ImageBackground source={{ uri: require('../images/textured-bg.jpg') }}>
+    <ImageBackground
+      source={{ uri: require('../assets/images/textured-bg.jpg') }}
+    >
       <Box paddingVertical={60}>
         <Container>
           <Row>
@@ -78,7 +80,9 @@ const AskAQuestionSection = () => {
 
 const HowItWorksSection = () => {
   return (
-    <ImageBackground source={{ uri: require('../images/dotted-bg.png') }}>
+    <ImageBackground
+      source={{ uri: require('../assets/images/dotted-bg.png') }}
+    >
       <Box paddingVertical={60}>
         <Container>
           <Row>
@@ -95,7 +99,7 @@ const HowItWorksSection = () => {
               <Box paddingBottom={60}>
                 <WebImage
                   alt="trusted-oracle how it works"
-                  src={require('../images/how-it-works.png')}
+                  src={require('../assets/images/how-it-works.png')}
                 />
               </Box>
             </Column>
@@ -115,7 +119,9 @@ const HowItWorksSection = () => {
 
 const GetTRSTSection = () => {
   return (
-    <ImageBackground source={{ uri: require('../images/textured-bg.jpg') }}>
+    <ImageBackground
+      source={{ uri: require('../assets/images/textured-bg.jpg') }}
+    >
       <Box paddingVertical={60}>
         <Container>
           <Row>
@@ -140,7 +146,7 @@ const GetTRSTSection = () => {
                   icon={
                     <WebImage
                       alt="get trst via banchor"
-                      src={require('../images/banchor.png')}
+                      src={require('../assets/images/banchor.png')}
                     />
                   }
                 />
@@ -149,7 +155,7 @@ const GetTRSTSection = () => {
                   icon={
                     <WebImage
                       alt="get trst via uniswap"
-                      src={require('../images/uniswap.png')}
+                      src={require('../assets/images/uniswap.png')}
                     />
                   }
                 />

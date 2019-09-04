@@ -1,6 +1,6 @@
 // import ArbitratorETH from '@realitio/realitio-contracts/truffle/build/contracts/Arbitrator.json';
 import ArbitratorTRST from '@realitio/realitio-contracts/truffle/build/contracts/Arbitrator.TRST.json';
-import { Currency } from './RealitioProvider';
+import { Currency } from './OracleProvider';
 import { useSmartContract } from './useSmartContract';
 
 export const useArbitratorContract = (currency: Currency) => {
