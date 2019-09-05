@@ -1,12 +1,13 @@
 import React from 'react';
 import Web3 from 'web3';
 
+export type NetworkId = 1 | 3 | 4 | 42 | 1337;
 type Web3State = {
   web3IsLoading: boolean;
   web3: Web3;
   providerName: string | null;
   account: string | null;
-  networkId: number | null;
+  networkId: NetworkId;
   hasWallet: boolean;
   isUsingFallback: boolean;
 };
@@ -16,13 +17,13 @@ const initialState: Web3State = {
   web3: new Web3(Web3.givenProvider),
   providerName: null,
   account: null,
-  networkId: null,
+  networkId: 1,
   hasWallet: false,
   isUsingFallback: false,
 };
 
-const getNetworkId = async (web3: Web3) => {
-  const id = await web3.eth.net.getId();
+const getNetworkId = async (web3: Web3): Promise<NetworkId> => {
+  const id = (await web3.eth.net.getId()) as NetworkId;
 
   return id;
 };
@@ -65,7 +66,7 @@ const getProviderName = (web3: any): ProviderName | null => {
 
 const getWeb3State = async (
   web3: Web3,
-  fallbackRPCEndpoint = `https://rinkeby.infura.io/v3/022f489bd91a47f3960f6f70333bdb76`,
+  fallbackRPCEndpoint = `https://mainnet.infura.io/v3/022f489bd91a47f3960f6f70333bdb76`,
 ): Promise<Web3State> => {
   const hasWallet = getHasWallet(web3);
 
