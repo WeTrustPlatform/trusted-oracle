@@ -2,25 +2,6 @@ import React from 'react';
 import Web3 from 'web3';
 
 export type NetworkId = 1 | 3 | 4 | 42 | 1337;
-type Web3State = {
-  web3IsLoading: boolean;
-  web3: Web3;
-  providerName: string | null;
-  account: string | null;
-  networkId: NetworkId;
-  hasWallet: boolean;
-  isUsingFallback: boolean;
-};
-
-const initialState: Web3State = {
-  web3IsLoading: true,
-  web3: new Web3(Web3.givenProvider),
-  providerName: null,
-  account: null,
-  networkId: 1,
-  hasWallet: false,
-  isUsingFallback: false,
-};
 
 const getNetworkId = async (web3: Web3): Promise<NetworkId> => {
   const id = (await web3.eth.net.getId()) as NetworkId;
@@ -64,10 +45,30 @@ const getProviderName = (web3: any): ProviderName | null => {
   return null;
 };
 
+interface State {
+  web3IsLoading: boolean;
+  web3: Web3;
+  providerName: string | null;
+  account: string | null;
+  networkId: NetworkId;
+  hasWallet: boolean;
+  isUsingFallback: boolean;
+}
+
+const initialState: State = {
+  web3IsLoading: true,
+  web3: new Web3(Web3.givenProvider),
+  providerName: null,
+  account: null,
+  networkId: 1,
+  hasWallet: false,
+  isUsingFallback: false,
+};
+
 const getWeb3State = async (
   web3: Web3,
   fallbackRPCEndpoint = `https://mainnet.infura.io/v3/022f489bd91a47f3960f6f70333bdb76`,
-): Promise<Web3State> => {
+): Promise<State> => {
   const hasWallet = getHasWallet(web3);
 
   if (!hasWallet) {
@@ -100,10 +101,10 @@ export const useWeb3 = () => {
 };
 
 type Action =
-  | { type: 'update'; payload: Web3State }
-  | { type: 'load'; payload: Web3State };
+  | { type: 'update'; payload: State }
+  | { type: 'load'; payload: State };
 
-const reducer = (state: Web3State, action: Action) => {
+const reducer = (state: State, action: Action) => {
   switch (action.type) {
     case 'update':
       return { ...state, ...action.payload };

@@ -1,123 +1,130 @@
-import { useWeb3 } from '@wetrustplatform/paramount-ethereum';
 import BigNumber from 'bn.js';
+import { formatDistanceToNow } from 'date-fns';
+import {
+  Box,
+  Column,
+  Container,
+  Divider,
+  Icon,
+  Row,
+  Text,
+  useTheme,
+} from 'paramount-ui';
 import React from 'react';
-import { useAsync } from 'react-use';
+import { ImageBackground } from 'react-native';
+import Web3 from 'web3';
 
-import { useOracle } from '../oracle/OracleProvider';
+import { Currency, useOracle } from '../oracle/OracleProvider';
+import { Question, useQuestionsQuery } from '../oracle/useQuestionsQuery';
+import { WebImage } from './WebImage';
 
-const BEGINNING_BLOCKS = {
-  1: 6531147,
-  3: 0,
-  4: 3175028, // for quicker loading start more like 4800000,
-  42: 10350865,
-  1337: 0,
-} as const;
-
-const useLatestBlockQuery = () => {
-  const { web3, web3IsLoading } = useWeb3();
-  const state = useAsync(async () => {
-    if (web3IsLoading) return;
-
-    const latestBlock = await web3.eth.getBlock('latest');
-
-    return latestBlock.number;
-  }, [web3IsLoading]);
-
-  return {
-    latestBlockNumber: state.value || 0,
-    loading: state.loading,
-  };
+const currencyInfoMap = {
+  ETH: {
+    decimals: new BigNumber('1000000000000000000'),
+    smallNumber: 0.01 * 1000000000000000000,
+  },
+  TRST: {
+    decimals: new BigNumber('1000000'),
+    smallNumber: 100 * 1000000,
+  },
 };
 
-type NewQuestionEventArgs = {
-  0: string;
-  1: string;
-  2: BigNumber;
-  3: string;
-  4: string;
-  5: string;
-  6: BigNumber;
-  7: BigNumber;
-  8: BigNumber;
-  9: BigNumber;
-  arbitrator: string;
-  content_hash: string;
-  created: BigNumber;
-  nonce: BigNumber;
-  opening_ts: BigNumber;
-  question: string;
-  question_id: string;
-  template_id: BigNumber;
-  timeout: BigNumber;
-  user: string;
-};
+function formatCurrency(bigNumber: BigNumber, currency: Currency = 'TRST') {
+  if (currency !== 'ETH') {
+    return bigNumber.div(currencyInfoMap[currency].decimals).toNumber();
+  }
 
-interface NewQuestionEvent {
-  args: NewQuestionEventArgs;
-  address: string;
-  blockHash: string;
-  blockNumber: number;
-  event: string;
-  id: string;
-  logIndex: 62;
-  raw: any;
-  removed: false;
-  returnValues: any;
-  signature: string;
-  transactionHash: string;
-  transactionIndex: 38;
+  return Web3.utils.fromWei(bigNumber.toNumber(), 'ether');
 }
 
-const transformNewQuestionEventToQuestion = (event: NewQuestionEvent) => {
-  const { args, blockNumber } = event;
+interface QuestionCardProps {
+  question: Question;
+}
 
-  return {
-    id: args[0],
-    reward: args[6],
-    creationAtDate: args.created,
-    createdAtBlock: blockNumber,
-    createdBy: args.user,
-    contentHash: args.content_hash,
-    questionTitle: args.question,
-    templateId: args.template_id.toNumber(),
-    openingDate: args.opening_ts,
-  };
-};
+const QuestionCard = (props: QuestionCardProps) => {
+  const { currency } = useOracle();
+  const theme = useTheme();
+  const { question } = props;
 
-export const useFetchQuestions = () => {
-  const { networkId, web3IsLoading } = useWeb3();
-  const { loading: oracleIsLoading, realitioContract } = useOracle();
-  const beginningBlockNumber = BEGINNING_BLOCKS[networkId];
-
-  const {
-    latestBlockNumber,
-    loading: latestBlockIsLoading,
-  } = useLatestBlockQuery();
-
-  const { loading, value } = useAsync(async () => {
-    if (oracleIsLoading || web3IsLoading || latestBlockIsLoading) return;
-    if (!realitioContract) return;
-
-    const newQuestionsEvents = (await realitioContract.getPastEvents(
-      'LogNewQuestion',
-      {
-        fromBlock: beginningBlockNumber,
-        toBlock: latestBlockNumber,
-      },
-    )) as NewQuestionEvent[];
-
-    return newQuestionsEvents.map(transformNewQuestionEventToQuestion);
-  }, [oracleIsLoading, web3IsLoading, latestBlockIsLoading]);
-
-  return {
-    loading: !(!loading && value),
-    questions: value || [],
-  };
+  return (
+    <Box
+      backgroundColor="white"
+      borderWidth={1}
+      paddingBottom={40}
+      borderColor={theme.colors.border.default}
+      borderRadius={8}
+    >
+      <Box alignItems="flex-end" padding={10}>
+        <Icon name="alert-circle" color="default" />
+      </Box>
+      <Box flexDirection="row" alignItems="center" paddingHorizontal={40}>
+        <Box flex={1} paddingRight={24}>
+          <Text weight="bold" size="large">
+            {question.questionTitle}
+          </Text>
+        </Box>
+        <Divider
+          position="vertical"
+          getStyles={() => ({ dividerStyle: { height: 70 } })}
+        />
+        <Box flexBasis="15%" paddingLeft={24}>
+          <Box flexDirection="row" paddingBottom={24}>
+            <Box paddingRight={8}>
+              <WebImage
+                alt="card trst icon"
+                src={require('../assets/images/card-trst.svg')}
+              />
+            </Box>
+            <Text size="small">
+              {formatCurrency(question.bounty, currency)} {currency}
+            </Text>
+          </Box>
+          <Box flexDirection="row">
+            <Box paddingRight={8}>
+              <WebImage
+                alt="card posted icon"
+                src={require('../assets/images/card-posted.svg')}
+              />
+            </Box>
+            <Text size="small">
+              Posted {formatDistanceToNow(question.createdAtDate)} ago
+            </Text>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
 };
 
 export const QuestionList = () => {
-  const { loading, questions } = useFetchQuestions();
-  console.log(loading, questions);
+  const { loading, questions } = useQuestionsQuery();
 
-  return <></>;
+  console.log(questions);
+
+  return (
+    <ImageBackground
+      source={{ uri: require('../assets/images/dotted-bg.png') }}
+    >
+      <Box paddingVertical={60}>
+        <Container>
+          <Row>
+            {questions.map(question => (
+              <Column key={question.id}>
+                <Box paddingBottom={24}>
+                  <QuestionCard question={question} />
+                </Box>
+              </Column>
+            ))}
+          </Row>
+          {loading && (
+            <Row>
+              <Column>
+                <Text>Loading...</Text>
+              </Column>
+            </Row>
+          )}
+        </Container>
+      </Box>
+    </ImageBackground>
+  );
 };

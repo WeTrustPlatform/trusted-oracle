@@ -6,6 +6,7 @@
     "@realitio/realitio-contracts": "^2.1.0",
     "@realitio/realitio-lib": "^2.0.1",
     "@wetrustplatform/paramount-ethereum": "1.0.0",
+    "date-fns": "^2.0.1",
     "paramount-ui": "^1.76.2",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
