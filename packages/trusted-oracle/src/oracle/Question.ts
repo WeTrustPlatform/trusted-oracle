@@ -1,5 +1,5 @@
 import BigNumber from 'bn.js';
-import { isBefore } from 'date-fns';
+import { isAfter } from 'date-fns';
 
 export interface NewQuestionEventArgs {
   arbitrator: string;
@@ -55,12 +55,31 @@ export interface QuestionBase {
 
 export interface Question extends QuestionBase {
   timeout: BigNumber;
-  finalizeDate: Date;
+  finalizedAtDate: Date;
   isPendingArbitration: boolean;
   bounty: BigNumber;
   bestAnswer: string;
   historyHash: string;
   bond: BigNumber;
+}
+
+export enum QuestionState {
+  NOT_OPEN = 'NOT_OPEN',
+  OPEN = 'OPEN',
+  FINALIZED = 'FINALIZED',
+}
+
+export enum QuestionType {
+  //  A simple yes or no answer. Note that this has no value for “null” or “undecided”. If you want to be able to report these options, you may prefer a multi-choice question.
+  BINARY = 'BINARY',
+  // A positive (unsigned) number. By default questions allow up to 13 decimals.
+  NUMBER = 'NUMBER',
+  // One answer can be selected from a list. The answer form will display this as a select box.
+  SINGLE_CHOICE = 'SINGLE_CHOICE',
+  // Multiple answers can be selected from a list. The answer form will display this as a group of checkboxes.
+  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
+  // A date or date and time. The answer form will display this as a date picker.
+  DATE_TIME = 'DATE_TIME',
 }
 
 export const toDate = (bigNumber: BigNumber) => {
@@ -91,7 +110,7 @@ export const enrichQuestionBaseWithQuestionFromContract = (
   return {
     ...question,
     timeout: questionFromContract.timeout,
-    finalizeDate: toDate(questionFromContract.finalize_ts),
+    finalizedAtDate: toDate(questionFromContract.finalize_ts),
     isPendingArbitration: questionFromContract.is_pending_arbitration,
     bounty: questionFromContract.bounty,
     bestAnswer: questionFromContract.best_answer,
@@ -100,8 +119,14 @@ export const enrichQuestionBaseWithQuestionFromContract = (
   };
 };
 
-export const isNowBeforeOpeningDate = (question: Question) => {
-  var now = new Date();
+export const isOpen = (question: Question) => {
+  const now = new Date();
 
-  return isBefore(now, question.openingDate);
+  return isAfter(now, question.openingDate);
+};
+
+export const isFinalized = (question: Question) => {
+  if (question.isPendingArbitration) return false;
+
+  return isAfter(new Date(), question.finalizedAtDate);
 };
