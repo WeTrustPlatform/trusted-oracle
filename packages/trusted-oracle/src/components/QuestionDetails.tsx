@@ -47,6 +47,9 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
       </Box>
     );
   }
+
+  console.log(question, 'question');
+
   return (
     <Box>
       <Box paddingBottom={16} paddingHorizontal={60} paddingTop={40}>

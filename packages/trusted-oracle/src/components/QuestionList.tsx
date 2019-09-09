@@ -211,7 +211,6 @@ export const QuestionList = () => {
   const { questions } = useQuestionsQuery();
   const [sort, setSort] = React.useState(QuestionCategory.LATEST);
   const sortedQuestions = sortQuestions(questions, sort);
-  console.log(sortedQuestions, 'sortedQuestions');
 
   return (
     <Background pattern="dotted">

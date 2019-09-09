@@ -1,6 +1,13 @@
 import BigNumber from 'bn.js';
 import { isAfter, isBefore } from 'date-fns';
 
+export interface QuestionJson {
+  title: string;
+  type: string;
+  category: string;
+  lang: string;
+}
+
 export interface NewQuestionEventArgs {
   arbitrator: string;
   content_hash: string;
@@ -42,6 +49,7 @@ export interface QuestionFromContract {
   bond: BigNumber;
 }
 
+export type TemplateId = 0 | 1 | 2 | 3 | 4;
 export interface QuestionFromNewQuestionEvent {
   id: string;
   createdAtDate: Date;
@@ -49,7 +57,7 @@ export interface QuestionFromNewQuestionEvent {
   createdBy: string;
   contentHash: string;
   questionTitle: string;
-  templateId: number;
+  templateId: TemplateId;
   openingDate: Date;
 }
 
@@ -73,6 +81,7 @@ export interface QuestionBasic extends QuestionFromNewQuestionEvent {
  */
 export interface Question extends QuestionBasic {
   state: QuestionState;
+  type: string;
 }
 
 export enum QuestionState {
@@ -110,7 +119,7 @@ export const transformNewQuestionEventToQuestion = (
     createdBy: args.user,
     contentHash: args.content_hash,
     questionTitle: args.question,
-    templateId: args.template_id.toNumber(),
+    templateId: args.template_id.toNumber() as TemplateId,
     openingDate: toDate(args.opening_ts),
   };
 };
@@ -165,9 +174,13 @@ export const toQuestionBasic = (
   };
 };
 
-export const toQuestion = (question: QuestionBasic): Question => {
+export const toQuestion = (
+  question: QuestionBasic,
+  questionJson: QuestionJson,
+): Question => {
   return {
     ...question,
     state: getQuestionState(question),
+    type: questionJson.type,
   };
 };

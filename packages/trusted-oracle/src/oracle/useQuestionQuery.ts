@@ -7,10 +7,12 @@ import {
   NewQuestionEvent,
   Question,
   QuestionFromContract,
+  QuestionJson,
   toQuestion,
   toQuestionBasic,
   transformNewQuestionEventToQuestion,
 } from './Question';
+import { RealitioQuestionUtils } from './QuestionUtils';
 
 const INITIAL_BLOCKS = {
   1: 6531147,
@@ -22,9 +24,9 @@ const INITIAL_BLOCKS = {
 
 export type FetchQuestion = (questionId: string) => Promise<Question | null>;
 
-export const useQuestionQueryLazy = () => {
+export const useFetchQuestionQuery = () => {
   const { networkId } = useWeb3();
-  const { realitioContract } = useOracle();
+  const { realitioContract, templates } = useOracle();
   const initialBlock = INITIAL_BLOCKS[networkId];
 
   const fetchQuestion: FetchQuestion = React.useCallback(
@@ -55,6 +57,7 @@ export const useQuestionQueryLazy = () => {
       }
 
       const newQuestionEvent = newQuestionsEvents[0];
+
       const questionBase = transformNewQuestionEventToQuestion(
         newQuestionEvent,
       );
@@ -63,7 +66,15 @@ export const useQuestionQueryLazy = () => {
         questionId,
       )) as QuestionFromContract;
 
-      return toQuestion(toQuestionBasic(questionBase, questionFromContract));
+      const questionJson = RealitioQuestionUtils.populatedJSONForTemplate(
+        templates[questionBase.templateId],
+        questionBase.questionTitle,
+      ) as QuestionJson;
+
+      return toQuestion(
+        toQuestionBasic(questionBase, questionFromContract),
+        questionJson,
+      );
     },
     [realitioContract, initialBlock],
   );
@@ -74,7 +85,7 @@ export const useQuestionQueryLazy = () => {
 export const useQuestionQuery = (questionId: string) => {
   const { web3IsLoading } = useWeb3();
   const { loading: oracleIsLoading, realitioContract } = useOracle();
-  const fetchQuestion = useQuestionQueryLazy();
+  const fetchQuestion = useFetchQuestionQuery();
 
   const { value, loading } = useAsync(async () => {
     const question = await fetchQuestion(questionId);
