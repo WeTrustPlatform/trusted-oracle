@@ -5,10 +5,10 @@ import React from 'react';
 import { useLatestBlockQuery } from '../blockchain/useLatestBlockQuery';
 import { useOracle } from '../oracle/OracleProvider';
 import {
-  enrichQuestionBaseWithQuestionFromContract,
   NewQuestionEvent,
-  Question,
+  QuestionBasic,
   QuestionFromContract,
+  toQuestionBasic,
   transformNewQuestionEventToQuestion,
 } from './Question';
 
@@ -21,7 +21,7 @@ const INITIAL_BLOCKS = {
 } as const;
 
 interface State {
-  questions: Question[];
+  questions: QuestionBasic[];
   toBlock: number;
   incrementIndex: number;
   loading: boolean;
@@ -98,10 +98,7 @@ export const useQuestionsQuery = () => {
               question.id,
             )) as QuestionFromContract;
 
-            return enrichQuestionBaseWithQuestionFromContract(
-              question,
-              questionFromContract,
-            );
+            return toQuestionBasic(question, questionFromContract);
           }),
       );
 

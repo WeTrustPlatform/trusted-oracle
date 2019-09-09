@@ -1,5 +1,5 @@
 import BigNumber from 'bn.js';
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import {
   Badge,
   Box,
@@ -11,13 +11,14 @@ import {
   NativePickerItem,
   Text,
   TextInput,
+  Theme,
   useTheme,
 } from 'paramount-ui';
 import React from 'react';
 import Web3 from 'web3';
 
 import { Currency, useOracle } from '../oracle/OracleProvider';
-import { Question } from '../oracle/Question';
+import { Question, QuestionBasic, QuestionState } from '../oracle/Question';
 import { useQuestionQuery } from '../oracle/useQuestionQuery';
 import { Background } from './Background';
 import { CTAButton } from './CTAButton';
@@ -103,6 +104,10 @@ export interface QuestionProps {
   question: Question;
 }
 
+export interface QuestionBasicProps {
+  question: QuestionBasic;
+}
+
 export const QuestionAddReward = (props: QuestionProps) => {
   const { question } = props;
   const [isOpen, setIsOpen] = React.useState(false);
@@ -180,6 +185,34 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
   );
 };
 
+export const getQuestionBadgeTitle = (question: Question) => {
+  const { state, finalizedAtDate, openingDate } = question;
+
+  if (state === QuestionState.FINALIZED && finalizedAtDate !== 'UNANSWERED') {
+    return `RESOLVED ON ${format(finalizedAtDate, 'MMM d, yyyy')}`;
+  }
+
+  if (state === QuestionState.OPEN) {
+    return 'OPENING FOR ANSWERS';
+  }
+
+  return `OPEN FOR ANSWERS ON ${format(openingDate, 'MMM d, yyyy')}`;
+};
+
+export const getQuestionBadgeColor = (question: Question, theme: Theme) => {
+  const { state } = question;
+
+  if (state === QuestionState.FINALIZED) {
+    return theme.colors.text.default;
+  }
+
+  if (state === QuestionState.OPEN) {
+    return theme.colors.text.primary;
+  }
+
+  return theme.colors.text.secondary;
+};
+
 export const QuestionBadge = (props: QuestionProps) => {
   const { question } = props;
   const theme = useTheme();
@@ -188,15 +221,15 @@ export const QuestionBadge = (props: QuestionProps) => {
     <Badge
       size="small"
       shape="pill"
-      title="Opening for answers"
+      title={getQuestionBadgeTitle(question)}
       getStyles={() => ({
         containerStyle: {
           borderWidth: 1,
-          borderColor: theme.colors.text.primary,
+          borderColor: getQuestionBadgeColor(question, theme),
           backgroundColor: theme.colors.background.content,
         },
         textStyle: {
-          color: theme.colors.text.primary,
+          color: getQuestionBadgeColor(question, theme),
           fontSize: 14,
         },
       })}
@@ -228,7 +261,7 @@ export const QuestionApplyForArbitration = (props: QuestionProps) => {
   );
 };
 
-export const QuestionPostedDate = (props: QuestionProps) => {
+export const QuestionPostedDate = (props: QuestionBasicProps) => {
   const { question } = props;
 
   return (
@@ -265,7 +298,7 @@ function formatCurrency(bigNumber: BigNumber, currency: Currency = 'TRST') {
   return Web3.utils.fromWei(bigNumber.toNumber(), 'ether');
 }
 
-export const QuestionReward = (props: QuestionProps) => {
+export const QuestionReward = (props: QuestionBasicProps) => {
   const { question } = props;
   const { currency } = useOracle();
 
@@ -284,6 +317,6 @@ export const QuestionReward = (props: QuestionProps) => {
   );
 };
 
-export const QuestionTooltip = (props: QuestionProps) => {
+export const QuestionTooltip = (props: QuestionBasicProps) => {
   return <Icon name="alert-circle" color="default" />;
 };

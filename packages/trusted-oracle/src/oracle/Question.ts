@@ -1,5 +1,5 @@
 import BigNumber from 'bn.js';
-import { isAfter } from 'date-fns';
+import { isAfter, isBefore } from 'date-fns';
 
 export interface NewQuestionEventArgs {
   arbitrator: string;
@@ -21,13 +21,13 @@ export interface NewQuestionEvent {
   blockNumber: number;
   event: string;
   id: string;
-  logIndex: 62;
+  logIndex: number;
   raw: any;
   removed: false;
   returnValues: any;
   signature: string;
   transactionHash: string;
-  transactionIndex: 38;
+  transactionIndex: number;
 }
 
 export interface QuestionFromContract {
@@ -42,7 +42,7 @@ export interface QuestionFromContract {
   bond: BigNumber;
 }
 
-export interface QuestionBase {
+export interface QuestionFromNewQuestionEvent {
   id: string;
   createdAtDate: Date;
   createdAtBlock: number;
@@ -53,14 +53,26 @@ export interface QuestionBase {
   openingDate: Date;
 }
 
-export interface Question extends QuestionBase {
+type Unanswered = 'UNANSWERED';
+
+/**
+ * Question with basic information for display in a list of question
+ */
+export interface QuestionBasic extends QuestionFromNewQuestionEvent {
   timeout: BigNumber;
-  finalizedAtDate: Date;
+  finalizedAtDate: Date | Unanswered;
   isPendingArbitration: boolean;
   bounty: BigNumber;
   bestAnswer: string;
   historyHash: string;
   bond: BigNumber;
+}
+
+/**
+ * Question with all the necessary information to display in QuestionDetails
+ */
+export interface Question extends QuestionBasic {
+  state: QuestionState;
 }
 
 export enum QuestionState {
@@ -88,7 +100,7 @@ export const toDate = (bigNumber: BigNumber) => {
 
 export const transformNewQuestionEventToQuestion = (
   event: NewQuestionEvent,
-): QuestionBase => {
+): QuestionFromNewQuestionEvent => {
   const { args, blockNumber } = event;
 
   return {
@@ -103,14 +115,48 @@ export const transformNewQuestionEventToQuestion = (
   };
 };
 
-export const enrichQuestionBaseWithQuestionFromContract = (
-  question: QuestionBase,
+export const isOpen = (question: QuestionBasic) => {
+  const now = new Date();
+
+  const isPastOpeningDate = isAfter(now, question.openingDate);
+  const isBeforeFinalizedDate =
+    question.finalizedAtDate === 'UNANSWERED' ||
+    isBefore(now, question.finalizedAtDate);
+
+  return (
+    isPastOpeningDate && isBeforeFinalizedDate && !question.isPendingArbitration
+  );
+};
+
+const isAnswered = (question: QuestionFromContract) => {
+  const finalizedAtDate = question.finalize_ts.toNumber();
+  return finalizedAtDate > 1;
+};
+
+export const isFinalized = (question: QuestionBasic) => {
+  if (question.isPendingArbitration) return false;
+  if (question.finalizedAtDate === 'UNANSWERED') return false;
+
+  return isAfter(new Date(), question.finalizedAtDate);
+};
+
+const getQuestionState = (question: QuestionBasic): QuestionState => {
+  if (isFinalized(question)) return QuestionState.FINALIZED;
+  if (isOpen(question)) return QuestionState.OPEN;
+
+  return QuestionState.NOT_OPEN;
+};
+
+export const toQuestionBasic = (
+  questionFromNewQuestionEvent: QuestionFromNewQuestionEvent,
   questionFromContract: QuestionFromContract,
-): Question => {
+): QuestionBasic => {
   return {
-    ...question,
+    ...questionFromNewQuestionEvent,
     timeout: questionFromContract.timeout,
-    finalizedAtDate: toDate(questionFromContract.finalize_ts),
+    finalizedAtDate: isAnswered(questionFromContract)
+      ? toDate(questionFromContract.finalize_ts)
+      : 'UNANSWERED',
     isPendingArbitration: questionFromContract.is_pending_arbitration,
     bounty: questionFromContract.bounty,
     bestAnswer: questionFromContract.best_answer,
@@ -119,14 +165,9 @@ export const enrichQuestionBaseWithQuestionFromContract = (
   };
 };
 
-export const isOpen = (question: Question) => {
-  const now = new Date();
-
-  return isAfter(now, question.openingDate);
-};
-
-export const isFinalized = (question: Question) => {
-  if (question.isPendingArbitration) return false;
-
-  return isAfter(new Date(), question.finalizedAtDate);
+export const toQuestion = (question: QuestionBasic): Question => {
+  return {
+    ...question,
+    state: getQuestionState(question),
+  };
 };

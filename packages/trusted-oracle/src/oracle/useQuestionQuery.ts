@@ -4,9 +4,11 @@ import { useAsync } from 'react-use';
 
 import { useOracle } from './OracleProvider';
 import {
-  enrichQuestionBaseWithQuestionFromContract,
   NewQuestionEvent,
+  Question,
   QuestionFromContract,
+  toQuestion,
+  toQuestionBasic,
   transformNewQuestionEventToQuestion,
 } from './Question';
 
@@ -18,12 +20,14 @@ const INITIAL_BLOCKS = {
   1337: 0,
 } as const;
 
+export type FetchQuestion = (questionId: string) => Promise<Question | null>;
+
 export const useQuestionQueryLazy = () => {
   const { networkId } = useWeb3();
   const { realitioContract } = useOracle();
   const initialBlock = INITIAL_BLOCKS[networkId];
 
-  const fetchQuestion = React.useCallback(
+  const fetchQuestion: FetchQuestion = React.useCallback(
     async (questionId: string) => {
       if (!realitioContract) {
         throw new Error(
@@ -59,10 +63,7 @@ export const useQuestionQueryLazy = () => {
         questionId,
       )) as QuestionFromContract;
 
-      return enrichQuestionBaseWithQuestionFromContract(
-        questionBase,
-        questionFromContract,
-      );
+      return toQuestion(toQuestionBasic(questionBase, questionFromContract));
     },
     [realitioContract, initialBlock],
   );

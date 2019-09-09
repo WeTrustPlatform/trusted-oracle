@@ -16,7 +16,7 @@ import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Route, RouteChildrenProps } from 'react-router';
 
-import { isFinalized, Question } from '../oracle/Question';
+import { isFinalized, QuestionBasic } from '../oracle/Question';
 import { useQuestionsQuery } from '../oracle/useQuestionsQuery';
 import { Background } from './Background';
 import { Link } from './Link';
@@ -28,7 +28,7 @@ import {
 } from './QuestionDetails';
 
 interface QuestionCardProps {
-  question: Question;
+  question: QuestionBasic;
 }
 
 const QuestionCard = (props: QuestionCardProps) => {
@@ -181,16 +181,23 @@ const QuestionSortTabs = (props: QuestionSortTabsProps) => {
   );
 };
 
-const sortQuestions = (questions: Question[], sort: QuestionCategory) => {
+const sortQuestions = (questions: QuestionBasic[], sort: QuestionCategory) => {
   switch (sort) {
     case QuestionCategory.LATEST:
       return questions.sort((a, b) =>
         compareDesc(a.createdAtDate, b.createdAtDate),
       );
     case QuestionCategory.CLOSING_SOON:
-      return questions.sort((a, b) =>
-        compareDesc(a.finalizedAtDate, b.finalizedAtDate),
-      );
+      return questions.sort((a, b) => {
+        if (
+          a.finalizedAtDate === 'UNANSWERED' ||
+          b.finalizedAtDate === 'UNANSWERED'
+        ) {
+          return -1;
+        }
+
+        return compareDesc(a.finalizedAtDate, b.finalizedAtDate);
+      });
     case QuestionCategory.HIGH_REWARD:
       return questions.sort((a, b) => b.bounty.sub(a.bounty).toNumber());
     case QuestionCategory.RESOLVED:
@@ -204,6 +211,7 @@ export const QuestionList = () => {
   const { questions } = useQuestionsQuery();
   const [sort, setSort] = React.useState(QuestionCategory.LATEST);
   const sortedQuestions = sortQuestions(questions, sort);
+  console.log(sortedQuestions, 'sortedQuestions');
 
   return (
     <Background pattern="dotted">
