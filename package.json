@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "scripts": {
+    "start": "yarn workspace @wetrustplatform/trusted-oracle start",
     "build": "tsc -b packages",
     "build:watch": "yarn build --watch",
     "prettier": "prettier",

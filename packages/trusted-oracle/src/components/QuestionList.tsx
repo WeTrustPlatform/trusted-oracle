@@ -1,48 +1,34 @@
-import BigNumber from 'bn.js';
-import { formatDistanceToNow } from 'date-fns';
 import {
   Box,
   Column,
   Container,
+  Dialog,
   Divider,
   Icon,
   Row,
   Text,
+  useLayout,
   useTheme,
 } from 'paramount-ui';
 import React from 'react';
-import { ImageBackground } from 'react-native';
-import Web3 from 'web3';
+import { ImageBackground, TouchableOpacity } from 'react-native';
+import { Route, RouteChildrenProps } from 'react-router';
 
-import { Currency, useOracle } from '../oracle/OracleProvider';
-import { Question, useQuestionsQuery } from '../oracle/useQuestionsQuery';
-import { WebImage } from './WebImage';
-
-const currencyInfoMap = {
-  ETH: {
-    decimals: new BigNumber('1000000000000000000'),
-    smallNumber: 0.01 * 1000000000000000000,
-  },
-  TRST: {
-    decimals: new BigNumber('1000000'),
-    smallNumber: 100 * 1000000,
-  },
-};
-
-function formatCurrency(bigNumber: BigNumber, currency: Currency = 'TRST') {
-  if (currency !== 'ETH') {
-    return bigNumber.div(currencyInfoMap[currency].decimals).toNumber();
-  }
-
-  return Web3.utils.fromWei(bigNumber.toNumber(), 'ether');
-}
+import { Question } from '../oracle/Question';
+import { useQuestionsQuery } from '../oracle/useQuestionsQuery';
+import { Link } from './Link';
+import {
+  QuestionDetails,
+  QuestionPostedDate,
+  QuestionReward,
+  QuestionTooltip,
+} from './QuestionDetails';
 
 interface QuestionCardProps {
   question: Question;
 }
 
 const QuestionCard = (props: QuestionCardProps) => {
-  const { currency } = useOracle();
   const theme = useTheme();
   const { question } = props;
 
@@ -55,7 +41,7 @@ const QuestionCard = (props: QuestionCardProps) => {
       borderRadius={8}
     >
       <Box alignItems="flex-end" padding={10}>
-        <Icon name="alert-circle" color="default" />
+        <QuestionTooltip question={question} />
       </Box>
       <Box flexDirection="row" alignItems="center" paddingHorizontal={40}>
         <Box flex={1} paddingRight={24}>
@@ -68,38 +54,52 @@ const QuestionCard = (props: QuestionCardProps) => {
           getStyles={() => ({ dividerStyle: { height: 70 } })}
         />
         <Box flexBasis="15%" paddingLeft={24}>
-          <Box flexDirection="row" paddingBottom={24}>
-            <Box paddingRight={8}>
-              <WebImage
-                alt="card trst icon"
-                src={require('../assets/images/card-trst.svg')}
-              />
-            </Box>
-            <Text size="small">
-              {formatCurrency(question.bounty, currency)} {currency}
-            </Text>
+          <Box paddingBottom={24}>
+            <QuestionReward question={question} />
           </Box>
-          <Box flexDirection="row">
-            <Box paddingRight={8}>
-              <WebImage
-                alt="card posted icon"
-                src={require('../assets/images/card-posted.svg')}
-              />
-            </Box>
-            <Text size="small">
-              Posted {formatDistanceToNow(question.createdAtDate)} ago
-            </Text>
-          </Box>
+          <QuestionPostedDate question={question} />
         </Box>
       </Box>
     </Box>
   );
 };
 
-export const QuestionList = () => {
-  const { loading, questions } = useQuestionsQuery();
+const QuestionDetailsDialog = (
+  props: RouteChildrenProps<{ questionId: string }>,
+) => {
+  const { history, match } = props;
+  const layout = useLayout();
 
-  console.log(questions);
+  if (!match) return null;
+
+  return (
+    <Dialog
+      isVisible
+      onRequestClose={() => history.replace('/')}
+      getStyles={() => ({
+        containerStyle: {
+          width: '100%',
+          maxWidth: layout.containerSizes.xlarge,
+          overflow: 'visible',
+        },
+        bodyStyle: {
+          maxHeight: 756,
+          overflow: 'visible',
+        },
+      })}
+    >
+      <Box marginTop={-60} alignItems="flex-end">
+        <TouchableOpacity onPress={() => history.replace('/')}>
+          <Icon name="x" size={60} color="#fff" />
+        </TouchableOpacity>
+      </Box>
+      <QuestionDetails questionId={match.params.questionId} />
+    </Dialog>
+  );
+};
+
+export const QuestionList = () => {
+  const { questions } = useQuestionsQuery();
 
   return (
     <ImageBackground
@@ -111,20 +111,23 @@ export const QuestionList = () => {
             {questions.map(question => (
               <Column key={question.id}>
                 <Box paddingBottom={24}>
-                  <QuestionCard question={question} />
+                  <Link to={`/question/${question.id}`}>
+                    <QuestionCard question={question} />
+                  </Link>
                 </Box>
               </Column>
             ))}
           </Row>
-          {loading && (
+          {/* {loading && (
             <Row>
               <Column>
                 <Text>Loading...</Text>
               </Column>
             </Row>
-          )}
+          )} */}
         </Container>
       </Box>
+      <Route path="/question/:questionId" component={QuestionDetailsDialog} />
     </ImageBackground>
   );
 };

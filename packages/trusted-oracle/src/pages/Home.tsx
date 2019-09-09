@@ -1,7 +1,7 @@
 import { Box, Column, Container, Heading, Row, Text } from 'paramount-ui';
 import React from 'react';
-import { ImageBackground } from 'react-native';
 
+import { Background } from '../components/Background';
 import { BlogSection } from '../components/BlogSection';
 import { CTAButton } from '../components/CTAButton';
 import { Footer } from '../components/Footer';
@@ -44,9 +44,7 @@ const HeroSection = () => {
 
 const AskAQuestionSection = () => {
   return (
-    <ImageBackground
-      source={{ uri: require('../assets/images/textured-bg.jpg') }}
-    >
+    <Background pattern="textured">
       <Box paddingVertical={60}>
         <Container>
           <Row>
@@ -74,15 +72,13 @@ const AskAQuestionSection = () => {
           </Row>
         </Container>
       </Box>
-    </ImageBackground>
+    </Background>
   );
 };
 
 const HowItWorksSection = () => {
   return (
-    <ImageBackground
-      source={{ uri: require('../assets/images/dotted-bg.png') }}
-    >
+    <Background pattern="dotted">
       <Box paddingVertical={60}>
         <Container>
           <Row>
@@ -113,15 +109,13 @@ const HowItWorksSection = () => {
           </Row>
         </Container>
       </Box>
-    </ImageBackground>
+    </Background>
   );
 };
 
 const GetTRSTSection = () => {
   return (
-    <ImageBackground
-      source={{ uri: require('../assets/images/textured-bg.jpg') }}
-    >
+    <Background pattern="textured">
       <Box paddingVertical={60}>
         <Container>
           <Row>
@@ -164,7 +158,7 @@ const GetTRSTSection = () => {
           </Row>
         </Container>
       </Box>
-    </ImageBackground>
+    </Background>
   );
 };
 

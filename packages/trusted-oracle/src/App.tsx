@@ -36,11 +36,17 @@ export const App = () => {
               lineHeight: 66,
               marginBottom: 16,
             },
+            xxlarge: {
+              fontSize: 40,
+            },
           },
           textSizes: {
             medium: {
               fontSize: 18,
               lineHeight: 24,
+            },
+            large: {
+              fontSize: 24,
             },
           },
         }}

@@ -1,10 +1,16 @@
 import { useWeb3 } from '@wetrustplatform/paramount-ethereum';
-import BigNumber from 'bn.js';
 import { compareDesc } from 'date-fns';
 import React from 'react';
-import { useAsync } from 'react-use';
 
+import { useLatestBlockQuery } from '../blockchain/useLatestBlockQuery';
 import { useOracle } from '../oracle/OracleProvider';
+import {
+  enrichQuestionBaseWithQuestionFromContract,
+  NewQuestionEvent,
+  Question,
+  QuestionFromContract,
+  transformNewQuestionEventToQuestion,
+} from './Question';
 
 const INITIAL_BLOCKS = {
   1: 6531147,
@@ -13,121 +19,6 @@ const INITIAL_BLOCKS = {
   42: 10350865,
   1337: 0,
 } as const;
-
-const useLatestBlockQuery = () => {
-  const { web3, web3IsLoading } = useWeb3();
-  const state = useAsync(async () => {
-    if (web3IsLoading) return;
-
-    const latestBlock = await web3.eth.getBlock('latest');
-
-    return latestBlock.number;
-  }, [web3IsLoading]);
-
-  return {
-    latestBlock: state.value || 0,
-    loading: state.loading,
-  };
-};
-
-interface NewQuestionEventArgs {
-  arbitrator: string;
-  content_hash: string;
-  created: BigNumber;
-  nonce: BigNumber;
-  opening_ts: BigNumber;
-  question: string;
-  question_id: string;
-  template_id: BigNumber;
-  timeout: BigNumber;
-  user: string;
-}
-
-interface NewQuestionEvent {
-  args: NewQuestionEventArgs;
-  address: string;
-  blockHash: string;
-  blockNumber: number;
-  event: string;
-  id: string;
-  logIndex: 62;
-  raw: any;
-  removed: false;
-  returnValues: any;
-  signature: string;
-  transactionHash: string;
-  transactionIndex: 38;
-}
-
-interface QuestionFromContract {
-  content_hash: string;
-  opening_ts: BigNumber;
-  timeout: BigNumber;
-  finalize_ts: BigNumber;
-  is_pending_arbitration: boolean;
-  bounty: BigNumber;
-  best_answer: string;
-  history_hash: string;
-  bond: BigNumber;
-}
-
-interface QuestionBase {
-  id: string;
-  createdAtDate: Date;
-  createdAtBlock: number;
-  createdBy: string;
-  contentHash: string;
-  questionTitle: string;
-  templateId: number;
-  openingDate: Date;
-}
-
-export interface Question extends QuestionBase {
-  timeout: BigNumber;
-  finalizeDate: Date;
-  isPendingArbitration: boolean;
-  bounty: BigNumber;
-  bestAnswer: string;
-  historyHash: string;
-  bond: BigNumber;
-}
-
-const toDate = (bigNumber: BigNumber) => {
-  return new Date(bigNumber.toNumber() * 1000);
-};
-
-const transformNewQuestionEventToQuestion = (
-  event: NewQuestionEvent,
-): QuestionBase => {
-  const { args, blockNumber } = event;
-
-  return {
-    id: args.question_id,
-    createdAtDate: toDate(args.created),
-    createdAtBlock: blockNumber,
-    createdBy: args.user,
-    contentHash: args.content_hash,
-    questionTitle: args.question,
-    templateId: args.template_id.toNumber(),
-    openingDate: toDate(args.opening_ts),
-  };
-};
-
-const enrcihQuestionBaseWithQuestionFromContract = (
-  question: QuestionBase,
-  questionFromContract: QuestionFromContract,
-): Question => {
-  return {
-    ...question,
-    timeout: questionFromContract.timeout,
-    finalizeDate: toDate(questionFromContract.finalize_ts),
-    isPendingArbitration: questionFromContract.is_pending_arbitration,
-    bounty: questionFromContract.bounty,
-    bestAnswer: questionFromContract.best_answer,
-    historyHash: questionFromContract.history_hash,
-    bond: questionFromContract.bond,
-  };
-};
 
 interface State {
   questions: Question[];
@@ -207,7 +98,7 @@ export const useQuestionsQuery = () => {
               question.id,
             )) as QuestionFromContract;
 
-            return enrcihQuestionBaseWithQuestionFromContract(
+            return enrichQuestionBaseWithQuestionFromContract(
               question,
               questionFromContract,
             );
@@ -230,7 +121,12 @@ export const useQuestionsQuery = () => {
     web3IsLoading,
     latestBlockIsLoading,
     latestBlock,
-    state,
+    incrementIndex,
+    questions,
+    toBlock,
+    loading,
+    realitioContract,
+    initialBlock,
   ]);
 
   return {

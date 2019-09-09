@@ -14,11 +14,10 @@ export const CTAButton = (props: ButtonProps) => {
               borderColor: '#eb7209',
               borderWidth: 1,
               width: 280,
-              // paddingLeft: 80,
-              // paddingRight: 80,
             },
             textStyle: {
               color: '#eb7209',
+              fontSize: 18,
             },
           };
         }
@@ -26,8 +25,9 @@ export const CTAButton = (props: ButtonProps) => {
         return {
           touchableStyle: {
             width: 280,
-            // paddingLeft: 80,
-            // paddingRight: 80,
+          },
+          textStyle: {
+            fontSize: 18,
           },
         };
       }}
