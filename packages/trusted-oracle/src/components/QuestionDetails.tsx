@@ -54,8 +54,14 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
           QUESTION DETAILS
         </Heading>
       </Box>
-      <Box paddingBottom={16} paddingHorizontal={60}>
+      <Box
+        paddingBottom={16}
+        paddingHorizontal={60}
+        flexDirection="row"
+        justifyContent="space-between"
+      >
         <QuestionTooltip question={question} />
+        <QuestionSummary question={question} />
       </Box>
       <Box paddingBottom={24} paddingHorizontal={60}>
         <Text
@@ -319,4 +325,8 @@ export const QuestionReward = (props: QuestionBasicProps) => {
 
 export const QuestionTooltip = (props: QuestionBasicProps) => {
   return <Icon name="alert-circle" color="default" />;
+};
+
+export const QuestionSummary = (props: QuestionProps) => {
+  return <Icon name="more-horizontal" color="default" />;
 };
