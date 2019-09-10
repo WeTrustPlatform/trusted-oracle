@@ -18,7 +18,7 @@ import { Route, RouteChildrenProps } from 'react-router';
 
 import { Background } from '../components/Background';
 import { Link } from '../components/Link';
-import { isFinalized, QuestionBasic } from './Question';
+import { Question, QuestionState } from './Question';
 import {
   QuestionDetails,
   QuestionPostedDate,
@@ -28,7 +28,7 @@ import {
 import { useQuestionsQuery } from './useQuestionsQuery';
 
 interface QuestionCardProps {
-  question: QuestionBasic;
+  question: Question;
 }
 
 const QuestionCard = (props: QuestionCardProps) => {
@@ -181,27 +181,31 @@ const QuestionSortTabs = (props: QuestionSortTabsProps) => {
   );
 };
 
-const sortQuestions = (questions: QuestionBasic[], sort: QuestionCategory) => {
+const sortQuestions = (questions: Question[], sort: QuestionCategory) => {
   switch (sort) {
     case QuestionCategory.LATEST:
-      return questions.sort((a, b) =>
-        compareDesc(a.createdAtDate, b.createdAtDate),
-      );
+      return questions
+        .filter(q => q.state !== QuestionState.FINALIZED)
+        .sort((a, b) => compareDesc(a.createdAtDate, b.createdAtDate));
     case QuestionCategory.CLOSING_SOON:
-      return questions.sort((a, b) => {
-        if (
-          a.finalizedAtDate === 'UNANSWERED' ||
-          b.finalizedAtDate === 'UNANSWERED'
-        ) {
-          return -1;
-        }
+      return questions
+        .filter(q => q.state !== QuestionState.FINALIZED)
+        .sort((a, b) => {
+          if (
+            a.finalizedAtDate === 'UNANSWERED' ||
+            b.finalizedAtDate === 'UNANSWERED'
+          ) {
+            return -1;
+          }
 
-        return compareDesc(a.finalizedAtDate, b.finalizedAtDate);
-      });
+          return compareDesc(a.finalizedAtDate, b.finalizedAtDate);
+        });
     case QuestionCategory.HIGH_REWARD:
-      return questions.sort((a, b) => b.bounty.sub(a.bounty).toNumber());
+      return questions
+        .filter(q => q.state !== QuestionState.FINALIZED)
+        .sort((a, b) => b.bounty.sub(a.bounty).toNumber());
     case QuestionCategory.RESOLVED:
-      return questions.filter(isFinalized);
+      return questions.filter(q => q.state === QuestionState.FINALIZED);
     default:
       return questions;
   }

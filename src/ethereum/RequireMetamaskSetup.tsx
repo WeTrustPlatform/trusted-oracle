@@ -29,6 +29,7 @@ export const RequireMetamaskSetup = () => {
               style={{ textDecoration: 'none' }}
               href={isFirefox ? METAMASK_FIREFOX_LINK : METAMASK_CHROME_LINK}
               target="_blank"
+              rel="noopener noreferrer"
             >
               <Text color="link">MetaMask extension</Text>
             </a>{' '}

@@ -1,4 +1,3 @@
-import TEMPLATE_CONFIG from '@realitio/realitio-contracts/config/templates.json';
 import React from 'react';
 
 import { useArbitratorContract } from './useArbitratorContract';
@@ -11,21 +10,10 @@ import { useRealitioInstance } from './useRealitioInstance';
 
 interface OracleProviderProps {
   children?: React.ReactNode;
-  currency: Currency;
+  initialCurrency: Currency;
 }
 
 export type Currency = 'ETH' | 'TRST';
-export interface QuestionTemplates {
-  0: string;
-  1: string;
-  2: string;
-  3: string;
-  4: string;
-}
-
-const getTemplates = (): QuestionTemplates => {
-  return TEMPLATE_CONFIG.content;
-};
 
 export interface OracleContext {
   currency: Currency;
@@ -34,7 +22,7 @@ export interface OracleContext {
   /** Arbitrator contract */
   arbitratorContract: any;
   loading: boolean;
-  templates: QuestionTemplates;
+  setCurrency: (currency: Currency) => void;
 }
 
 const OracleContext = React.createContext<OracleContext>({
@@ -42,7 +30,7 @@ const OracleContext = React.createContext<OracleContext>({
   realitio: null,
   arbitratorContract: null,
   loading: true,
-  templates: getTemplates(),
+  setCurrency: () => {},
 });
 
 export const useOracle = () => {
@@ -50,7 +38,8 @@ export const useOracle = () => {
 };
 
 export const OracleProvider = (props: OracleProviderProps) => {
-  const { children, currency = 'TRST' } = props;
+  const { children, initialCurrency = 'TRST' } = props;
+  const [currency, setCurrency] = React.useState(initialCurrency);
 
   const { instance: realitio, loading: realitioLoading } = useRealitioInstance(
     currency,
@@ -67,7 +56,7 @@ export const OracleProvider = (props: OracleProviderProps) => {
         realitio,
         arbitratorContract,
         loading: arbitratorContractLoading || realitioLoading,
-        templates: getTemplates(),
+        setCurrency,
       }}
     >
       {children}

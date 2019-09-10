@@ -21,9 +21,13 @@ import { useAsync } from 'react-use';
 import { Background } from '../components/Background';
 import { CTAButton } from '../components/CTAButton';
 import { WebImage } from '../components/WebImage';
-import { formatCurrency } from './CurrencyUtils';
+import { useWeb3Dialogs } from '../ethereum/Web3DialogsProvider';
+import { useWeb3 } from '../ethereum/Web3Provider';
+import { formatCurrency, toBigNumber } from './CurrencyUtils';
 import { useOracle } from './OracleProvider';
-import { Question, QuestionBasic, QuestionState } from './Question';
+import { Question, QuestionState } from './Question';
+import { QuestionUtils } from './QuestionUtils';
+import { useAnswersQuery } from './useAnswersQuery';
 import { useQuestionQuery } from './useQuestionQuery';
 
 interface QuestionDetailsProps {
@@ -32,7 +36,7 @@ interface QuestionDetailsProps {
 
 export const QuestionDetails = (props: QuestionDetailsProps) => {
   const { questionId } = props;
-  const { data: question, loading } = useQuestionQuery(questionId);
+  const { data: question, loading, refetch } = useQuestionQuery(questionId);
 
   if (loading) {
     return (
@@ -64,7 +68,7 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
         justifyContent="space-between"
       >
         <QuestionTooltip question={question} />
-        <QuestionSummary question={question} />
+        <QuestionSummary question={question} refetch={refetch} />
       </Box>
       <Box paddingBottom={24} paddingHorizontal={60}>
         <Text
@@ -90,38 +94,69 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
           </Box>
           <QuestionPostedDate question={question} />
         </Box>
-        <QuestionBadge question={question} />
+        <QuestionBadge question={question} refetch={refetch} />
       </Box>
       <Box paddingVertical={16} paddingHorizontal={60}>
-        <QuestionAddReward question={question} />
+        <QuestionAddReward question={question} refetch={refetch} />
+      </Box>
+      <Box paddingVertical={16} paddingHorizontal={60}>
+        <QuestionAnswers question={question} />
       </Box>
       <Background pattern="textured">
         <Box paddingVertical={24} paddingHorizontal={60}>
-          <QuestionPostAnswer question={question} />
+          <QuestionPostAnswer question={question} refetch={refetch} />
         </Box>
       </Background>
       <Background pattern="dotted">
         <Box paddingVertical={40} paddingHorizontal={60}>
-          <QuestionApplyForArbitration question={question} />
+          <QuestionApplyForArbitration question={question} refetch={refetch} />
         </Box>
       </Background>
     </Box>
   );
 };
 
-export interface QuestionProps {
+export interface QuestionBasicProps {
   question: Question;
 }
 
-export interface QuestionBasicProps {
-  question: QuestionBasic;
+export interface QuestionProps extends QuestionBasicProps {
+  refetch: () => Promise<void>;
 }
 
-export const QuestionAddReward = (props: QuestionProps) => {
+export const QuestionAnswers = (props: QuestionBasicProps) => {
   const { question } = props;
   const [isOpen, setIsOpen] = React.useState(false);
+  const { realitio, currency } = useOracle();
+  const { data, loading } = useAnswersQuery(question.id);
   const theme = useTheme();
-  const { values, errors, touched, setFieldValue, submitForm } = useFormik({
+
+  return (
+    <Background pattern="textured">
+      <Box />
+    </Background>
+  );
+};
+
+export const QuestionAddReward = (props: QuestionProps) => {
+  const { question, refetch } = props;
+  const [isOpen, setIsOpen] = React.useState(false);
+  const { realitio, currency } = useOracle();
+  const { account } = useWeb3();
+  const {
+    setShowRequireMetamaskSetup,
+    setShowRequireWalletSignIn,
+  } = useWeb3Dialogs();
+  const theme = useTheme();
+
+  const {
+    values,
+    errors,
+    touched,
+    setFieldValue,
+    submitForm,
+    isSubmitting,
+  } = useFormik({
     initialValues: {
       reward: '',
     },
@@ -138,7 +173,22 @@ export const QuestionAddReward = (props: QuestionProps) => {
       return errors;
     },
 
-    onSubmit: async () => {},
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      if (!account) throw new Error('Need account');
+      try {
+        await realitio.fundAnswerBounty(question.id, {
+          from: account,
+          value: toBigNumber(values.reward, currency),
+        });
+
+        await refetch();
+        resetForm();
+      } catch (error) {
+        console.log(error);
+      }
+
+      setSubmitting(false);
+    },
   });
 
   return (
@@ -149,7 +199,7 @@ export const QuestionAddReward = (props: QuestionProps) => {
         onOpen={() => setIsOpen(true)}
         onClose={() => setIsOpen(false)}
         // eslint-disable-next-line
-        // @ts-ignore
+        // @ts-ignore: TODO fix in paramount-ui
         getStyles={() => ({
           textStyle: {
             fontSize: 20,
@@ -167,11 +217,12 @@ export const QuestionAddReward = (props: QuestionProps) => {
                 value={values.reward}
                 keyboardType="number-pad"
                 onChangeText={text => setFieldValue('reward', text)}
-                placeholder="Enter TRST amount"
+                placeholder="Enter amount"
               />
             </FormField>
           </Box>
           <CTAButton
+            isLoading={isSubmitting}
             onPress={submitForm}
             appearance="outline"
             title="Add Reward"
@@ -183,10 +234,23 @@ export const QuestionAddReward = (props: QuestionProps) => {
 };
 
 export const QuestionPostAnswer = (props: QuestionProps) => {
-  const { question } = props;
+  const { question, refetch } = props;
   const theme = useTheme();
+  const { realitio, currency } = useOracle();
+  const { account } = useWeb3();
+  const {
+    setShowRequireMetamaskSetup,
+    setShowRequireWalletSignIn,
+  } = useWeb3Dialogs();
 
-  const { values, errors, touched, setFieldValue, submitForm } = useFormik({
+  const {
+    values,
+    errors,
+    touched,
+    setFieldValue,
+    submitForm,
+    isSubmitting,
+  } = useFormik({
     initialValues: {
       answer: 'UNSELECTED',
       bond: '',
@@ -202,14 +266,59 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
         errors.answer = 'Please select an answer';
       }
 
-      if (!values.bond) {
+      if (!values.bond || values.bond === '') {
         errors.bond = 'Please enter a bond';
+      }
+
+      if (
+        toBigNumber(values.bond, currency).lt(
+          question.bond.mul(new BigNumber(2)),
+        )
+      ) {
+        errors.bond = `Bond must be greater than ${formatCurrency(
+          question.bond.mul(new BigNumber(2)),
+          currency,
+        )} ${currency}`;
       }
 
       return errors;
     },
 
-    onSubmit: async () => {},
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      if (!account) throw new Error('Need account');
+
+      const answer = QuestionUtils.answerToBytes32(values.answer, {
+        type: question.type,
+      });
+      try {
+        if (currency === 'ETH') {
+          realitio.submitAnswer.sendTransaction(
+            question.id,
+            answer,
+            question.bond,
+            {
+              from: account,
+              value: toBigNumber(values.bond, currency),
+            },
+          );
+        } else {
+          throw new Error('TODO');
+
+          // ensureAmountApproved(realitio.address, account, toBigNumber(values.bond, currency)).then(function() {
+          //     realitio.submitAnswerERC20.sendTransaction(question.id, answer, question.bond, toBigNumber(values.bond, currency), {
+          //         from: account,
+          //     });
+          // });
+        }
+
+        await refetch();
+        resetForm();
+      } catch (error) {
+        console.log(error);
+      }
+
+      setSubmitting(false);
+    },
   });
 
   if (question.type !== 'bool') {
@@ -241,9 +350,12 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
               onValueChange={value => setFieldValue('answer', value)}
             >
               <NativePickerItem value="UNSELECTED" label="Select your answer" />
-              <NativePickerItem value="YES" label="Yes" />
-              <NativePickerItem value="NO" label="No" />
-              <NativePickerItem value="INVALID" label="Invalid" />
+              <NativePickerItem value="1" label="Yes" />
+              <NativePickerItem value="0" label="No" />
+              <NativePickerItem
+                value="0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                label="Invalid"
+              />
             </NativePicker>
           </FormField>
         </Box>
@@ -262,13 +374,17 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
               value={values.bond}
               keyboardType="number-pad"
               onChangeText={text => setFieldValue('bond', text)}
-              placeholder="Enter TRST amount"
+              placeholder="Enter amount"
             />
           </FormField>
         </Box>
         <Box flex={1}>
           <Box height={28} />
-          <CTAButton onPress={submitForm} title="Post your Answer" />
+          <CTAButton
+            isLoading={isSubmitting}
+            onPress={submitForm}
+            title="Post your Answer"
+          />
         </Box>
       </Box>
     </Box>

@@ -168,7 +168,7 @@ export const Web3Provider = (props: Web3ProviderProps) => {
     if (hasWallet && currentProvider.publicConfigStore) {
       currentProvider.publicConfigStore.on('update', updateWeb3State);
     }
-  }, [account, networkId]);
+  }, [account, networkId, fallbackRPCEndpoint, hasWallet, web3]);
 
   return (
     <Web3Context.Provider

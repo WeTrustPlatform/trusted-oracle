@@ -5,23 +5,16 @@ import { useLatestBlockQuery } from '../ethereum/useLatestBlockQuery';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from './OracleProvider';
 import {
+  INITIAL_BLOCKS,
   NewQuestionEvent,
-  QuestionBasic,
+  Question,
   QuestionFromContract,
-  toQuestionBasic,
+  toQuestion,
   transformNewQuestionEventToQuestion,
 } from './Question';
 
-const INITIAL_BLOCKS = {
-  1: 6531147,
-  3: 0,
-  4: 3175028, // for quicker loading start more like 4800000,
-  42: 10350865,
-  1337: 0,
-} as const;
-
 interface State {
-  questions: QuestionBasic[];
+  questions: Question[];
   toBlock: number;
   incrementIndex: number;
   loading: boolean;
@@ -98,7 +91,7 @@ export const useQuestionsQuery = () => {
               question.id,
             )) as QuestionFromContract;
 
-            return toQuestionBasic(question, questionFromContract);
+            return toQuestion(question, questionFromContract);
           }),
       );
 

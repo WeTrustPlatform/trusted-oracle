@@ -62,7 +62,7 @@ export const App = () => {
           <ToastProvider>
             <Web3Provider>
               <Web3DialogsProvider>
-                <OracleProvider currency="TRST">
+                <OracleProvider initialCurrency="ETH">
                   <NavigationBar />
                   <Route path="/" component={Home} />
                 </OracleProvider>

@@ -1,5 +1,28 @@
+import TEMPLATE_CONFIG from '@realitio/realitio-contracts/config/templates.json';
 import BigNumber from 'bn.js';
 import { isAfter, isBefore } from 'date-fns';
+
+import { QuestionUtils } from './QuestionUtils';
+
+export const INITIAL_BLOCKS = {
+  1: 6531147,
+  3: 0,
+  4: 3175028, // for quicker loading start more like 4800000,
+  42: 10350865,
+  1337: 0,
+} as const;
+
+export interface QuestionTemplates {
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  4: string;
+}
+
+const getTemplates = (): QuestionTemplates => {
+  return TEMPLATE_CONFIG.content;
+};
 
 export interface QuestionJson {
   title: string;
@@ -68,7 +91,11 @@ type Unanswered = 'UNANSWERED';
 /**
  * Question with basic information for display in a list of question
  */
-export interface QuestionBasic extends QuestionFromNewQuestionEvent {
+
+/**
+ * Question with all the necessary information to display in QuestionDetails
+ */
+export interface Question extends QuestionFromNewQuestionEvent {
   timeout: Date;
   finalizedAtDate: Date | Unanswered;
   isPendingArbitration: boolean;
@@ -76,14 +103,10 @@ export interface QuestionBasic extends QuestionFromNewQuestionEvent {
   bestAnswer: string;
   historyHash: string;
   bond: BigNumber;
-}
-
-/**
- * Question with all the necessary information to display in QuestionDetails
- */
-export interface Question extends QuestionBasic {
-  state: QuestionState;
+  category: string | null;
+  language: string | null;
   type: string;
+  state: QuestionState;
 }
 
 export enum QuestionState {
@@ -128,44 +151,51 @@ export const transformNewQuestionEventToQuestion = (
   };
 };
 
-export const isOpen = (question: QuestionBasic) => {
-  const now = new Date();
-
-  const isPastOpeningDate = isAfter(now, question.openingDate);
-  const isBeforeFinalizedDate =
-    question.finalizedAtDate === 'UNANSWERED' ||
-    isBefore(now, question.finalizedAtDate);
-
-  return (
-    isPastOpeningDate && isBeforeFinalizedDate && !question.isPendingArbitration
-  );
-};
-
 const isAnswered = (question: QuestionFromContract) => {
   const finalizedAtDate = question.finalize_ts.toNumber();
   return finalizedAtDate > 1;
 };
 
-export const isFinalized = (question: QuestionBasic) => {
-  if (question.isPendingArbitration) return false;
-  if (question.finalizedAtDate === 'UNANSWERED') return false;
+export const isOpen = (question: QuestionFromContract) => {
+  const now = new Date();
 
-  return isAfter(new Date(), question.finalizedAtDate);
+  const isPastOpeningDate = isAfter(now, toDate(question.opening_ts));
+  const isBeforeFinalizedDate =
+    !isAnswered(question) || isBefore(now, toDate(question.finalize_ts));
+
+  return (
+    isPastOpeningDate &&
+    isBeforeFinalizedDate &&
+    !question.is_pending_arbitration
+  );
 };
 
-const getQuestionState = (question: QuestionBasic): QuestionState => {
+export const isFinalized = (question: QuestionFromContract) => {
+  if (question.is_pending_arbitration) return false;
+  if (!isAnswered(question)) return false;
+
+  return isAfter(new Date(), toDate(question.finalize_ts));
+};
+
+const getQuestionState = (question: QuestionFromContract): QuestionState => {
   if (isFinalized(question)) return QuestionState.FINALIZED;
   if (isOpen(question)) return QuestionState.OPEN;
 
   return QuestionState.NOT_OPEN;
 };
 
-export const toQuestionBasic = (
+export const toQuestion = (
   questionFromNewQuestionEvent: QuestionFromNewQuestionEvent,
   questionFromContract: QuestionFromContract,
-): QuestionBasic => {
+): Question => {
+  const questionJson = QuestionUtils.populatedJSONForTemplate(
+    getTemplates()[questionFromNewQuestionEvent.templateId],
+    questionFromNewQuestionEvent.questionTitle,
+  ) as QuestionJson;
+
   return {
     ...questionFromNewQuestionEvent,
+    questionTitle: questionJson.title,
     timeout: toDate(questionFromContract.timeout),
     finalizedAtDate: isAnswered(questionFromContract)
       ? toDate(questionFromContract.finalize_ts)
@@ -175,16 +205,46 @@ export const toQuestionBasic = (
     bestAnswer: questionFromContract.best_answer,
     historyHash: questionFromContract.history_hash,
     bond: questionFromContract.bond,
+    type: questionJson.type,
+    language: questionJson.lang === 'undefined' ? null : questionJson.lang,
+    category:
+      questionJson.category === 'undefined' ? null : questionJson.category,
+    state: getQuestionState(questionFromContract),
   };
 };
 
-export const toQuestion = (
-  question: QuestionBasic,
-  questionJson: QuestionJson,
-): Question => {
-  return {
-    ...question,
-    state: getQuestionState(question),
-    type: questionJson.type,
-  };
+export interface NewAnswerEventArgs {
+  answer: string;
+  bond: BigNumber;
+  history_hash: string;
+  is_commitment: boolean;
+  question_id: string;
+  ts: BigNumber;
+  user: string;
+}
+
+export interface NewAnswerEvent {
+  args: NewAnswerEventArgs;
+}
+
+export interface Answer {
+  answer: string;
+  bond: BigNumber;
+  historyHash: string;
+  isCommitment: boolean;
+  questionId: string;
+  createdAtDate: Date;
+  user: string;
+}
+
+export const toAnswer = (events: NewAnswerEvent[]): Answer[] => {
+  return events.map(e => ({
+    answer: e.args.answer,
+    bond: e.args.bond,
+    historyHash: e.args.history_hash,
+    isCommitment: e.args.is_commitment,
+    questionId: e.args.question_id,
+    createdAtDate: toDate(e.args.ts),
+    user: e.args.user,
+  }));
 };

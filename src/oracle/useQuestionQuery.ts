@@ -4,29 +4,19 @@ import { useAsync } from 'react-use';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from './OracleProvider';
 import {
+  INITIAL_BLOCKS,
   NewQuestionEvent,
   Question,
   QuestionFromContract,
-  QuestionJson,
   toQuestion,
-  toQuestionBasic,
   transformNewQuestionEventToQuestion,
 } from './Question';
-import { QuestionUtils } from './QuestionUtils';
-
-const INITIAL_BLOCKS = {
-  1: 6531147,
-  3: 0,
-  4: 3175028, // for quicker loading start more like 4800000,
-  42: 10350865,
-  1337: 0,
-} as const;
 
 export type FetchQuestion = (questionId: string) => Promise<Question | null>;
 
 export const useFetchQuestionQuery = () => {
   const { networkId } = useWeb3();
-  const { realitio, templates } = useOracle();
+  const { realitio } = useOracle();
   const initialBlock = INITIAL_BLOCKS[networkId];
 
   const fetchQuestion: FetchQuestion = React.useCallback(
@@ -66,15 +56,7 @@ export const useFetchQuestionQuery = () => {
         questionId,
       )) as QuestionFromContract;
 
-      const questionJson = QuestionUtils.populatedJSONForTemplate(
-        templates[questionBase.templateId],
-        questionBase.questionTitle,
-      ) as QuestionJson;
-
-      return toQuestion(
-        toQuestionBasic(questionBase, questionFromContract),
-        questionJson,
-      );
+      return toQuestion(questionBase, questionFromContract);
     },
     [realitio, initialBlock],
   );
@@ -86,15 +68,22 @@ export const useQuestionQuery = (questionId: string) => {
   const { web3IsLoading } = useWeb3();
   const { loading: oracleIsLoading, realitio } = useOracle();
   const fetchQuestion = useFetchQuestionQuery();
+  const [question, setQuestion] = React.useState<Question | null>(null);
 
-  const { value, loading } = useAsync(async () => {
-    const question = await fetchQuestion(questionId);
+  const { loading } = useAsync(async () => {
+    const result = await fetchQuestion(questionId);
+    setQuestion(result);
+  }, [fetchQuestion, questionId]);
 
-    return question;
+  const refetch = React.useCallback(async () => {
+    const result = await fetchQuestion(questionId);
+
+    setQuestion(result);
   }, [fetchQuestion, questionId]);
 
   return {
-    data: value,
+    data: question,
     loading: oracleIsLoading || web3IsLoading || !realitio || loading,
+    refetch,
   };
 };
