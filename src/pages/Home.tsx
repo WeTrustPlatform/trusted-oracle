@@ -6,8 +6,8 @@ import { BlogSection } from '../components/BlogSection';
 import { CTAButton } from '../components/CTAButton';
 import { Footer } from '../components/Footer';
 import { Link } from '../components/Link';
-import { QuestionList } from '../components/QuestionList';
 import { WebImage } from '../components/WebImage';
+import { QuestionList } from '../oracle/QuestionList';
 
 const HeroSection = () => {
   return (

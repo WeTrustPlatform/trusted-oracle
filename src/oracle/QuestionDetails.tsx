@@ -17,12 +17,12 @@ import {
 import React from 'react';
 import Web3 from 'web3';
 
-import { Currency, useOracle } from '../oracle/OracleProvider';
-import { Question, QuestionBasic, QuestionState } from '../oracle/Question';
-import { useQuestionQuery } from '../oracle/useQuestionQuery';
-import { Background } from './Background';
-import { CTAButton } from './CTAButton';
-import { WebImage } from './WebImage';
+import { Background } from '../components/Background';
+import { CTAButton } from '../components/CTAButton';
+import { WebImage } from '../components/WebImage';
+import { Currency, useOracle } from './OracleProvider';
+import { Question, QuestionBasic, QuestionState } from './Question';
+import { useQuestionQuery } from './useQuestionQuery';
 
 interface QuestionDetailsProps {
   questionId: string;

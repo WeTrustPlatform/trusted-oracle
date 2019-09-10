@@ -16,16 +16,16 @@ import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Route, RouteChildrenProps } from 'react-router';
 
-import { isFinalized, QuestionBasic } from '../oracle/Question';
-import { useQuestionsQuery } from '../oracle/useQuestionsQuery';
-import { Background } from './Background';
-import { Link } from './Link';
+import { Background } from '../components/Background';
+import { Link } from '../components/Link';
+import { isFinalized, QuestionBasic } from './Question';
 import {
   QuestionDetails,
   QuestionPostedDate,
   QuestionReward,
   QuestionTooltip,
 } from './QuestionDetails';
+import { useQuestionsQuery } from './useQuestionsQuery';
 
 interface QuestionCardProps {
   question: QuestionBasic;

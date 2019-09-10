@@ -4,7 +4,6 @@ import React from 'react';
 import { useArbitratorContract } from './useArbitratorContract';
 import { useRealitioContract } from './useRealitioContract';
 
-// import RealitioQuestionUtils from '@realitio/realitio-lib/formatters/question.js';
 // import RealitioTemplates from '@realitio/realitio-lib/formatters/template.js';
 // import ERC20TRST from '@realitio/realitio-contracts/truffle/build/contracts/ERC20.TRST.json';
 // import ArbitratorList from '@realitio/realitio-contracts/config/arbitrators.json';

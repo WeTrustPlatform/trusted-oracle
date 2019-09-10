@@ -1,5 +1,6 @@
-import { useWeb3 } from '@wetrustplatform/paramount-ethereum';
 import { useAsync } from 'react-use';
+
+import { useWeb3 } from './Web3Provider';
 
 export const useLatestBlockQuery = () => {
   const { web3, web3IsLoading } = useWeb3();

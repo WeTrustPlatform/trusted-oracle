@@ -1,15 +1,27 @@
 {
-  "name": "root",
+  "name": "@wetrustplatform/trusted-oracle",
+  "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "start": "yarn workspace @wetrustplatform/trusted-oracle start",
-    "build": "tsc -b packages",
-    "build:watch": "yarn build --watch",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
     "prettier": "prettier",
     "lint": "eslint . --cache --ext js,jsx,ts,tsx"
+  },
+  "dependencies": {
+    "@realitio/realitio-contracts": "^2.1.0",
+    "@realitio/realitio-lib": "^2.0.1",
+    "@wetrustplatform/paramount-ethereum": "1.0.0",
+    "date-fns": "^2.0.1",
+    "paramount-ui": "^1.76.2",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-router": "^5.0.1",
+    "react-router-dom": "^5.0.1",
+    "react-use": "^12.2.0",
+    "truffle-contract": "^4.0.31"
   },
   "devDependencies": {
     "@types/jest": "24.0.18",
@@ -32,5 +44,17 @@
     "ts-jest": "^24.0.2",
     "typescript": "3.6.2",
     "yarnhook": "^0.4.2"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

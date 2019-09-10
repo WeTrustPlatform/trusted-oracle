@@ -1,9 +1,9 @@
-import { useWeb3 } from '@wetrustplatform/paramount-ethereum';
 import { compareDesc } from 'date-fns';
 import React from 'react';
 
-import { useLatestBlockQuery } from '../blockchain/useLatestBlockQuery';
-import { useOracle } from '../oracle/OracleProvider';
+import { useLatestBlockQuery } from '../ethereum/useLatestBlockQuery';
+import { useWeb3 } from '../ethereum/Web3Provider';
+import { useOracle } from './OracleProvider';
 import {
   NewQuestionEvent,
   QuestionBasic,

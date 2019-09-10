@@ -1,7 +1,7 @@
-import { useWeb3 } from '@wetrustplatform/paramount-ethereum';
 import { useAsync } from 'react-use';
 import makeTruffleContract from 'truffle-contract';
 
+import { useWeb3 } from '../ethereum/Web3Provider';
 import { Currency } from './OracleProvider';
 
 // TODO: Support ETH

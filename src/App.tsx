@@ -1,13 +1,11 @@
-import {
-  Web3DialogsProvider,
-  Web3Provider,
-} from '@wetrustplatform/paramount-ethereum';
 import { LayoutProvider, ThemeProvider, ToastProvider } from 'paramount-ui';
 import React from 'react';
 import { Route } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 
 import { NavigationBar } from './components/NavigationBar';
+import { Web3DialogsProvider } from './ethereum/Web3DialogsProvider';
+import { Web3Provider } from './ethereum/Web3Provider';
 import { OracleProvider } from './oracle/OracleProvider';
 import { Home } from './pages/Home';
 

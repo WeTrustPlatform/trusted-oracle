@@ -1,7 +1,7 @@
-import { useWeb3 } from '@wetrustplatform/paramount-ethereum';
 import React from 'react';
 import { useAsync } from 'react-use';
 
+import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from './OracleProvider';
 import {
   NewQuestionEvent,
@@ -12,7 +12,7 @@ import {
   toQuestionBasic,
   transformNewQuestionEventToQuestion,
 } from './Question';
-import { RealitioQuestionUtils } from './QuestionUtils';
+import { QuestionUtils } from './QuestionUtils';
 
 const INITIAL_BLOCKS = {
   1: 6531147,
@@ -66,7 +66,7 @@ export const useFetchQuestionQuery = () => {
         questionId,
       )) as QuestionFromContract;
 
-      const questionJson = RealitioQuestionUtils.populatedJSONForTemplate(
+      const questionJson = QuestionUtils.populatedJSONForTemplate(
         templates[questionBase.templateId],
         questionBase.questionTitle,
       ) as QuestionJson;

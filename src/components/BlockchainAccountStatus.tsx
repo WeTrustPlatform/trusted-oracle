@@ -1,14 +1,11 @@
-import {
-  networkIdToNameMap,
-  trimAddress,
-  useWeb3,
-  useWeb3Dialogs,
-} from '@wetrustplatform/paramount-ethereum';
 import { Box, Text, ThemeContext } from 'paramount-ui';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 
 import { config } from '../config';
+import { networkIdToNameMap, trimAddress } from '../ethereum/EthUtils';
+import { useWeb3Dialogs } from '../ethereum/Web3DialogsProvider';
+import { useWeb3 } from '../ethereum/Web3Provider';
 
 export const BlockchainAccountStatus = () => {
   const { account, hasWallet, networkId } = useWeb3();
