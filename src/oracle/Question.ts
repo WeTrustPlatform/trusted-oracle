@@ -52,6 +52,8 @@ export interface QuestionFromContract {
 export type TemplateId = 0 | 1 | 2 | 3 | 4;
 export interface QuestionFromNewQuestionEvent {
   id: string;
+  arbitrator: string;
+  nonce: BigNumber;
   createdAtDate: Date;
   createdAtBlock: number;
   createdBy: string;
@@ -67,7 +69,7 @@ type Unanswered = 'UNANSWERED';
  * Question with basic information for display in a list of question
  */
 export interface QuestionBasic extends QuestionFromNewQuestionEvent {
-  timeout: BigNumber;
+  timeout: Date;
   finalizedAtDate: Date | Unanswered;
   isPendingArbitration: boolean;
   bounty: BigNumber;
@@ -114,6 +116,8 @@ export const transformNewQuestionEventToQuestion = (
 
   return {
     id: args.question_id,
+    arbitrator: args.arbitrator,
+    nonce: args.nonce,
     createdAtDate: toDate(args.created),
     createdAtBlock: blockNumber,
     createdBy: args.user,
@@ -162,7 +166,7 @@ export const toQuestionBasic = (
 ): QuestionBasic => {
   return {
     ...questionFromNewQuestionEvent,
-    timeout: questionFromContract.timeout,
+    timeout: toDate(questionFromContract.timeout),
     finalizedAtDate: isAnswered(questionFromContract)
       ? toDate(questionFromContract.finalize_ts)
       : 'UNANSWERED',

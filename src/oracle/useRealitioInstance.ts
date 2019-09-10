@@ -3,6 +3,7 @@ import RealitioTRST from '@realitio/realitio-contracts/truffle/build/contracts/R
 
 import { Currency } from './OracleProvider';
 import { useSmartContract } from './useSmartContract';
+import { useAsync } from 'react-use';
 
 const currencyToSmartContractMap: {
   [currency in Currency]: any;
@@ -11,11 +12,16 @@ const currencyToSmartContractMap: {
   ETH: RealitioETH,
 };
 
-export const useRealitioContract = (currency: Currency) => {
+export const useRealitioInstance = (currency: Currency) => {
   const { contract, loading } = useSmartContract(
-    currency,
     currencyToSmartContractMap[currency],
   );
 
-  return { contract, loading };
+  const state = useAsync(async () => {
+    const instance = await contract.deployed();
+
+    return instance;
+  }, [contract]);
+
+  return { instance: state.value, loading: loading || state.loading };
 };

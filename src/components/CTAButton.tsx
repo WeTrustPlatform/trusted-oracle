@@ -5,7 +5,6 @@ export const CTAButton = (props: ButtonProps) => {
   return (
     <Button
       color="primary"
-      size="large"
       getStyles={({ appearance }, theme) => {
         if (appearance === 'outline') {
           return {

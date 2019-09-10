@@ -1,5 +1,6 @@
 import BigNumber from 'bn.js';
 import { format, formatDistanceToNow } from 'date-fns';
+import { useFormik } from 'formik';
 import {
   Badge,
   Box,
@@ -15,12 +16,13 @@ import {
   useTheme,
 } from 'paramount-ui';
 import React from 'react';
-import Web3 from 'web3';
+import { useAsync } from 'react-use';
 
 import { Background } from '../components/Background';
 import { CTAButton } from '../components/CTAButton';
 import { WebImage } from '../components/WebImage';
-import { Currency, useOracle } from './OracleProvider';
+import { formatCurrency } from './CurrencyUtils';
+import { useOracle } from './OracleProvider';
 import { Question, QuestionBasic, QuestionState } from './Question';
 import { useQuestionQuery } from './useQuestionQuery';
 
@@ -47,8 +49,6 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
       </Box>
     );
   }
-
-  console.log(question, 'question');
 
   return (
     <Box>
@@ -121,6 +121,25 @@ export const QuestionAddReward = (props: QuestionProps) => {
   const { question } = props;
   const [isOpen, setIsOpen] = React.useState(false);
   const theme = useTheme();
+  const { values, errors, touched, setFieldValue, submitForm } = useFormik({
+    initialValues: {
+      reward: '',
+    },
+
+    validate: values => {
+      const errors: {
+        reward?: string;
+      } = {};
+
+      if (!values.reward) {
+        errors.reward = 'Please enter a reward';
+      }
+
+      return errors;
+    },
+
+    onSubmit: async () => {},
+  });
 
   return (
     <Box alignItems="flex-start">
@@ -129,6 +148,7 @@ export const QuestionAddReward = (props: QuestionProps) => {
         isOpen={isOpen}
         onOpen={() => setIsOpen(true)}
         onClose={() => setIsOpen(false)}
+        // eslint-disable-next-line
         // @ts-ignore
         getStyles={() => ({
           textStyle: {
@@ -142,9 +162,20 @@ export const QuestionAddReward = (props: QuestionProps) => {
       >
         <Box flexDirection="row">
           <Box paddingRight={16}>
-            <TextInput placeholder="Enter TRST amount" size="large" />
+            <FormField error={touched.reward && errors.reward}>
+              <TextInput
+                value={values.reward}
+                keyboardType="number-pad"
+                onChangeText={text => setFieldValue('reward', text)}
+                placeholder="Enter TRST amount"
+              />
+            </FormField>
           </Box>
-          <CTAButton appearance="outline" title="Add Reward" />
+          <CTAButton
+            onPress={submitForm}
+            appearance="outline"
+            title="Add Reward"
+          />
         </Box>
       </Collapsible>
     </Box>
@@ -155,40 +186,90 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
   const { question } = props;
   const theme = useTheme();
 
+  const { values, errors, touched, setFieldValue, submitForm } = useFormik({
+    initialValues: {
+      answer: 'UNSELECTED',
+      bond: '',
+    },
+
+    validate: values => {
+      const errors: {
+        answer?: string;
+        bond?: string;
+      } = {};
+
+      if (values.answer === 'UNSELECTED') {
+        errors.answer = 'Please select an answer';
+      }
+
+      if (!values.bond) {
+        errors.bond = 'Please enter a bond';
+      }
+
+      return errors;
+    },
+
+    onSubmit: async () => {},
+  });
+
+  if (question.type !== 'bool') {
+    return (
+      <Box>
+        <Text>
+          Trusted Oracle does not support answering this type of question yet.
+        </Text>
+      </Box>
+    );
+  }
+
   return (
-    <Box flexDirection="row" alignItems="center">
-      <Box paddingRight={16} flex={1}>
-        <FormField
-          label="Do you know the answer to this question?"
-          getStyles={() => ({
-            labelTextStyle: {
-              color: theme.colors.text.primary,
-              fontWeight: 'bold',
-            },
-          })}
-        >
-          <NativePicker size="large">
-            <NativePickerItem value="s" label="s" />
-            <NativePickerItem value="d" label="s" />
-          </NativePicker>
-        </FormField>
-      </Box>
-      <Box paddingRight={16} flex={1}>
-        <FormField
-          label="Bond"
-          getStyles={() => ({
-            labelTextStyle: {
-              color: theme.colors.text.primary,
-              fontWeight: 'bold',
-            },
-          })}
-        >
-          <TextInput placeholder="Enter TRST amount" size="large" />
-        </FormField>
-      </Box>
-      <Box flex={1}>
-        <Box height={24} />
-        <CTAButton title="Post your Answer" />
+    <Box>
+      <Box flexDirection="row">
+        <Box paddingRight={16} flex={1}>
+          <FormField
+            label="Do you know the answer to this question?"
+            getStyles={() => ({
+              labelTextStyle: {
+                color: theme.colors.text.primary,
+                fontWeight: 'bold',
+              },
+            })}
+            error={touched.answer && errors.answer}
+          >
+            <NativePicker
+              selectedValue={values.answer}
+              onValueChange={value => setFieldValue('answer', value)}
+            >
+              <NativePickerItem value="UNSELECTED" label="Select your answer" />
+              <NativePickerItem value="YES" label="Yes" />
+              <NativePickerItem value="NO" label="No" />
+              <NativePickerItem value="INVALID" label="Invalid" />
+            </NativePicker>
+          </FormField>
+        </Box>
+        <Box paddingRight={16} flex={1}>
+          <FormField
+            label="Bond"
+            getStyles={() => ({
+              labelTextStyle: {
+                color: theme.colors.text.primary,
+                fontWeight: 'bold',
+              },
+            })}
+            error={touched.bond && errors.bond}
+          >
+            <TextInput
+              value={values.bond}
+              keyboardType="number-pad"
+              onChangeText={text => setFieldValue('bond', text)}
+              placeholder="Enter TRST amount"
+            />
+          </FormField>
+        </Box>
+        <Box flex={1}>
+          <Box height={28} />
+          <CTAButton onPress={submitForm} title="Post your Answer" />
+        </Box>
       </Box>
     </Box>
   );
@@ -202,7 +283,7 @@ export const getQuestionBadgeTitle = (question: Question) => {
   }
 
   if (state === QuestionState.OPEN) {
-    return 'OPENING FOR ANSWERS';
+    return 'OPEN FOR ANSWERS';
   }
 
   return `OPEN FOR ANSWERS ON ${format(openingDate, 'MMM d, yyyy')}`;
@@ -248,24 +329,35 @@ export const QuestionBadge = (props: QuestionProps) => {
 
 export const QuestionApplyForArbitration = (props: QuestionProps) => {
   const { question } = props;
+  const { arbitratorContract, currency } = useOracle();
+
+  const { loading, value: disputeFee } = useAsync(async () => {
+    if (!arbitratorContract) throw new Error('Expected arbitrator contract');
+
+    const arbitrator = await arbitratorContract.at(question.arbitrator);
+    const disputeFee = (await arbitrator.getDisputeFee.call(
+      question.id,
+    )) as BigNumber;
+
+    return disputeFee;
+  }, [arbitratorContract]);
 
   return (
     <Box>
-      <Box paddingBottom={16}>
-        <Text align="center">You're interested in this Question?</Text>
-        <Text align="center">
-          Let’s apply as an arbitrator* to give your Answer to this Question on
-          _______
-        </Text>
-      </Box>
       <Box paddingBottom={16} alignItems="center">
-        <CTAButton appearance="outline" title="Apply for arbitration" />
+        <CTAButton
+          isLoading={loading}
+          appearance="outline"
+          title={loading ? 'Loading dispute fee' : 'Apply for arbitration'}
+        />
       </Box>
-      <Box>
-        <Text size="small" isItalic align="center">
-          *Applying fee: _____
-        </Text>
-      </Box>
+      {disputeFee && (
+        <Box>
+          <Text size="small" isItalic align="center">
+            *Applying fee: {formatCurrency(disputeFee, currency)} {currency}
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 };
@@ -287,25 +379,6 @@ export const QuestionPostedDate = (props: QuestionBasicProps) => {
     </Box>
   );
 };
-
-const currencyInfoMap = {
-  ETH: {
-    decimals: new BigNumber('1000000000000000000'),
-    smallNumber: 0.01 * 1000000000000000000,
-  },
-  TRST: {
-    decimals: new BigNumber('1000000'),
-    smallNumber: 100 * 1000000,
-  },
-};
-
-function formatCurrency(bigNumber: BigNumber, currency: Currency = 'TRST') {
-  if (currency !== 'ETH') {
-    return bigNumber.div(currencyInfoMap[currency].decimals).toNumber();
-  }
-
-  return Web3.utils.fromWei(bigNumber.toNumber(), 'ether');
-}
 
 export const QuestionReward = (props: QuestionBasicProps) => {
   const { question } = props;

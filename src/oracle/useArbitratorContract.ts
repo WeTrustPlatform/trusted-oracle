@@ -12,7 +12,6 @@ const currencyToSmartContractMap: {
 
 export const useArbitratorContract = (currency: Currency) => {
   const { contract, loading } = useSmartContract(
-    currency,
     currencyToSmartContractMap[currency],
   );
 

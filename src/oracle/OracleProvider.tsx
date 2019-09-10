@@ -2,7 +2,7 @@ import TEMPLATE_CONFIG from '@realitio/realitio-contracts/config/templates.json'
 import React from 'react';
 
 import { useArbitratorContract } from './useArbitratorContract';
-import { useRealitioContract } from './useRealitioContract';
+import { useRealitioInstance } from './useRealitioInstance';
 
 // import RealitioTemplates from '@realitio/realitio-lib/formatters/template.js';
 // import ERC20TRST from '@realitio/realitio-contracts/truffle/build/contracts/ERC20.TRST.json';
@@ -11,6 +11,7 @@ import { useRealitioContract } from './useRealitioContract';
 
 interface OracleProviderProps {
   children?: React.ReactNode;
+  currency: Currency;
 }
 
 export type Currency = 'ETH' | 'TRST';
@@ -28,7 +29,9 @@ const getTemplates = (): QuestionTemplates => {
 
 export interface OracleContext {
   currency: Currency;
-  realitioContract: any;
+  /** Realitio contract instance */
+  realitio: any;
+  /** Arbitrator contract */
   arbitratorContract: any;
   loading: boolean;
   templates: QuestionTemplates;
@@ -36,7 +39,7 @@ export interface OracleContext {
 
 const OracleContext = React.createContext<OracleContext>({
   currency: 'TRST',
-  realitioContract: null,
+  realitio: null,
   arbitratorContract: null,
   loading: true,
   templates: getTemplates(),
@@ -47,12 +50,11 @@ export const useOracle = () => {
 };
 
 export const OracleProvider = (props: OracleProviderProps) => {
-  const { children } = props;
-  const { currency } = useOracle();
-  const {
-    contract: realitioContract,
-    loading: realitioContractLoading,
-  } = useRealitioContract(currency);
+  const { children, currency = 'TRST' } = props;
+
+  const { instance: realitio, loading: realitioLoading } = useRealitioInstance(
+    currency,
+  );
   const {
     contract: arbitratorContract,
     loading: arbitratorContractLoading,
@@ -62,9 +64,9 @@ export const OracleProvider = (props: OracleProviderProps) => {
     <OracleContext.Provider
       value={{
         currency,
-        realitioContract,
+        realitio,
         arbitratorContract,
-        loading: arbitratorContractLoading || realitioContractLoading,
+        loading: arbitratorContractLoading || realitioLoading,
         templates: getTemplates(),
       }}
     >

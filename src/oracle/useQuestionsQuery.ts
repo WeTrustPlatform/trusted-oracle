@@ -52,7 +52,7 @@ const reducer = (state: State, action: Action) => {
 
 export const useQuestionsQuery = () => {
   const { networkId, web3IsLoading } = useWeb3();
-  const { loading: oracleIsLoading, realitioContract } = useOracle();
+  const { loading: oracleIsLoading, realitio } = useOracle();
   const initialBlock = INITIAL_BLOCKS[networkId];
   const [state, dispatch] = React.useReducer(reducer, initialState);
   const { incrementIndex, questions, toBlock, loading } = state;
@@ -68,7 +68,7 @@ export const useQuestionsQuery = () => {
 
   React.useEffect(() => {
     if (oracleIsLoading || web3IsLoading || latestBlockIsLoading) return;
-    if (!realitioContract && latestBlock) return;
+    if (!realitio && latestBlock) return;
 
     const fetchQuestions = async () => {
       const numberOfBlocksToFetch =
@@ -84,7 +84,7 @@ export const useQuestionsQuery = () => {
         return;
       }
 
-      const newQuestionsEvents = (await realitioContract.getPastEvents(
+      const newQuestionsEvents = (await realitio.getPastEvents(
         'LogNewQuestion',
         { fromBlock, toBlock },
       )) as NewQuestionEvent[];
@@ -94,7 +94,7 @@ export const useQuestionsQuery = () => {
           .map(transformNewQuestionEventToQuestion)
           .sort((a, b) => compareDesc(a.createdAtDate, b.createdAtDate))
           .map(async question => {
-            const questionFromContract = (await realitioContract.questions.call(
+            const questionFromContract = (await realitio.questions.call(
               question.id,
             )) as QuestionFromContract;
 
@@ -122,7 +122,7 @@ export const useQuestionsQuery = () => {
     questions,
     toBlock,
     loading,
-    realitioContract,
+    realitio,
     initialBlock,
   ]);
 

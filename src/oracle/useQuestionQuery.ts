@@ -26,18 +26,18 @@ export type FetchQuestion = (questionId: string) => Promise<Question | null>;
 
 export const useFetchQuestionQuery = () => {
   const { networkId } = useWeb3();
-  const { realitioContract, templates } = useOracle();
+  const { realitio, templates } = useOracle();
   const initialBlock = INITIAL_BLOCKS[networkId];
 
   const fetchQuestion: FetchQuestion = React.useCallback(
     async (questionId: string) => {
-      if (!realitioContract) {
+      if (!realitio) {
         throw new Error(
           'Oracle and Web3 needs to be loaded first before fetching',
         );
       }
 
-      const newQuestionsEvents = (await realitioContract.getPastEvents(
+      const newQuestionsEvents = (await realitio.getPastEvents(
         'LogNewQuestion',
         {
           fromBlock: initialBlock,
@@ -62,7 +62,7 @@ export const useFetchQuestionQuery = () => {
         newQuestionEvent,
       );
 
-      const questionFromContract = (await realitioContract.questions.call(
+      const questionFromContract = (await realitio.questions.call(
         questionId,
       )) as QuestionFromContract;
 
@@ -76,7 +76,7 @@ export const useFetchQuestionQuery = () => {
         questionJson,
       );
     },
-    [realitioContract, initialBlock],
+    [realitio, initialBlock],
   );
 
   return fetchQuestion;
@@ -84,7 +84,7 @@ export const useFetchQuestionQuery = () => {
 
 export const useQuestionQuery = (questionId: string) => {
   const { web3IsLoading } = useWeb3();
-  const { loading: oracleIsLoading, realitioContract } = useOracle();
+  const { loading: oracleIsLoading, realitio } = useOracle();
   const fetchQuestion = useFetchQuestionQuery();
 
   const { value, loading } = useAsync(async () => {
@@ -95,6 +95,6 @@ export const useQuestionQuery = (questionId: string) => {
 
   return {
     data: value,
-    loading: oracleIsLoading || web3IsLoading || !realitioContract || loading,
+    loading: oracleIsLoading || web3IsLoading || !realitio || loading,
   };
 };
