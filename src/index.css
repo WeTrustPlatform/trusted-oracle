@@ -14,10 +14,12 @@ code {
 
 @font-face {
   font-family: 'MicrobrewSoftOne';
-  src: url(./assets/fonts/MicrobrewSoftOne.otf) format('opentype');
+  src: url(https://wetrustplatform.github.io/hosted-fonts/fonts/MicrobrewSoftOne.otf)
+    format('opentype');
 }
 
 @font-face {
   font-family: 'MicrobrewSoftOneHatch';
-  src: url(./assets/fonts/MicrobrewSoftOneHatch.otf) format('opentype');
+  src: url(https://wetrustplatform.github.io/hosted-fonts/fonts/MicrobrewSoftOneHatch.otf)
+    format('opentype');
 }
