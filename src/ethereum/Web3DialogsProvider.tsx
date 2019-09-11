@@ -4,11 +4,20 @@ import React from 'react';
 import { RequireMetamaskPrivacyApproval } from './RequireMetamaskPrivacyApproval';
 import { RequireMetamaskSetup } from './RequireMetamaskSetup';
 import { RequireWalletSignIn } from './RequireWalletSignIn';
+import { useWeb3 } from './Web3Provider';
 
-export const Web3DialogsContext = React.createContext({
+interface Web3DialogsContext {
+  setShowRequireMetamaskSetup: (isVisible: boolean) => void;
+  setShowRequireWalletSignIn: (isVisible: boolean) => void;
+  setShowRequireMetamaskPrivacyApproval: (isVisible: boolean) => void;
+  ensureHasConnected: () => boolean;
+}
+
+export const Web3DialogsContext = React.createContext<Web3DialogsContext>({
   setShowRequireMetamaskSetup: (isVisible: boolean) => {},
   setShowRequireWalletSignIn: (isVisible: boolean) => {},
   setShowRequireMetamaskPrivacyApproval: (isVisible: boolean) => {},
+  ensureHasConnected: () => false,
 });
 
 export const useWeb3Dialogs = () => {
@@ -21,10 +30,12 @@ export interface Web3DialogsProviderProps {
 
 export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
   const { children } = props;
-  const [setShowRequireMetamaskSetup, setShowSetupWallet] = React.useState(
-    false,
-  );
-  const [setShowRequireWalletSignIn, setShowSignInWallet] = React.useState(
+  const { account, hasWallet } = useWeb3();
+  const [
+    showRequireMetamaskSetup,
+    setShowRequireMetamaskSetup,
+  ] = React.useState(false);
+  const [showRequireWalletSignIn, setShowRequireWalletSignIn] = React.useState(
     false,
   );
   const [
@@ -32,36 +43,62 @@ export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
     setShowPrivacyWallet,
   ] = React.useState(false);
 
+  React.useEffect(() => {
+    if (account) {
+      setShowRequireWalletSignIn(false);
+    }
+  }, [account]);
+
+  const ensureHasConnected = React.useCallback(() => {
+    if (!hasWallet) {
+      setShowRequireMetamaskSetup(true);
+      return false;
+    }
+    if (!account) {
+      setShowRequireWalletSignIn(true);
+      return false;
+    }
+
+    return true;
+  }, [account, hasWallet]);
+
   return (
     <Web3DialogsContext.Provider
       value={{
-        setShowRequireMetamaskSetup: isVisible => setShowSetupWallet(isVisible),
-        setShowRequireWalletSignIn: isVisible => setShowSignInWallet(isVisible),
+        setShowRequireMetamaskSetup: isVisible =>
+          setShowRequireWalletSignIn(isVisible),
+        setShowRequireWalletSignIn: isVisible =>
+          setShowRequireWalletSignIn(isVisible),
         setShowRequireMetamaskPrivacyApproval: isVisible =>
           setShowPrivacyWallet(isVisible),
+        ensureHasConnected,
       }}
     >
       {children}
 
-      <Dialog
-        isVisible={setShowRequireMetamaskSetup}
-        onRequestClose={() => setShowSetupWallet(false)}
-      >
-        <RequireMetamaskSetup />
-      </Dialog>
-      <Dialog
-        isVisible={setShowRequireMetamaskPrivacyApproval}
-        onRequestClose={() => setShowPrivacyWallet(false)}
-      >
-        <RequireMetamaskPrivacyApproval />
-      </Dialog>
+      {showRequireMetamaskSetup && (
+        <Dialog
+          isVisible
+          onRequestClose={() => setShowRequireMetamaskSetup(false)}
+        >
+          <RequireMetamaskSetup />
+        </Dialog>
+      )}
 
-      <Dialog
-        isVisible={setShowRequireWalletSignIn}
-        onRequestClose={() => setShowSignInWallet(false)}
-      >
-        <RequireWalletSignIn />
-      </Dialog>
+      {setShowRequireMetamaskPrivacyApproval && (
+        <Dialog onRequestClose={() => setShowPrivacyWallet(false)}>
+          <RequireMetamaskPrivacyApproval />
+        </Dialog>
+      )}
+
+      {showRequireWalletSignIn && (
+        <Dialog
+          isVisible
+          onRequestClose={() => setShowRequireWalletSignIn(false)}
+        >
+          <RequireWalletSignIn />
+        </Dialog>
+      )}
     </Web3DialogsContext.Provider>
   );
 };

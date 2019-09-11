@@ -295,10 +295,7 @@ export const QuestionAddReward = (props: QuestionProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const { realitio, currency } = useOracle();
   const { account } = useWeb3();
-  const {
-    setShowRequireMetamaskSetup,
-    setShowRequireWalletSignIn,
-  } = useWeb3Dialogs();
+  const { ensureHasConnected } = useWeb3Dialogs();
   const theme = useTheme();
 
   const {
@@ -326,17 +323,18 @@ export const QuestionAddReward = (props: QuestionProps) => {
     },
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      if (!account) throw new Error('Need account');
-      try {
-        await realitio.fundAnswerBounty(question.id, {
-          from: account,
-          value: toBigNumber(values.reward, currency),
-        });
+      if (ensureHasConnected()) {
+        try {
+          await realitio.fundAnswerBounty(question.id, {
+            from: account,
+            value: toBigNumber(values.reward, currency),
+          });
 
-        await refetch();
-        resetForm();
-      } catch (error) {
-        console.log(error);
+          await refetch();
+          resetForm();
+        } catch (error) {
+          console.log(error);
+        }
       }
 
       setSubmitting(false);
@@ -390,10 +388,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
   const theme = useTheme();
   const { realitio, currency } = useOracle();
   const { account } = useWeb3();
-  const {
-    setShowRequireMetamaskSetup,
-    setShowRequireWalletSignIn,
-  } = useWeb3Dialogs();
+  const { ensureHasConnected } = useWeb3Dialogs();
 
   const {
     values,
@@ -435,34 +430,35 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
     },
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      if (!account) throw new Error('Need account');
-      if (values.answer === 'UNSELECTED') throw new Error('Answer required');
+      if (ensureHasConnected()) {
+        if (values.answer === 'UNSELECTED') throw new Error('Answer required');
 
-      try {
-        if (currency === 'ETH') {
-          await realitio.submitAnswer.sendTransaction(
-            question.id,
-            values.answer,
-            question.bond,
-            {
-              from: account,
-              value: toBigNumber(values.bond, currency),
-            },
-          );
-        } else {
-          throw new Error('TODO');
+        try {
+          if (currency === 'ETH') {
+            await realitio.submitAnswer.sendTransaction(
+              question.id,
+              values.answer,
+              question.bond,
+              {
+                from: account,
+                value: toBigNumber(values.bond, currency),
+              },
+            );
+          } else {
+            throw new Error('TODO');
 
-          // ensureAmountApproved(realitio.address, account, toBigNumber(values.bond, currency)).then(function() {
-          //     realitio.submitAnswerERC20.sendTransaction(question.id, answer, question.bond, toBigNumber(values.bond, currency), {
-          //         from: account,
-          //     });
-          // });
+            // ensureAmountApproved(realitio.address, account, toBigNumber(values.bond, currency)).then(function() {
+            //     realitio.submitAnswerERC20.sendTransaction(question.id, answer, question.bond, toBigNumber(values.bond, currency), {
+            //         from: account,
+            //     });
+            // });
+          }
+
+          resetForm();
+          await refetch();
+        } catch (error) {
+          console.log(error);
         }
-
-        resetForm();
-        await refetch();
-      } catch (error) {
-        console.log(error);
       }
 
       setSubmitting(false);

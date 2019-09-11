@@ -91,3 +91,5 @@ typings/
 dist
 
 .DS_STORE
+
+*.code-workspace
