@@ -105,8 +105,10 @@ export interface Question extends QuestionFromNewQuestionEvent {
   bond: BigNumber;
   category: string | null;
   language: string | null;
-  type: string;
+  type: QuestionType;
+  rawType: string;
   state: QuestionState;
+  answers: Answer[];
 }
 
 export enum QuestionState {
@@ -184,9 +186,20 @@ const getQuestionState = (question: QuestionFromContract): QuestionState => {
   return QuestionState.NOT_OPEN;
 };
 
+const toQuestionType = (type: string) => {
+  if (type === 'bool') return QuestionType.BINARY;
+  if (type === 'multiple-select') return QuestionType.MULTIPLE_CHOICE;
+  if (type === 'single-select') return QuestionType.SINGLE_CHOICE;
+  if (type === 'datetime') return QuestionType.DATE_TIME;
+  if (type === 'int' || type === 'uint') return QuestionType.NUMBER;
+
+  throw new Error(`Expected recognized question type, received ${type}`);
+};
+
 export const toQuestion = (
   questionFromNewQuestionEvent: QuestionFromNewQuestionEvent,
   questionFromContract: QuestionFromContract,
+  answers: Answer[],
 ): Question => {
   const questionJson = QuestionUtils.populatedJSONForTemplate(
     getTemplates()[questionFromNewQuestionEvent.templateId],
@@ -205,11 +218,13 @@ export const toQuestion = (
     bestAnswer: questionFromContract.best_answer,
     historyHash: questionFromContract.history_hash,
     bond: questionFromContract.bond,
-    type: questionJson.type,
+    type: toQuestionType(questionJson.type),
+    rawType: questionJson.type,
     language: questionJson.lang === 'undefined' ? null : questionJson.lang,
     category:
       questionJson.category === 'undefined' ? null : questionJson.category,
     state: getQuestionState(questionFromContract),
+    answers,
   };
 };
 

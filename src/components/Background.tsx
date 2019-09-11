@@ -1,5 +1,4 @@
 import React from 'react';
-import { ImageBackground } from 'react-native';
 
 export interface BackgroundProps {
   pattern: 'dotted' | 'textured';
@@ -11,21 +10,23 @@ export const Background = (props: BackgroundProps) => {
 
   if (pattern === 'dotted') {
     return (
-      <ImageBackground
-        source={{ uri: require('../assets/images/dotted-bg.png') }}
-        resizeMode="cover"
+      <div
+        style={{
+          backgroundImage: `url('/dotted-bg.png')`,
+        }}
       >
         {children}
-      </ImageBackground>
+      </div>
     );
   }
 
   return (
-    <ImageBackground
-      source={{ uri: require('../assets/images/textured-bg.jpg') }}
-      resizeMode="cover"
+    <div
+      style={{
+        backgroundImage: `url('/textured-bg.jpg')`,
+      }}
     >
       {children}
-    </ImageBackground>
+    </div>
   );
 };

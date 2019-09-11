@@ -91,7 +91,7 @@ export const useQuestionsQuery = () => {
               question.id,
             )) as QuestionFromContract;
 
-            return toQuestion(question, questionFromContract);
+            return toQuestion(question, questionFromContract, []);
           }),
       );
 

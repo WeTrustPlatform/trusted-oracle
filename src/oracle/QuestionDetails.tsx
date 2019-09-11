@@ -1,10 +1,11 @@
 import BigNumber from 'bn.js';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, formatRelative } from 'date-fns';
 import { useFormik } from 'formik';
 import {
   Badge,
   Box,
   Collapsible,
+  Divider,
   FormField,
   Heading,
   Icon,
@@ -25,9 +26,7 @@ import { useWeb3Dialogs } from '../ethereum/Web3DialogsProvider';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { formatCurrency, toBigNumber } from './CurrencyUtils';
 import { useOracle } from './OracleProvider';
-import { Question, QuestionState } from './Question';
-import { QuestionUtils } from './QuestionUtils';
-import { useAnswersQuery } from './useAnswersQuery';
+import { Answer, Question, QuestionState, QuestionType } from './Question';
 import { useQuestionQuery } from './useQuestionQuery';
 
 interface QuestionDetailsProps {
@@ -87,6 +86,7 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
         flexDirection="row"
         justifyContent="space-between"
         paddingHorizontal={60}
+        paddingVertical={16}
       >
         <Box flexDirection="row" alignItems="center">
           <Box paddingRight={24}>
@@ -96,24 +96,46 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
         </Box>
         <QuestionBadge question={question} refetch={refetch} />
       </Box>
-      <Box paddingVertical={16} paddingHorizontal={60}>
-        <QuestionAddReward question={question} refetch={refetch} />
-      </Box>
-      <Box paddingVertical={16} paddingHorizontal={60}>
-        <QuestionAnswers question={question} />
-      </Box>
-      <Background pattern="textured">
-        <Box paddingVertical={24} paddingHorizontal={60}>
-          <QuestionPostAnswer question={question} refetch={refetch} />
+      {question.state !== QuestionState.FINALIZED && (
+        <Box paddingVertical={16} paddingHorizontal={60}>
+          <QuestionAddReward question={question} refetch={refetch} />
         </Box>
-      </Background>
-      <Background pattern="dotted">
-        <Box paddingVertical={40} paddingHorizontal={60}>
-          <QuestionApplyForArbitration question={question} refetch={refetch} />
-        </Box>
-      </Background>
+      )}
+      <QuestionAnswers question={question} />
+
+      {question.state !== QuestionState.FINALIZED && (
+        <Background pattern="textured">
+          <Box paddingVertical={24} paddingHorizontal={60}>
+            <QuestionPostAnswer question={question} refetch={refetch} />
+          </Box>
+        </Background>
+      )}
+      {question.state !== QuestionState.FINALIZED && (
+        <Background pattern="dotted">
+          <Box paddingVertical={40} paddingHorizontal={60}>
+            <QuestionApplyForArbitration
+              question={question}
+              refetch={refetch}
+            />
+          </Box>
+        </Background>
+      )}
     </Box>
   );
+};
+
+const UnsupportedQuestion = () => {
+  return (
+    <Box>
+      <Text>
+        Trusted Oracle does not support answering this type of question yet.
+      </Text>
+    </Box>
+  );
+};
+
+const isSupported = (question: Question) => {
+  return question.type === QuestionType.BINARY;
 };
 
 export interface QuestionBasicProps {
@@ -124,17 +146,147 @@ export interface QuestionProps extends QuestionBasicProps {
   refetch: () => Promise<void>;
 }
 
-export const QuestionAnswers = (props: QuestionBasicProps) => {
-  const { question } = props;
-  const [isOpen, setIsOpen] = React.useState(false);
-  const { realitio, currency } = useOracle();
-  const { data, loading } = useAnswersQuery(question.id);
-  const theme = useTheme();
+enum BooleanAnswer {
+  YES = 'Yes',
+  NO = 'No',
+  INVALID = 'Invalid',
+}
+
+const binaryAnswerMap = {
+  [BooleanAnswer.NO]:
+    '0x0000000000000000000000000000000000000000000000000000000000000001',
+  [BooleanAnswer.YES]:
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+  [BooleanAnswer.INVALID]:
+    '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+} as const;
+
+const toBinaryAnswer = (answer: string) => {
+  switch (answer) {
+    case binaryAnswerMap[BooleanAnswer.NO]:
+      return BooleanAnswer.NO;
+    case binaryAnswerMap[BooleanAnswer.YES]:
+      return BooleanAnswer.YES;
+    case binaryAnswerMap[BooleanAnswer.INVALID]:
+      return BooleanAnswer.INVALID;
+    default:
+      throw new Error('Invalid binary answer');
+  }
+};
+
+interface QuestionAnswerCardProps {
+  order: React.ReactNode;
+  answer: Answer;
+}
+
+const useAnswerColor = () => {
+  return (answer: Answer) => {
+    if (answer.answer === binaryAnswerMap[BooleanAnswer.YES]) {
+      return '#17874f';
+    }
+    if (answer.answer === binaryAnswerMap[BooleanAnswer.INVALID]) {
+      return '#eb7060';
+    }
+
+    return '#974d0c';
+  };
+};
+
+const QuestionAnswerCard = (props: QuestionAnswerCardProps) => {
+  const { answer, order } = props;
+  const { currency } = useOracle();
+  const getAnswerColor = useAnswerColor();
 
   return (
-    <Background pattern="textured">
-      <Box />
-    </Background>
+    <Box>
+      <Box flexDirection="row" alignItems="center" paddingVertical={16}>
+        <Box flexBasis="20%">{order}</Box>
+        <Box flex={1}>
+          <Text
+            weight="bold"
+            color={getAnswerColor(answer)}
+            transform="uppercase"
+            size="large"
+          >
+            {toBinaryAnswer(answer.answer)}
+          </Text>
+        </Box>
+        <Box flexBasis="20%" alignItems="flex-end">
+          <Text>
+            <Text size="small">
+              Posted {formatDistanceToNow(answer.createdAtDate)} ago
+            </Text>
+          </Text>
+        </Box>
+      </Box>
+      <Box flexDirection="row" alignItems="center" paddingBottom={16}>
+        <Text>
+          <Text weight="bold">User </Text>
+          {answer.user}{' '}
+        </Text>
+        <Text>
+          <Text weight="bold">Bond </Text>
+          {formatCurrency(answer.bond, currency)} {currency}
+        </Text>
+      </Box>
+    </Box>
+  );
+};
+
+export const QuestionAnswers = (props: QuestionBasicProps) => {
+  const { question } = props;
+  const { answers } = question;
+
+  if (!answers.length) return null;
+
+  if (!isSupported(question)) return <UnsupportedQuestion />;
+
+  if (question.finalizedAtDate === 'UNANSWERED') {
+    throw new Error('Expected answers');
+  }
+
+  const [currentAnswer, ...previousAnswers] = answers.slice().reverse();
+
+  return (
+    <Box>
+      <Background pattern="textured">
+        <Box paddingHorizontal={60} paddingTop={16}>
+          {question.state !== QuestionState.FINALIZED && (
+            <Text weight="bold">
+              Deadline {formatRelative(question.finalizedAtDate, new Date())}
+            </Text>
+          )}
+
+          <QuestionAnswerCard
+            answer={currentAnswer}
+            order={
+              question.state === QuestionState.FINALIZED ? (
+                <Text size="large" weight="bold">
+                  FINAL ANSWER:
+                </Text>
+              ) : (
+                <Text size="large" weight="bold">
+                  CURRENT ANSWER:
+                </Text>
+              )
+            }
+          />
+        </Box>
+      </Background>
+      <Background pattern="dotted">
+        <Box paddingHorizontal={60}>
+          {previousAnswers.map((answer, index) => (
+            <>
+              <QuestionAnswerCard
+                answer={answer}
+                order={<Text weight="bold">ANSWER #{index + 1}:</Text>}
+              />
+              {index !== previousAnswers.length - 1 && <Divider />}
+            </>
+          ))}
+        </Box>
+      </Background>
+    </Box>
   );
 };
 
@@ -252,7 +404,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
     isSubmitting,
   } = useFormik({
     initialValues: {
-      answer: 'UNSELECTED',
+      answer: 'UNSELECTED' as BooleanAnswer | 'UNSELECTED',
       bond: '',
     },
 
@@ -268,14 +420,12 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
 
       if (!values.bond || values.bond === '') {
         errors.bond = 'Please enter a bond';
-      }
-
-      if (
+      } else if (
         toBigNumber(values.bond, currency).lt(
           question.bond.mul(new BigNumber(2)),
         )
       ) {
-        errors.bond = `Bond must be greater than ${formatCurrency(
+        errors.bond = `Bond must be equal or greater than ${formatCurrency(
           question.bond.mul(new BigNumber(2)),
           currency,
         )} ${currency}`;
@@ -286,15 +436,13 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       if (!account) throw new Error('Need account');
+      if (values.answer === 'UNSELECTED') throw new Error('Answer required');
 
-      const answer = QuestionUtils.answerToBytes32(values.answer, {
-        type: question.type,
-      });
       try {
         if (currency === 'ETH') {
-          realitio.submitAnswer.sendTransaction(
+          await realitio.submitAnswer.sendTransaction(
             question.id,
-            answer,
+            values.answer,
             question.bond,
             {
               from: account,
@@ -311,8 +459,8 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
           // });
         }
 
-        await refetch();
         resetForm();
+        await refetch();
       } catch (error) {
         console.log(error);
       }
@@ -321,15 +469,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
     },
   });
 
-  if (question.type !== 'bool') {
-    return (
-      <Box>
-        <Text>
-          Trusted Oracle does not support answering this type of question yet.
-        </Text>
-      </Box>
-    );
-  }
+  if (!isSupported(question)) return <UnsupportedQuestion />;
 
   return (
     <Box>
@@ -350,18 +490,31 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
               onValueChange={value => setFieldValue('answer', value)}
             >
               <NativePickerItem value="UNSELECTED" label="Select your answer" />
-              <NativePickerItem value="1" label="Yes" />
-              <NativePickerItem value="0" label="No" />
               <NativePickerItem
-                value="0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-                label="Invalid"
+                value={binaryAnswerMap[BooleanAnswer.YES]}
+                label={BooleanAnswer.YES}
+              />
+              <NativePickerItem
+                value={binaryAnswerMap[BooleanAnswer.NO]}
+                label={BooleanAnswer.NO}
+              />
+              <NativePickerItem
+                value={binaryAnswerMap[BooleanAnswer.INVALID]}
+                label={BooleanAnswer.INVALID}
               />
             </NativePicker>
           </FormField>
         </Box>
         <Box paddingRight={16} flex={1}>
           <FormField
-            label="Bond"
+            label={`Bond ${
+              question.bond
+                ? `(minimum ${formatCurrency(
+                    question.bond.mul(new BigNumber(2)),
+                    currency,
+                  )} ${currency})`
+                : ''
+            }`}
             getStyles={() => ({
               labelTextStyle: {
                 color: theme.colors.text.primary,

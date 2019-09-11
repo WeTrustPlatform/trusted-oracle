@@ -5,9 +5,11 @@ import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from './OracleProvider';
 import {
   INITIAL_BLOCKS,
+  NewAnswerEvent,
   NewQuestionEvent,
   Question,
   QuestionFromContract,
+  toAnswer,
   toQuestion,
   transformNewQuestionEventToQuestion,
 } from './Question';
@@ -56,7 +58,18 @@ export const useFetchQuestionQuery = () => {
         questionId,
       )) as QuestionFromContract;
 
-      return toQuestion(questionBase, questionFromContract);
+      const answerEvents = (await realitio.getPastEvents('LogNewAnswer', {
+        fromBlock: initialBlock,
+        toBlock: 'latest',
+        // eslint-disable-next-line
+        filter: { question_id: questionId },
+      })) as NewAnswerEvent[];
+
+      return toQuestion(
+        questionBase,
+        questionFromContract,
+        toAnswer(answerEvents),
+      );
     },
     [realitio, initialBlock],
   );

@@ -5,7 +5,7 @@ export const CTAButton = (props: ButtonProps) => {
   return (
     <Button
       color="primary"
-      getStyles={({ appearance }, theme) => {
+      getStyles={({ appearance, isLoading }, theme) => {
         if (appearance === 'outline') {
           return {
             touchableStyle: {
@@ -24,6 +24,7 @@ export const CTAButton = (props: ButtonProps) => {
         return {
           touchableStyle: {
             width: 280,
+            backgroundColor: '#e98100',
           },
           textStyle: {
             fontSize: 18,
