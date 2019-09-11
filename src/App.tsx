@@ -4,6 +4,7 @@ import { Route } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 
 import { NavigationBar } from './components/NavigationBar';
+import { CurrencyProvider } from './ethereum/CurrencyProvider';
 import { Web3DialogsProvider } from './ethereum/Web3DialogsProvider';
 import { Web3Provider } from './ethereum/Web3Provider';
 import { OracleProvider } from './oracle/OracleProvider';
@@ -62,10 +63,12 @@ export const App = () => {
           <ToastProvider>
             <Web3Provider>
               <Web3DialogsProvider>
-                <OracleProvider initialCurrency="ETH">
-                  <NavigationBar />
-                  <Route path="/" component={Home} />
-                </OracleProvider>
+                <CurrencyProvider initialCurrency="ETH">
+                  <OracleProvider>
+                    <NavigationBar />
+                    <Route path="/" component={Home} />
+                  </OracleProvider>
+                </CurrencyProvider>
               </Web3DialogsProvider>
             </Web3Provider>
           </ToastProvider>

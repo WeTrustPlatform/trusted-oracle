@@ -1,7 +1,7 @@
 import RealitioETH from '@realitio/realitio-contracts/truffle/build/contracts/Realitio.json';
 import RealitioTRST from '@realitio/realitio-contracts/truffle/build/contracts/Realitio.TRST.json';
 
-import { Currency } from './OracleProvider';
+import { Currency } from '../ethereum/CurrencyProvider';
 import { useSmartContract } from './useSmartContract';
 import { useAsync } from 'react-use';
 

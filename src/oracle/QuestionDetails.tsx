@@ -22,9 +22,10 @@ import { useAsync } from 'react-use';
 import { Background } from '../components/Background';
 import { CTAButton } from '../components/CTAButton';
 import { WebImage } from '../components/WebImage';
+import { useCurrency } from '../ethereum/CurrencyProvider';
+import { formatCurrency, toBigNumber } from '../ethereum/CurrencyUtils';
 import { useWeb3Dialogs } from '../ethereum/Web3DialogsProvider';
 import { useWeb3 } from '../ethereum/Web3Provider';
-import { formatCurrency, toBigNumber } from './CurrencyUtils';
 import { useOracle } from './OracleProvider';
 import { Answer, Question, QuestionState, QuestionType } from './Question';
 import { useQuestionQuery } from './useQuestionQuery';
@@ -194,7 +195,7 @@ const useAnswerColor = () => {
 
 const QuestionAnswerCard = (props: QuestionAnswerCardProps) => {
   const { answer, order } = props;
-  const { currency } = useOracle();
+  const { currency } = useCurrency();
   const getAnswerColor = useAnswerColor();
 
   return (
@@ -293,7 +294,8 @@ export const QuestionAnswers = (props: QuestionBasicProps) => {
 export const QuestionAddReward = (props: QuestionProps) => {
   const { question, refetch } = props;
   const [isOpen, setIsOpen] = React.useState(false);
-  const { realitio, currency } = useOracle();
+  const { realitio } = useOracle();
+  const { currency } = useCurrency();
   const { account } = useWeb3();
   const { ensureHasConnected } = useWeb3Dialogs();
   const theme = useTheme();
@@ -386,8 +388,9 @@ export const QuestionAddReward = (props: QuestionProps) => {
 export const QuestionPostAnswer = (props: QuestionProps) => {
   const { question, refetch } = props;
   const theme = useTheme();
-  const { realitio, currency } = useOracle();
+  const { realitio } = useOracle();
   const { account } = useWeb3();
+  const { currency } = useCurrency();
   const { ensureHasConnected } = useWeb3Dialogs();
 
   const {
@@ -594,7 +597,8 @@ export const QuestionBadge = (props: QuestionProps) => {
 
 export const QuestionApplyForArbitration = (props: QuestionProps) => {
   const { question } = props;
-  const { arbitratorContract, currency } = useOracle();
+  const { arbitratorContract } = useOracle();
+  const { currency } = useCurrency();
 
   const { loading, value: disputeFee } = useAsync(async () => {
     if (!arbitratorContract) throw new Error('Expected arbitrator contract');
@@ -647,7 +651,7 @@ export const QuestionPostedDate = (props: QuestionBasicProps) => {
 
 export const QuestionReward = (props: QuestionBasicProps) => {
   const { question } = props;
-  const { currency } = useOracle();
+  const { currency } = useCurrency();
 
   return (
     <Box flexDirection="row">

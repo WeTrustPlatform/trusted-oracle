@@ -1,7 +1,7 @@
 import BigNumber from 'bn.js';
 import Web3 from 'web3';
 
-import { Currency } from './OracleProvider';
+import { Currency } from './CurrencyProvider';
 
 const currencyInfoMap = {
   ETH: {
