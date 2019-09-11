@@ -1,7 +1,7 @@
 import ArbitratorETH from '@realitio/realitio-contracts/truffle/build/contracts/Arbitrator.json';
 import ArbitratorTRST from '@realitio/realitio-contracts/truffle/build/contracts/Arbitrator.TRST.json';
 import { Currency } from '../ethereum/CurrencyProvider';
-import { useSmartContract } from './useSmartContract';
+import { useSmartContract } from '../ethereum/useSmartContract';
 
 const currencyToSmartContractMap: {
   [currency in Currency]: any;

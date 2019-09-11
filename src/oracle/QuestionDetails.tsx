@@ -295,7 +295,7 @@ export const QuestionAddReward = (props: QuestionProps) => {
   const { question, refetch } = props;
   const [isOpen, setIsOpen] = React.useState(false);
   const { realitio } = useOracle();
-  const { currency } = useCurrency();
+  const { currency, approve } = useCurrency();
   const { account } = useWeb3();
   const { ensureHasConnected } = useWeb3Dialogs();
   const theme = useTheme();
@@ -326,11 +326,20 @@ export const QuestionAddReward = (props: QuestionProps) => {
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       if (ensureHasConnected()) {
+        const reward = toBigNumber(values.reward, currency);
+
         try {
-          await realitio.fundAnswerBounty(question.id, {
-            from: account,
-            value: toBigNumber(values.reward, currency),
-          });
+          if (currency === 'ETH') {
+            await realitio.fundAnswerBounty(question.id, {
+              from: account,
+              value: reward,
+            });
+          } else {
+            await approve(realitio.address, reward);
+            await realitio.fundAnswerBountyERC20(question.id, reward, {
+              from: account,
+            });
+          }
 
           await refetch();
           resetForm();
@@ -390,7 +399,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
   const theme = useTheme();
   const { realitio } = useOracle();
   const { account } = useWeb3();
-  const { currency } = useCurrency();
+  const { currency, approve } = useCurrency();
   const { ensureHasConnected } = useWeb3Dialogs();
 
   const {
@@ -427,6 +436,12 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
           question.bond.mul(new BigNumber(2)),
           currency,
         )} ${currency}`;
+      } else if (
+        toBigNumber(values.bond, currency)
+          .toString()
+          .includes('undefined')
+      ) {
+        errors.bond = 'Invalid bond value. The value may be too small';
       }
 
       return errors;
@@ -437,24 +452,24 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
         if (values.answer === 'UNSELECTED') throw new Error('Answer required');
 
         try {
+          const bond = toBigNumber(values.bond, currency);
+
           if (currency === 'ETH') {
             await realitio.submitAnswer.sendTransaction(
               question.id,
               values.answer,
               question.bond,
-              {
-                from: account,
-                value: toBigNumber(values.bond, currency),
-              },
+              { from: account, value: bond },
             );
           } else {
-            throw new Error('TODO');
-
-            // ensureAmountApproved(realitio.address, account, toBigNumber(values.bond, currency)).then(function() {
-            //     realitio.submitAnswerERC20.sendTransaction(question.id, answer, question.bond, toBigNumber(values.bond, currency), {
-            //         from: account,
-            //     });
-            // });
+            await approve(realitio.address, bond);
+            await realitio.submitAnswerERC20.sendTransaction(
+              question.id,
+              values.answer,
+              question.bond,
+              bond,
+              { from: account },
+            );
           }
 
           resetForm();
@@ -507,7 +522,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
         <Box paddingRight={16} flex={1}>
           <FormField
             label={`Bond ${
-              question.bond
+              question.bond && question.bond.toString() !== '0'
                 ? `(minimum ${formatCurrency(
                     question.bond.mul(new BigNumber(2)),
                     currency,

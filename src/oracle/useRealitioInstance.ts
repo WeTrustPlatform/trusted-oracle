@@ -2,7 +2,7 @@ import RealitioETH from '@realitio/realitio-contracts/truffle/build/contracts/Re
 import RealitioTRST from '@realitio/realitio-contracts/truffle/build/contracts/Realitio.TRST.json';
 
 import { Currency } from '../ethereum/CurrencyProvider';
-import { useSmartContract } from './useSmartContract';
+import { useSmartContract } from '../ethereum/useSmartContract';
 import { useAsync } from 'react-use';
 
 const currencyToSmartContractMap: {
