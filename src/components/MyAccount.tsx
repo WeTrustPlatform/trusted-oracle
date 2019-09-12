@@ -1,3 +1,4 @@
+import BigNumber from 'bn.js';
 import { formatDistanceToNow } from 'date-fns/esm';
 import { uniqBy } from 'lodash';
 import {
@@ -13,7 +14,10 @@ import {
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useAsync } from 'react-use';
+import { Block } from 'web3/eth/types';
 
+import { useCurrency } from '../ethereum/CurrencyProvider';
+import { formatCurrency } from '../ethereum/CurrencyUtils';
 import { useFetchBlock } from '../ethereum/useBlockQuery';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import {
@@ -28,10 +32,45 @@ import { QuestionCard } from '../oracle/QuestionList';
 import { useFetchQuestionQuery } from '../oracle/useQuestionQuery';
 import { Background } from './Background';
 import { Tabs } from './CustomTabs';
+import { Link } from './Link';
+
+const timeAgo = (dateOrBlock: Date | Block) => {
+  const date =
+    dateOrBlock instanceof Date
+      ? dateOrBlock
+      : new Date(dateOrBlock.timestamp * 1000);
+
+  return `${formatDistanceToNow(date)} ago`;
+};
+
+interface NotificationProps {
+  questionId: string;
+  questionTitle: string;
+  date: string;
+  message: string;
+}
+
+const Notification = (props: NotificationProps) => {
+  const { questionId, questionTitle, date, message } = props;
+
+  return (
+    <Link to={`/question/${questionId}`}>
+      <Box>
+        <Box paddingBottom={16}>
+          <Text color="muted">
+            {message} {date}
+          </Text>
+          <Text weight="bold">{questionTitle}</Text>
+        </Box>
+      </Box>
+    </Link>
+  );
+};
 
 const useNotifications = () => {
   const { networkId, account } = useWeb3();
   const { realitio } = useOracle();
+  const { currency } = useCurrency();
   const fetchQuestion = useFetchQuestionQuery();
   const initialBlock = INITIAL_BLOCKS[networkId];
   const fetchBlock = useFetchBlock();
@@ -52,12 +91,12 @@ const useNotifications = () => {
               if (!question) throw new Error('Question not found');
 
               return (
-                <Box>
-                  <Text>
-                    You asked a question{' '}
-                    {formatDistanceToNow(question.createdAtDate)} ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={question.id}
+                  date={timeAgo(question.createdAtDate)}
+                  questionTitle={question.questionTitle}
+                  message="You asked a question"
+                />
               );
             }
 
@@ -71,33 +110,33 @@ const useNotifications = () => {
             if (event.args.user === account) {
               if (event.args.is_commitment) {
                 return (
-                  <Box>
-                    <Text>
-                      You committed to answering a question{' '}
-                      {formatDistanceToNow(toDate(event.args.ts))} ago
-                    </Text>
-                  </Box>
+                  <Notification
+                    questionId={answeredQuestion.id}
+                    date={timeAgo(toDate(event.args.ts))}
+                    questionTitle={answeredQuestion.questionTitle}
+                    message="You committed to answering a question"
+                  />
                 );
               } else {
                 return (
-                  <Box>
-                    <Text>
-                      You answered a question{' '}
-                      {formatDistanceToNow(toDate(event.args.ts))} ago
-                    </Text>
-                  </Box>
+                  <Notification
+                    questionId={answeredQuestion.id}
+                    date={timeAgo(toDate(event.args.ts))}
+                    questionTitle={answeredQuestion.questionTitle}
+                    message="You answered a question"
+                  />
                 );
               }
             }
 
             if (answeredQuestion.user === account) {
               return (
-                <Box>
-                  <Text>
-                    Someone answered your question{' '}
-                    {formatDistanceToNow(toDate(event.args.ts))} ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={answeredQuestion.id}
+                  date={timeAgo(toDate(event.args.ts))}
+                  questionTitle={answeredQuestion.questionTitle}
+                  message="Someone answered your question"
+                />
               );
             } else if (
               answeredQuestion.answers
@@ -105,12 +144,12 @@ const useNotifications = () => {
                 .some(answer => answer.user === account)
             ) {
               return (
-                <Box>
-                  <Text>
-                    Your answer was overwritten{' '}
-                    {formatDistanceToNow(toDate(event.args.ts))} ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={answeredQuestion.id}
+                  date={timeAgo(toDate(event.args.ts))}
+                  questionTitle={answeredQuestion.questionTitle}
+                  message="Your answer was overwritten"
+                />
               );
             }
 
@@ -125,25 +164,23 @@ const useNotifications = () => {
 
             if (event.args.user === account) {
               return (
-                <Box>
-                  <Text>
-                    You revealed an answer to a question{' '}
-                    {formatDistanceToNow(new Date(answerRevealBlock.timestamp))}{' '}
-                    ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={answerRevealedQuestion.id}
+                  date={timeAgo(answerRevealBlock)}
+                  questionTitle={answerRevealedQuestion.questionTitle}
+                  message="You revealed an answer to a question"
+                />
               );
             }
 
             if (answerRevealedQuestion.user === account) {
               return (
-                <Box>
-                  <Text>
-                    Someone revealed their answer to your question{' '}
-                    {formatDistanceToNow(new Date(answerRevealBlock.timestamp))}{' '}
-                    ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={answerRevealedQuestion.id}
+                  date={timeAgo(answerRevealBlock)}
+                  questionTitle={answerRevealedQuestion.questionTitle}
+                  message="Someone revealed their answer to your question"
+                />
               );
             } else if (
               answerRevealedQuestion.answers
@@ -151,13 +188,12 @@ const useNotifications = () => {
                 .some(answer => answer.user === account)
             ) {
               return (
-                <Box>
-                  <Text>
-                    Your answer was overwritten{' '}
-                    {formatDistanceToNow(new Date(answerRevealBlock.timestamp))}{' '}
-                    ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={answerRevealedQuestion.id}
+                  date={timeAgo(answerRevealBlock)}
+                  questionTitle={answerRevealedQuestion.questionTitle}
+                  message="Your answer was overwritten"
+                />
               );
             }
 
@@ -165,41 +201,41 @@ const useNotifications = () => {
 
           case OracleEventType.LogFundAnswerBounty:
             const rewardBlock = await fetchBlock(event.blockNumber);
+            const fundedQuestion = await fetchQuestion(event.args.question_id);
+            if (!fundedQuestion) throw new Error('Question not found');
+            const reward = formatCurrency(event.args.bounty, currency);
 
             if (event.args.user === account) {
               return (
-                <Box>
-                  <Text>
-                    You added reward{' '}
-                    {formatDistanceToNow(new Date(rewardBlock.timestamp))} ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={fundedQuestion.id}
+                  date={timeAgo(rewardBlock)}
+                  questionTitle={fundedQuestion.questionTitle}
+                  message={`You added ${reward} ${currency} reward`}
+                />
               );
             }
 
-            const fundedQuestion = await fetchQuestion(event.args.question_id);
-            if (!fundedQuestion) throw new Error('Question not found');
-
             if (fundedQuestion.user === account) {
               return (
-                <Box>
-                  <Text>
-                    Someone added reward to your question{' '}
-                    {formatDistanceToNow(new Date(rewardBlock.timestamp))} ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={fundedQuestion.id}
+                  date={timeAgo(rewardBlock)}
+                  questionTitle={fundedQuestion.questionTitle}
+                  message={`Someone added ${reward} ${currency} reward to your question`}
+                />
               );
             } else {
               if (
                 fundedQuestion.answers.some(answer => answer.user === account)
               ) {
                 return (
-                  <Box>
-                    <Text>
-                      Someone added reward to the question you answered{' '}
-                      {formatDistanceToNow(new Date(rewardBlock.timestamp))} ago
-                    </Text>
-                  </Box>
+                  <Notification
+                    questionId={fundedQuestion.id}
+                    date={timeAgo(rewardBlock)}
+                    questionTitle={fundedQuestion.questionTitle}
+                    message={`Someone added ${reward} ${currency} reward to the question you answered`}
+                  />
                 );
               }
             }
@@ -207,39 +243,32 @@ const useNotifications = () => {
             return null;
 
           case OracleEventType.LogNotifyOfArbitrationRequest:
-            const arbitrationRequestBlock = await fetchBlock(event.blockNumber);
-
-            if (event.args.user === account) {
-              return (
-                <Box>
-                  <Text>
-                    You requested arbitration{' '}
-                    {formatDistanceToNow(
-                      new Date(arbitrationRequestBlock.timestamp),
-                    )}{' '}
-                    ago
-                  </Text>
-                </Box>
-              );
-            }
-
             const arbitrationRequestedQuestion = await fetchQuestion(
               event.args.question_id,
             );
             if (!arbitrationRequestedQuestion)
               throw new Error('Question not found');
+            const arbitrationRequestBlock = await fetchBlock(event.blockNumber);
+
+            if (event.args.user === account) {
+              return (
+                <Notification
+                  questionId={arbitrationRequestedQuestion.id}
+                  date={timeAgo(arbitrationRequestBlock)}
+                  questionTitle={arbitrationRequestedQuestion.questionTitle}
+                  message="You requested arbitration"
+                />
+              );
+            }
 
             if (arbitrationRequestedQuestion.user === account) {
               return (
-                <Box>
-                  <Text>
-                    Someone requested arbitration to your question{' '}
-                    {formatDistanceToNow(
-                      new Date(arbitrationRequestBlock.timestamp),
-                    )}{' '}
-                    ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={arbitrationRequestedQuestion.id}
+                  date={timeAgo(arbitrationRequestBlock)}
+                  questionTitle={arbitrationRequestedQuestion.questionTitle}
+                  message="Someone requested arbitration to your question"
+                />
               );
             }
 
@@ -249,15 +278,12 @@ const useNotifications = () => {
               )
             ) {
               return (
-                <Box>
-                  <Text>
-                    Someone requested arbitration to the question you answered{' '}
-                    {formatDistanceToNow(
-                      new Date(arbitrationRequestBlock.timestamp),
-                    )}{' '}
-                    ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={arbitrationRequestedQuestion.id}
+                  date={timeAgo(arbitrationRequestBlock)}
+                  questionTitle={arbitrationRequestedQuestion.questionTitle}
+                  message="Someone requested arbitration to the question you answered"
+                />
               );
             }
 
@@ -268,29 +294,28 @@ const useNotifications = () => {
             const finalizedQuestion = await fetchQuestion(
               event.args.question_id,
             );
+
             if (!finalizedQuestion) throw new Error('Question not found');
 
             if (finalizedQuestion.user === account) {
               return (
-                <Box>
-                  <Text>
-                    Your question is finalized{' '}
-                    {formatDistanceToNow(new Date(finalizedBlock.timestamp))}{' '}
-                    ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={finalizedQuestion.id}
+                  date={timeAgo(finalizedBlock)}
+                  questionTitle={finalizedQuestion.questionTitle}
+                  message="Your question is finalized"
+                />
               );
             } else if (
               finalizedQuestion.answers.some(answer => answer.user === account)
             ) {
               return (
-                <Box>
-                  <Text>
-                    The question you answered is finalized{' '}
-                    {formatDistanceToNow(new Date(finalizedBlock.timestamp))}{' '}
-                    ago
-                  </Text>
-                </Box>
+                <Notification
+                  questionId={finalizedQuestion.id}
+                  date={timeAgo(finalizedBlock)}
+                  questionTitle={finalizedQuestion.questionTitle}
+                  message="The question you answered is finalized"
+                />
               );
             }
 
@@ -373,6 +398,26 @@ const useMyQuestionsQuery = () => {
   };
 };
 
+const useBalanceQuery = () => {
+  const { account, web3 } = useWeb3();
+  const { currency, tokenInstance } = useCurrency();
+
+  const { value, loading } = useAsync(async () => {
+    if (!account) throw new Error('Expected account');
+
+    const balance = await (currency === 'ETH'
+      ? web3.eth.getBalance(account)
+      : tokenInstance.balanceOf.call(account));
+
+    return balance as BigNumber;
+  }, [account, web3, currency, tokenInstance]);
+
+  return {
+    data: value || new BigNumber(0),
+    loading,
+  };
+};
+
 interface NotificationsPreviewProps {
   notifications: React.ReactElement[];
   onPressSeeAllNotifications: () => void;
@@ -403,17 +448,20 @@ interface MainProps extends NotificationsPreviewProps {
   setTab: (tab: MyAccountTab) => void;
   questions: Question[];
   answeredQuestions: Question[];
+  balance: BigNumber;
 }
 
 const Main = (props: MainProps) => {
   const {
     questions,
+    balance,
     answeredQuestions,
     tab,
     notifications,
     setTab,
     onPressSeeAllNotifications,
   } = props;
+  const { currency } = useCurrency();
 
   return (
     <Box>
@@ -422,6 +470,13 @@ const Main = (props: MainProps) => {
           MY ACCOUNT
         </Heading>
       </Box>
+      <Background pattern="textured">
+        <Box paddingHorizontal={60} paddingVertical={24}>
+          <Text color="primary" weight="bold">
+            Your balance: {formatCurrency(balance, currency)} {currency}
+          </Text>
+        </Box>
+      </Background>
       <Box paddingHorizontal={60} paddingVertical={24}>
         <NotificationPreview
           notifications={notifications.slice(0, 1)}
@@ -523,9 +578,15 @@ export const MyAccount = () => {
     loading: answersLoading,
   } = useMyAnswersQuery();
   const { data: questions, loading: questionsLoading } = useMyQuestionsQuery();
+  const { data: balance, loading: balanceLoading } = useBalanceQuery();
   const [seeAllNotifications, setSeeAllNotifications] = React.useState(false);
 
-  if (notificationsLoading || answersLoading || questionsLoading) {
+  if (
+    notificationsLoading ||
+    answersLoading ||
+    questionsLoading ||
+    balanceLoading
+  ) {
     return <Text>Loading...</Text>;
   }
 
@@ -539,6 +600,7 @@ export const MyAccount = () => {
           notifications={notifications}
           questions={questions}
           answeredQuestions={answeredQuestions}
+          balance={balance}
         />
       )}
       {seeAllNotifications && (
