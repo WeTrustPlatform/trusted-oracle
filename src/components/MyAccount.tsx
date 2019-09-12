@@ -13,7 +13,7 @@ import {
 } from 'paramount-ui';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { useAsync } from 'react-use';
+import { useAsync, useAsyncFn } from 'react-use';
 import { Block } from 'web3/eth/types';
 
 import { useCurrency } from '../ethereum/CurrencyProvider';
@@ -27,7 +27,12 @@ import {
   OracleEventType,
 } from '../oracle/OracleData';
 import { useOracle } from '../oracle/OracleProvider';
-import { INITIAL_BLOCKS, Question, toDate } from '../oracle/Question';
+import {
+  INITIAL_BLOCKS,
+  Question,
+  QuestionState,
+  toDate,
+} from '../oracle/Question';
 import { QuestionCard } from '../oracle/QuestionList';
 import { useFetchQuestionQuery } from '../oracle/useQuestionQuery';
 import { Background } from './Background';
@@ -68,9 +73,9 @@ const Notification = (props: NotificationProps) => {
 };
 
 const useNotifications = () => {
-  const { networkId, account } = useWeb3();
-  const { realitio } = useOracle();
-  const { currency } = useCurrency();
+  const { networkId, account, web3IsLoading } = useWeb3();
+  const { realitio, loading: oracleLoading } = useOracle();
+  const { currency, isCurrencyLoading } = useCurrency();
   const fetchQuestion = useFetchQuestionQuery();
   const initialBlock = INITIAL_BLOCKS[networkId];
   const fetchBlock = useFetchBlock();
@@ -320,6 +325,29 @@ const useNotifications = () => {
             }
 
             return null;
+          case OracleEventType.LogClaim:
+            if (event.args.user === account) {
+              const claimedBlock = await fetchBlock(event.blockNumber);
+              const claimedQuestion = await fetchQuestion(
+                event.args.question_id,
+              );
+
+              if (!claimedQuestion) throw new Error('Question not found');
+
+              return (
+                <Notification
+                  questionId={claimedQuestion.id}
+                  date={timeAgo(claimedBlock)}
+                  questionTitle={claimedQuestion.questionTitle}
+                  message={`You claimed ${formatCurrency(
+                    event.args.amount,
+                    currency,
+                  )} ${currency}`}
+                />
+              );
+            }
+
+            return null;
 
           default:
             return null;
@@ -331,9 +359,108 @@ const useNotifications = () => {
   }, [realitio]);
 
   return {
-    loading,
+    loading: loading || isCurrencyLoading || oracleLoading || web3IsLoading,
     data: value || [],
   };
+};
+
+const useMakeQuestionClaim = () => {
+  const { account } = useWeb3();
+
+  const makeQuestionClaim = React.useCallback(
+    (question: Question) => {
+      let total = new BigNumber(0);
+
+      if (
+        new BigNumber(question.historyHash.substring(2)).eq(new BigNumber(0))
+      ) {
+        return null;
+      }
+
+      if (question.state !== QuestionState.FINALIZED) return null;
+
+      const questionIds = [];
+      const answerLengths = [];
+      const bonds = [];
+      const answers = [];
+      const answerers = [];
+      const historyHashes = [];
+
+      let isFirst = true;
+      let isYours = false;
+
+      for (let i = question.answers.length - 1; i >= 0; i--) {
+        // TODO: Check the history hash, and if we haven't reached it, keep going until we do
+        // ...since someone may have claimed partway through
+
+        const { answer, bond, user: answerer, historyHash } = question.answers[
+          i
+        ];
+        // TODO: support answer commitments
+        // Only set on reveal, otherwise the answer field still holds the commitment ID for commitments
+        // if (question_detail['history'][i].args.commitment_id) {
+        //   answer = question_detail['history'][i].args.commitment_id;
+        // } else {
+        //   answer = question_detail['history'][i].args.answer;
+        // }
+
+        if (isYours) {
+          // Somebody takes over your answer
+          if (answerer !== account && question.bestAnswer === answer) {
+            isYours = false;
+            total = total.sub(bond); // pay them their bond
+          } else {
+            total = total.add(bond); // take their bond
+          }
+        } else {
+          // You take over someone else's answer
+          if (answerer === account && question.bestAnswer === answer) {
+            isYours = true;
+            total = total.add(bond); // your bond back
+          }
+        }
+
+        if (isFirst && isYours) {
+          total = total.add(question.bounty);
+        }
+
+        bonds.push(bond);
+        answers.push(answer);
+        answerers.push(answerer);
+        historyHashes.push(historyHash);
+
+        isFirst = false;
+      }
+
+      // Nothing for you to claim, so return nothing
+      if (!total.gt(new BigNumber(0))) {
+        return null;
+      }
+
+      questionIds.push(question.id);
+      answerLengths.push(bonds.length);
+
+      // For the history hash, each time we need to provide the previous hash in the history
+      // So delete the first item, and add 0x0 to the end.
+      historyHashes.shift();
+      historyHashes.push('0x0');
+
+      // TODO: Someone may have claimed partway, so we should really be checking against the contract state
+
+      return {
+        total,
+        questionIds,
+        answerLengths,
+        answers,
+        answerers,
+        bonds,
+        historyHashes,
+      };
+    },
+    [account],
+  );
+
+  return makeQuestionClaim;
 };
 
 enum MyAccountTab {
@@ -341,10 +468,20 @@ enum MyAccountTab {
   ANSWER = 'ANSWER',
 }
 
+interface ClaimArguments {
+  questionIds: string[];
+  answerLengths: number[];
+  answers: string[];
+  answerers: string[];
+  bonds: BigNumber[];
+  historyHashes: string[];
+}
+
 const useMyAnswersQuery = () => {
   const { networkId, account } = useWeb3();
-  const { realitio } = useOracle();
+  const { realitio, loading: oracleLoading } = useOracle();
   const fetchQuestion = useFetchQuestionQuery();
+  const makeQuestionClaim = useMakeQuestionClaim();
   const initialBlock = INITIAL_BLOCKS[networkId];
 
   const { loading, value } = useAsync(async () => {
@@ -356,22 +493,63 @@ const useMyAnswersQuery = () => {
 
     const uniqueEvents = uniqBy(events, event => event.args.question_id);
 
-    const questions = await Promise.all(
+    const questions = (await Promise.all(
       uniqueEvents.map(async event => fetchQuestion(event.args.question_id)),
-    );
+    )).filter(Boolean) as Question[];
 
-    return questions.filter(Boolean) as Question[];
+    let claimable = new BigNumber(0);
+
+    const claimArguments: ClaimArguments = {
+      questionIds: [],
+      answerLengths: [],
+      answers: [],
+      answerers: [],
+      bonds: [],
+      historyHashes: [],
+    };
+
+    questions.map(makeQuestionClaim).forEach(claim => {
+      if (claim) {
+        claimable = claimable.add(claim.total);
+
+        claimArguments.questionIds.push(...claim.questionIds);
+        claimArguments.answerLengths.push(...claim.answerLengths);
+        claimArguments.answers.push(...claim.answers);
+        claimArguments.answerers.push(...claim.answerers);
+        claimArguments.bonds.push(...claim.bonds);
+        claimArguments.historyHashes.push(...claim.historyHashes);
+      }
+    });
+
+    return {
+      questions,
+      claimArguments,
+      claimable,
+    };
   }, [realitio]);
 
   return {
-    loading,
-    data: value || [],
+    loading: loading || oracleLoading,
+    data: value || {
+      questions: [],
+      claimArguments: {
+        txids: [],
+        total: new BigNumber(0),
+        questionIds: [],
+        answerLengths: [],
+        answers: [],
+        answerers: [],
+        bonds: [],
+        historyHashes: [],
+      },
+      claimable: new BigNumber(0),
+    },
   };
 };
 
 const useMyQuestionsQuery = () => {
   const { networkId, account } = useWeb3();
-  const { realitio } = useOracle();
+  const { realitio, loading: oracleLoading } = useOracle();
   const fetchQuestion = useFetchQuestionQuery();
   const initialBlock = INITIAL_BLOCKS[networkId];
 
@@ -393,14 +571,14 @@ const useMyQuestionsQuery = () => {
   }, [realitio]);
 
   return {
-    loading,
+    loading: loading || oracleLoading,
     data: value || [],
   };
 };
 
 const useBalanceQuery = () => {
-  const { account, web3 } = useWeb3();
-  const { currency, tokenInstance } = useCurrency();
+  const { account, web3, web3IsLoading } = useWeb3();
+  const { currency, tokenInstance, isCurrencyLoading } = useCurrency();
 
   const { value, loading } = useAsync(async () => {
     if (!account) throw new Error('Expected account');
@@ -414,8 +592,60 @@ const useBalanceQuery = () => {
 
   return {
     data: value || new BigNumber(0),
-    loading,
+    loading: loading || web3IsLoading || isCurrencyLoading,
   };
+};
+
+interface ClaimableProps {
+  claimable: BigNumber;
+  claimArguments: ClaimArguments;
+}
+
+const Claimable = (props: ClaimableProps) => {
+  const { claimable, claimArguments } = props;
+  const { realitio } = useOracle();
+  const { currency } = useCurrency();
+  const { account } = useWeb3();
+
+  const [{ loading }, handleClaim] = useAsyncFn(async () => {
+    // estimateGas gives us a number that credits the eventual storage refund.
+    // However, this is only supplied at the end of the transaction, so we need to send more to get us to that point.
+    // MetaMask seems to add a bit extra, but it's not enough.
+    // Get the number via estimateGas, then add 60000 per question, which should be the max storage we free.
+
+    // For now hard-code a fairly generous allowance
+    // Tried earlier with single answerer:
+    //  1 answer 48860
+    //  2 answers 54947
+    //  5 answers 73702
+    const gas = 140000 + 30000 * claimArguments.historyHashes.length;
+
+    await realitio.claimMultipleAndWithdrawBalance.sendTransaction(
+      claimArguments.questionIds,
+      claimArguments.answerLengths,
+      claimArguments.historyHashes,
+      claimArguments.answerers,
+      claimArguments.bonds,
+      claimArguments.answers,
+      { from: account, gas },
+    );
+  }, [account, realitio, claimArguments]);
+
+  if (claimable.eq(new BigNumber(0))) return null;
+
+  return (
+    <Box>
+      <TouchableOpacity onPress={handleClaim}>
+        {loading ? (
+          <Text color="secondary">Loading...</Text>
+        ) : (
+          <Text color="secondary">
+            Claim {formatCurrency(claimable, currency)} {currency}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </Box>
+  );
 };
 
 interface NotificationsPreviewProps {
@@ -443,7 +673,7 @@ const NotificationPreview = (props: NotificationsPreviewProps) => {
   );
 };
 
-interface MainProps extends NotificationsPreviewProps {
+interface MainProps extends NotificationsPreviewProps, ClaimableProps {
   tab: MyAccountTab;
   setTab: (tab: MyAccountTab) => void;
   questions: Question[];
@@ -460,6 +690,8 @@ const Main = (props: MainProps) => {
     notifications,
     setTab,
     onPressSeeAllNotifications,
+    claimArguments,
+    claimable,
   } = props;
   const { currency } = useCurrency();
 
@@ -471,10 +703,16 @@ const Main = (props: MainProps) => {
         </Heading>
       </Box>
       <Background pattern="textured">
-        <Box paddingHorizontal={60} paddingVertical={24}>
+        <Box
+          paddingHorizontal={60}
+          paddingVertical={24}
+          flexDirection="row"
+          justifyContent="space-between"
+        >
           <Text color="primary" weight="bold">
             Your balance: {formatCurrency(balance, currency)} {currency}
           </Text>
+          <Claimable claimArguments={claimArguments} claimable={claimable} />
         </Box>
       </Background>
       <Box paddingHorizontal={60} paddingVertical={24}>
@@ -574,7 +812,7 @@ export const MyAccount = () => {
     loading: notificationsLoading,
   } = useNotifications();
   const {
-    data: answeredQuestions,
+    data: { questions: answeredQuestions, claimArguments, claimable },
     loading: answersLoading,
   } = useMyAnswersQuery();
   const { data: questions, loading: questionsLoading } = useMyQuestionsQuery();
@@ -601,6 +839,8 @@ export const MyAccount = () => {
           questions={questions}
           answeredQuestions={answeredQuestions}
           balance={balance}
+          claimArguments={claimArguments}
+          claimable={claimable}
         />
       )}
       {seeAllNotifications && (
