@@ -25,6 +25,19 @@ export enum OracleEventType {
   'LogClaim' = 'LogClaim',
 }
 
+export interface EventBase {
+  address: string;
+  blockHash: string;
+  blockNumber: number;
+  event: OracleEventType;
+  id: string;
+  logIndex: number;
+  removed: boolean;
+  signature: string;
+  transactionHash: string;
+  transactionIndex: number;
+}
+
 export type OracleEvent =
   | NewQuestionEvent
   | NewAnswerEvent
@@ -57,7 +70,7 @@ export interface NewQuestionEventArgs {
   user: string;
 }
 
-export interface NewQuestionEvent {
+export interface NewQuestionEvent extends EventBase {
   args: NewQuestionEventArgs;
   event: OracleEventType.LogNewQuestion;
 }
@@ -72,7 +85,7 @@ export interface NewAnswerEventArgs {
   user: string;
 }
 
-export interface NewAnswerEvent {
+export interface NewAnswerEvent extends EventBase {
   args: NewAnswerEventArgs;
   event: OracleEventType.LogNewAnswer;
 }
@@ -87,7 +100,7 @@ export interface NewAnswerEventArgs {
   user: string;
 }
 
-export interface NewAnswerEvent {
+export interface NewAnswerEvent extends EventBase {
   args: NewAnswerEventArgs;
   event: OracleEventType.LogNewAnswer;
 }
@@ -97,7 +110,7 @@ export interface SetQuestionFeeEventArgs {
   amount: BigNumber;
 }
 
-export interface SetQuestionFeeEvent {
+export interface SetQuestionFeeEvent extends EventBase {
   args: SetQuestionFeeEventArgs;
   event: OracleEventType.LogSetQuestionFee;
 }
@@ -108,7 +121,7 @@ export interface NewTemplateEventArgs {
   question_text: string;
 }
 
-export interface NewTemplateEvent {
+export interface NewTemplateEvent extends EventBase {
   args: NewTemplateEventArgs;
   event: OracleEventType.LogNewTemplate;
 }
@@ -120,7 +133,7 @@ export interface FundAnswerBountyEventArgs {
   user: string;
 }
 
-export interface FundAnswerBountyEvent {
+export interface FundAnswerBountyEvent extends EventBase {
   args: FundAnswerBountyEventArgs;
   event: OracleEventType.LogFundAnswerBounty;
 }
@@ -131,10 +144,10 @@ export interface AnswerRevealEventArgs {
   answer_hash: string;
   answer: string;
   nonce: BigNumber;
-  bon: BigNumber;
+  bond: BigNumber;
 }
 
-export interface AnswerRevealEvent {
+export interface AnswerRevealEvent extends EventBase {
   args: AnswerRevealEventArgs;
   event: OracleEventType.LogAnswerReveal;
 }
@@ -144,7 +157,7 @@ export interface NotifyOfArbitrationRequestEventArgs {
   user: string;
 }
 
-export interface NotifyOfArbitrationRequestEvent {
+export interface NotifyOfArbitrationRequestEvent extends EventBase {
   args: NotifyOfArbitrationRequestEventArgs;
   event: OracleEventType.LogNotifyOfArbitrationRequest;
 }
@@ -154,7 +167,7 @@ export interface FinalizeEventArgs {
   answer: string;
 }
 
-export interface FinalizeEvent {
+export interface FinalizeEvent extends EventBase {
   args: FinalizeEventArgs;
   event: OracleEventType.LogFinalize;
 }
@@ -165,7 +178,7 @@ export interface ClaimEventArgs {
   amount: BigNumber;
 }
 
-export interface ClaimEvent {
+export interface ClaimEvent extends EventBase {
   args: ClaimEventArgs;
   event: OracleEventType.LogClaim;
 }

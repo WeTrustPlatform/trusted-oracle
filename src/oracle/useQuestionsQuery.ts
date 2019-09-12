@@ -1,6 +1,7 @@
 import React from 'react';
+import { useAsync } from 'react-use';
 
-import { useLatestBlockQuery } from '../ethereum/useLatestBlockQuery';
+import { useFetchBlock } from '../ethereum/useBlockQuery';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { NewQuestionEvent, OracleEventType } from './OracleData';
 import { useOracle } from './OracleProvider';
@@ -44,19 +45,20 @@ export const useQuestionsQuery = () => {
   const initialBlock = INITIAL_BLOCKS[networkId];
   const [state, dispatch] = React.useReducer(reducer, initialState);
   const { incrementIndex, questions, toBlock, loading } = state;
+  const fetchBlock = useFetchBlock();
 
-  const { latestBlock, loading: latestBlockIsLoading } = useLatestBlockQuery();
+  useAsync(async () => {
+    if (web3IsLoading) return;
 
-  React.useEffect(() => {
-    if (oracleIsLoading || web3IsLoading || latestBlockIsLoading) return;
-    if (latestBlock) {
-      dispatch({ type: 'update', payload: { toBlock: latestBlock } });
+    const latestBlock = await fetchBlock('latest');
+    if (!toBlock) {
+      dispatch({ type: 'update', payload: { toBlock: latestBlock.number } });
     }
-  }, [oracleIsLoading, web3IsLoading, latestBlockIsLoading, latestBlock]);
+  }, [oracleIsLoading, web3IsLoading]);
 
   React.useEffect(() => {
-    if (oracleIsLoading || web3IsLoading || latestBlockIsLoading) return;
-    if (!realitio && latestBlock) return;
+    if (oracleIsLoading || web3IsLoading) return;
+    if (!realitio && toBlock) return;
 
     const fetchQuestions = async () => {
       const numberOfBlocksToFetch =
@@ -99,8 +101,6 @@ export const useQuestionsQuery = () => {
   }, [
     oracleIsLoading,
     web3IsLoading,
-    latestBlockIsLoading,
-    latestBlock,
     incrementIndex,
     questions,
     toBlock,

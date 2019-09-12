@@ -10,23 +10,11 @@ export const Background = (props: BackgroundProps) => {
 
   if (pattern === 'dotted') {
     return (
-      <div
-        style={{
-          backgroundImage: `url('/dotted-bg.png')`,
-        }}
-      >
-        {children}
-      </div>
+      <div style={{ backgroundImage: `url('/dotted-bg.png')` }}>{children}</div>
     );
   }
 
   return (
-    <div
-      style={{
-        backgroundImage: `url('/textured-bg.jpg')`,
-      }}
-    >
-      {children}
-    </div>
+    <div style={{ backgroundImage: `url('/textured-bg.jpg')` }}>{children}</div>
   );
 };

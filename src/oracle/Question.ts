@@ -35,7 +35,7 @@ export interface QuestionFromNewQuestionEvent {
   arbitrator: string;
   nonce: BigNumber;
   createdAtDate: Date;
-  createdBy: string;
+  user: string;
   contentHash: string;
   questionTitle: string;
   templateId: TemplateId;
@@ -100,7 +100,7 @@ export const transformNewQuestionEventToQuestion = (
     arbitrator: args.arbitrator,
     nonce: args.nonce,
     createdAtDate: toDate(args.created),
-    createdBy: args.user,
+    user: args.user,
     contentHash: args.content_hash,
     questionTitle: args.question,
     templateId: args.template_id.toNumber() as TemplateId,
