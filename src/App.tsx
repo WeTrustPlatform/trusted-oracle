@@ -1,14 +1,41 @@
 import { LayoutProvider, ThemeProvider, ToastProvider } from 'paramount-ui';
 import React from 'react';
-import { Route } from 'react-router';
+import { Route, RouteChildrenProps } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 
+import { CustomDialog } from './components/CustomDialog';
+import { MyAccount } from './components/MyAccount';
 import { NavigationBar } from './components/NavigationBar';
 import { CurrencyProvider } from './ethereum/CurrencyProvider';
 import { Web3DialogsProvider } from './ethereum/Web3DialogsProvider';
 import { Web3Provider } from './ethereum/Web3Provider';
 import { OracleProvider } from './oracle/OracleProvider';
+import { QuestionDetails } from './oracle/QuestionDetails';
 import { Home } from './pages/Home';
+
+const MyAccountDialog = (props: RouteChildrenProps<{ questionId: string }>) => {
+  const { history } = props;
+
+  return (
+    <CustomDialog history={history}>
+      <MyAccount />
+    </CustomDialog>
+  );
+};
+
+const QuestionDetailsDialog = (
+  props: RouteChildrenProps<{ questionId: string }>,
+) => {
+  const { history, match } = props;
+
+  if (!match) return null;
+
+  return (
+    <CustomDialog history={history}>
+      <QuestionDetails questionId={match.params.questionId} />
+    </CustomDialog>
+  );
+};
 
 export const App = () => {
   return (
@@ -45,7 +72,7 @@ export const App = () => {
               lineHeight: 24,
             },
             large: {
-              fontSize: 24,
+              fontSize: 20,
             },
           },
         }}
@@ -67,6 +94,11 @@ export const App = () => {
                   <OracleProvider>
                     <NavigationBar />
                     <Route path="/" component={Home} />
+                    <Route path="/my-account" component={MyAccountDialog} />
+                    <Route
+                      path="/question/:questionId"
+                      component={QuestionDetailsDialog}
+                    />
                   </OracleProvider>
                 </CurrencyProvider>
               </Web3DialogsProvider>

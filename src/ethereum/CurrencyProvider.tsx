@@ -84,7 +84,7 @@ export const CurrencyProvider = (props: CurrencyProviderProps) => {
           .on('error', (error: any) => reject(error));
       });
     },
-    [tokenInstance],
+    [tokenInstance, account],
   );
 
   return (

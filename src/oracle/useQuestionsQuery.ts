@@ -1,17 +1,11 @@
-import { compareDesc } from 'date-fns';
 import React from 'react';
 
 import { useLatestBlockQuery } from '../ethereum/useLatestBlockQuery';
 import { useWeb3 } from '../ethereum/Web3Provider';
+import { NewQuestionEvent, OracleEventType } from './OracleData';
 import { useOracle } from './OracleProvider';
-import {
-  INITIAL_BLOCKS,
-  NewQuestionEvent,
-  Question,
-  QuestionFromContract,
-  toQuestion,
-  transformNewQuestionEventToQuestion,
-} from './Question';
+import { INITIAL_BLOCKS, Question } from './Question';
+import { useFetchQuestionQuery } from './useQuestionQuery';
 
 interface State {
   questions: Question[];
@@ -46,6 +40,7 @@ const reducer = (state: State, action: Action) => {
 export const useQuestionsQuery = () => {
   const { networkId, web3IsLoading } = useWeb3();
   const { loading: oracleIsLoading, realitio } = useOracle();
+  const fetchQuestion = useFetchQuestionQuery();
   const initialBlock = INITIAL_BLOCKS[networkId];
   const [state, dispatch] = React.useReducer(reducer, initialState);
   const { incrementIndex, questions, toBlock, loading } = state;
@@ -78,22 +73,17 @@ export const useQuestionsQuery = () => {
       }
 
       const newQuestionsEvents = (await realitio.getPastEvents(
-        'LogNewQuestion',
+        OracleEventType.LogNewQuestion,
         { fromBlock, toBlock },
       )) as NewQuestionEvent[];
 
-      const newQuestions = await Promise.all(
-        newQuestionsEvents
-          .map(transformNewQuestionEventToQuestion)
-          .sort((a, b) => compareDesc(a.createdAtDate, b.createdAtDate))
-          .map(async question => {
-            const questionFromContract = (await realitio.questions.call(
-              question.id,
-            )) as QuestionFromContract;
-
-            return toQuestion(question, questionFromContract, []);
-          }),
+      const questionsFromEvents = await Promise.all(
+        newQuestionsEvents.map(async event =>
+          fetchQuestion(event.args.question_id),
+        ),
       );
+
+      const newQuestions = questionsFromEvents.filter(Boolean) as Question[];
 
       dispatch({
         type: 'update',

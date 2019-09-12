@@ -1,49 +1,52 @@
 import { compareDesc } from 'date-fns';
+import { isEmpty } from 'lodash';
 import {
   Box,
   Column,
   Container,
-  Dialog,
   Divider,
   Heading,
-  Icon,
   Row,
   Text,
-  useLayout,
   useTheme,
 } from 'paramount-ui';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import { Route, RouteChildrenProps } from 'react-router';
 
 import { Background } from '../components/Background';
+import { Tabs } from '../components/CustomTabs';
 import { Link } from '../components/Link';
+import { useWeb3 } from '../ethereum/Web3Provider';
 import { Question, QuestionState } from './Question';
 import {
-  QuestionDetails,
   QuestionPostedDate,
   QuestionReward,
   QuestionTooltip,
+  toBinaryAnswer,
+  useAnswerColor,
 } from './QuestionDetails';
 import { useQuestionsQuery } from './useQuestionsQuery';
 
-interface QuestionCardProps {
+export interface QuestionCardProps {
   question: Question;
 }
 
-const QuestionCard = (props: QuestionCardProps) => {
+export const QuestionCard = (props: QuestionCardProps) => {
   const theme = useTheme();
+  const { account } = useWeb3();
+  const answerColor = useAnswerColor();
   const { question } = props;
+
+  const answers = question.answers.slice().reverse();
+  const myAnswer = answers.find(answer => answer.user === account);
 
   return (
     <Box
       backgroundColor="white"
       borderWidth={1}
-      paddingBottom={40}
       borderColor={theme.colors.border.default}
       borderRadius={8}
     >
-      <Box alignItems="flex-end" padding={10}>
+      <Box alignItems="flex-end" paddingRight={8} paddingTop={8}>
         <QuestionTooltip question={question} />
       </Box>
       <Box flexDirection="row" alignItems="center" paddingHorizontal={40}>
@@ -63,41 +66,53 @@ const QuestionCard = (props: QuestionCardProps) => {
           <QuestionPostedDate question={question} />
         </Box>
       </Box>
-    </Box>
-  );
-};
-
-const QuestionDetailsDialog = (
-  props: RouteChildrenProps<{ questionId: string }>,
-) => {
-  const { history, match } = props;
-  const layout = useLayout();
-
-  if (!match) return null;
-
-  return (
-    <Dialog
-      isVisible
-      onRequestClose={() => history.replace('/')}
-      getStyles={() => ({
-        containerStyle: {
-          width: '100%',
-          maxWidth: layout.containerSizes.xlarge,
-          overflow: 'visible',
-        },
-        bodyStyle: {
-          maxHeight: 756,
-          overflow: 'visible',
-        },
-      })}
-    >
-      <Box marginTop={-60} alignItems="flex-end">
-        <TouchableOpacity onPress={() => history.replace('/')}>
-          <Icon name="x" size={60} color="#fff" />
-        </TouchableOpacity>
+      <Box paddingTop={24}>
+        {question.state !== QuestionState.NOT_OPEN && (
+          <Background pattern="textured">
+            <Box
+              paddingVertical={16}
+              paddingHorizontal={40}
+              flexDirection="row"
+              justifyContent="space-between"
+            >
+              {isEmpty(answers) && (
+                <Text size="large" weight="bold">
+                  OPEN FOR ANSWERS
+                </Text>
+              )}
+              {question.state === QuestionState.FINALIZED ? (
+                <Text size="large" weight="bold">
+                  FINAL ANSWER:{' '}
+                  <Text
+                    size="large"
+                    weight="bold"
+                    color={answerColor(answers[0])}
+                  >
+                    {toBinaryAnswer(answers[0].answer).toUpperCase()}
+                  </Text>
+                </Text>
+              ) : isEmpty(answers) ? null : (
+                <Text size="large" weight="bold">
+                  {answers.length} {answers.length === 1 ? 'ANSWER' : 'ANSWERS'}
+                </Text>
+              )}
+              {myAnswer && (
+                <Text size="large" weight="bold">
+                  MY ANSWER:{' '}
+                  <Text
+                    size="large"
+                    weight="bold"
+                    color={answerColor(myAnswer)}
+                  >
+                    {toBinaryAnswer(myAnswer.answer).toUpperCase()}
+                  </Text>
+                </Text>
+              )}
+            </Box>
+          </Background>
+        )}
       </Box>
-      <QuestionDetails questionId={match.params.questionId} />
-    </Dialog>
+    </Box>
   );
 };
 
@@ -107,79 +122,6 @@ export enum QuestionCategory {
   HIGH_REWARD = 'HIGH_REWARD',
   RESOLVED = 'RESOLVED',
 }
-
-interface QuestionSortTabProps {
-  label: string;
-  value: QuestionCategory;
-  onPress: (value: QuestionCategory) => void;
-  isActive: boolean;
-}
-
-const QuestionSortTab = (props: QuestionSortTabProps) => {
-  const { label, value, onPress, isActive } = props;
-  const theme = useTheme();
-
-  return (
-    <TouchableOpacity style={{ flex: 1 }} onPress={() => onPress(value)}>
-      <Box paddingBottom={16}>
-        <Heading
-          align="center"
-          size="xxlarge"
-          color={isActive ? 'primary' : 'muted'}
-        >
-          {label}
-        </Heading>
-      </Box>
-      {isActive ? (
-        <Divider
-          color={theme.colors.text.primary}
-          getStyles={() => ({ dividerStyle: { height: 6 } })}
-        />
-      ) : (
-        <Box height={6} />
-      )}
-      <Divider />
-    </TouchableOpacity>
-  );
-};
-
-interface QuestionSortTabsProps {
-  onChangeTab: (value: QuestionCategory) => void;
-  currentSort: QuestionCategory;
-}
-
-const QuestionSortTabs = (props: QuestionSortTabsProps) => {
-  const { onChangeTab, currentSort } = props;
-
-  return (
-    <Box flexDirection="row">
-      <QuestionSortTab
-        label="LATEST"
-        isActive={QuestionCategory.LATEST === currentSort}
-        value={QuestionCategory.LATEST}
-        onPress={onChangeTab}
-      />
-      <QuestionSortTab
-        label="CLOSING SOON"
-        isActive={QuestionCategory.CLOSING_SOON === currentSort}
-        value={QuestionCategory.CLOSING_SOON}
-        onPress={onChangeTab}
-      />
-      <QuestionSortTab
-        label="HIGH REWARD"
-        isActive={QuestionCategory.HIGH_REWARD === currentSort}
-        value={QuestionCategory.HIGH_REWARD}
-        onPress={onChangeTab}
-      />
-      <QuestionSortTab
-        label="RESOLVED"
-        isActive={QuestionCategory.RESOLVED === currentSort}
-        value={QuestionCategory.RESOLVED}
-        onPress={onChangeTab}
-      />
-    </Box>
-  );
-};
 
 const sortQuestions = (questions: Question[], sort: QuestionCategory) => {
   switch (sort) {
@@ -225,7 +167,30 @@ export const QuestionList = () => {
           </Heading>
         </Box>
         <Box paddingBottom={40}>
-          <QuestionSortTabs onChangeTab={setSort} currentSort={sort} />
+          <Tabs
+            // eslint-disable-next-line
+            // @ts-ignore: we know that only QuestionCategory is passed in
+            onChangeTab={setSort}
+            currentValue={sort}
+            tabs={[
+              {
+                label: 'LATEST',
+                value: QuestionCategory.LATEST,
+              },
+              {
+                label: 'CLOSING SOON',
+                value: QuestionCategory.CLOSING_SOON,
+              },
+              {
+                label: 'HIGH REWARD',
+                value: QuestionCategory.HIGH_REWARD,
+              },
+              {
+                label: 'RESOLVED',
+                value: QuestionCategory.RESOLVED,
+              },
+            ]}
+          />
         </Box>
         <Container>
           <Row>
@@ -241,7 +206,6 @@ export const QuestionList = () => {
           </Row>
         </Container>
       </Box>
-      <Route path="/question/:questionId" component={QuestionDetailsDialog} />
     </Background>
   );
 };

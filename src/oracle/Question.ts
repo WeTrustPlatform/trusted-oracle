@@ -1,7 +1,12 @@
-import TEMPLATE_CONFIG from '@realitio/realitio-contracts/config/templates.json';
 import BigNumber from 'bn.js';
 import { isAfter, isBefore } from 'date-fns';
 
+import {
+  getTemplates,
+  NewAnswerEvent,
+  NewQuestionEvent,
+  QuestionJson,
+} from './OracleData';
 import { QuestionUtils } from './QuestionUtils';
 
 export const INITIAL_BLOCKS = {
@@ -11,54 +16,6 @@ export const INITIAL_BLOCKS = {
   42: 10350865,
   1337: 0,
 } as const;
-
-export interface QuestionTemplates {
-  0: string;
-  1: string;
-  2: string;
-  3: string;
-  4: string;
-}
-
-const getTemplates = (): QuestionTemplates => {
-  return TEMPLATE_CONFIG.content;
-};
-
-export interface QuestionJson {
-  title: string;
-  type: string;
-  category: string;
-  lang: string;
-}
-
-export interface NewQuestionEventArgs {
-  arbitrator: string;
-  content_hash: string;
-  created: BigNumber;
-  nonce: BigNumber;
-  opening_ts: BigNumber;
-  question: string;
-  question_id: string;
-  template_id: BigNumber;
-  timeout: BigNumber;
-  user: string;
-}
-
-export interface NewQuestionEvent {
-  args: NewQuestionEventArgs;
-  address: string;
-  blockHash: string;
-  blockNumber: number;
-  event: string;
-  id: string;
-  logIndex: number;
-  raw: any;
-  removed: false;
-  returnValues: any;
-  signature: string;
-  transactionHash: string;
-  transactionIndex: number;
-}
 
 export interface QuestionFromContract {
   content_hash: string;
@@ -78,7 +35,6 @@ export interface QuestionFromNewQuestionEvent {
   arbitrator: string;
   nonce: BigNumber;
   createdAtDate: Date;
-  createdAtBlock: number;
   createdBy: string;
   contentHash: string;
   questionTitle: string;
@@ -137,14 +93,13 @@ export const toDate = (bigNumber: BigNumber) => {
 export const transformNewQuestionEventToQuestion = (
   event: NewQuestionEvent,
 ): QuestionFromNewQuestionEvent => {
-  const { args, blockNumber } = event;
+  const { args } = event;
 
   return {
     id: args.question_id,
     arbitrator: args.arbitrator,
     nonce: args.nonce,
     createdAtDate: toDate(args.created),
-    createdAtBlock: blockNumber,
     createdBy: args.user,
     contentHash: args.content_hash,
     questionTitle: args.question,
@@ -227,20 +182,6 @@ export const toQuestion = (
     answers,
   };
 };
-
-export interface NewAnswerEventArgs {
-  answer: string;
-  bond: BigNumber;
-  history_hash: string;
-  is_commitment: boolean;
-  question_id: string;
-  ts: BigNumber;
-  user: string;
-}
-
-export interface NewAnswerEvent {
-  args: NewAnswerEventArgs;
-}
 
 export interface Answer {
   answer: string;

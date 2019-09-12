@@ -1,39 +1,23 @@
 import { Box, Text, ThemeContext } from 'paramount-ui';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Image, TouchableOpacity } from 'react-native';
+import { withRouter } from 'react-router';
 
-import { config } from '../config';
-import { networkIdToNameMap, trimAddress } from '../ethereum/EthUtils';
+import { trimAddress } from '../ethereum/EthUtils';
 import { useWeb3Dialogs } from '../ethereum/Web3DialogsProvider';
 import { useWeb3 } from '../ethereum/Web3Provider';
 
-export const BlockchainAccountStatus = () => {
-  const { account, hasWallet, networkId } = useWeb3();
-  const {
-    setShowRequireMetamaskSetup,
-    setShowRequireWalletSignIn,
-  } = useWeb3Dialogs();
-  const isConnected = account && networkId === config.networkId && hasWallet;
+export const BlockchainAccountStatus = withRouter(props => {
+  const { history } = props;
+  const { account, hasWallet, web3IsLoading } = useWeb3();
+  const { ensureHasConnected } = useWeb3Dialogs();
   const theme = React.useContext(ThemeContext);
 
-  React.useEffect(() => {
-    if (account) {
-      setShowRequireWalletSignIn(false);
-    }
-  }, [account, setShowRequireWalletSignIn]);
-
   const handlePress = React.useCallback(() => {
-    if (!hasWallet) {
-      setShowRequireMetamaskSetup(true);
-    } else if (!account) {
-      setShowRequireWalletSignIn(true);
+    if (ensureHasConnected()) {
+      history.push('/my-account');
     }
-  }, [
-    hasWallet,
-    account,
-    setShowRequireWalletSignIn,
-    setShowRequireMetamaskSetup,
-  ]);
+  }, [hasWallet, account]);
 
   return (
     <TouchableOpacity onPress={handlePress}>
@@ -49,26 +33,30 @@ export const BlockchainAccountStatus = () => {
         alignItems="center"
         borderColor={theme.colors.border.default}
       >
-        {isConnected && (
+        {account && (
           <Box paddingRight={16}>
-            <img
-              width={16}
-              height={16}
-              src="/metamask-account-icon.svg"
-              alt="metamask account icon"
+            <Image
+              source={{
+                uri: require('../assets/images/metamask-account-icon.svg'),
+                height: 16,
+                width: 16,
+              }}
+              accessibilityLabel="metamask account icon"
             />
           </Box>
         )}
         <Box>
           <Text size="small">
-            {hasWallet
-              ? isConnected && account
+            {web3IsLoading
+              ? 'Loading...'
+              : hasWallet
+              ? account
                 ? trimAddress(account)
-                : `Connect to ${networkIdToNameMap[config.networkId]}`
-              : `Not connected`}
+                : `Sign in your wallet`
+              : `Connect to a wallet`}
           </Text>
         </Box>
       </Box>
     </TouchableOpacity>
   );
-};
+});

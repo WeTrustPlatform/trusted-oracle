@@ -162,7 +162,7 @@ const binaryAnswerMap = {
     '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
 } as const;
 
-const toBinaryAnswer = (answer: string) => {
+export const toBinaryAnswer = (answer: string) => {
   switch (answer) {
     case binaryAnswerMap[BooleanAnswer.NO]:
       return BooleanAnswer.NO;
@@ -180,7 +180,7 @@ interface QuestionAnswerCardProps {
   answer: Answer;
 }
 
-const useAnswerColor = () => {
+export const useAnswerColor = () => {
   return (answer: Answer) => {
     if (answer.answer === binaryAnswerMap[BooleanAnswer.YES]) {
       return '#17874f';
@@ -277,13 +277,13 @@ export const QuestionAnswers = (props: QuestionBasicProps) => {
       <Background pattern="dotted">
         <Box paddingHorizontal={60}>
           {previousAnswers.map((answer, index) => (
-            <>
+            <Box key={String(answer.bond)}>
               <QuestionAnswerCard
                 answer={answer}
                 order={<Text weight="bold">ANSWER #{index + 1}:</Text>}
               />
               {index !== previousAnswers.length - 1 && <Divider />}
-            </>
+            </Box>
           ))}
         </Box>
       </Background>

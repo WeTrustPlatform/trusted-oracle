@@ -2,11 +2,14 @@ import React from 'react';
 import { useAsync } from 'react-use';
 
 import { useWeb3 } from '../ethereum/Web3Provider';
+import {
+  NewAnswerEvent,
+  NewQuestionEvent,
+  OracleEventType,
+} from './OracleData';
 import { useOracle } from './OracleProvider';
 import {
   INITIAL_BLOCKS,
-  NewAnswerEvent,
-  NewQuestionEvent,
   Question,
   QuestionFromContract,
   toAnswer,
@@ -30,7 +33,7 @@ export const useFetchQuestionQuery = () => {
       }
 
       const newQuestionsEvents = (await realitio.getPastEvents(
-        'LogNewQuestion',
+        OracleEventType.LogNewQuestion,
         {
           fromBlock: initialBlock,
           toBlock: 'latest',
@@ -55,15 +58,18 @@ export const useFetchQuestionQuery = () => {
       );
 
       const questionFromContract = (await realitio.questions.call(
-        questionId,
+        newQuestionEvent.args.question_id,
       )) as QuestionFromContract;
 
-      const answerEvents = (await realitio.getPastEvents('LogNewAnswer', {
-        fromBlock: initialBlock,
-        toBlock: 'latest',
-        // eslint-disable-next-line
-        filter: { question_id: questionId },
-      })) as NewAnswerEvent[];
+      const answerEvents = (await realitio.getPastEvents(
+        OracleEventType.LogNewAnswer,
+        {
+          fromBlock: initialBlock,
+          toBlock: 'latest',
+          // eslint-disable-next-line
+          filter: { question_id: newQuestionEvent.args.question_id },
+        },
+      )) as NewAnswerEvent[];
 
       return toQuestion(
         questionBase,
