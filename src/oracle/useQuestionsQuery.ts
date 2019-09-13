@@ -39,25 +39,24 @@ const reducer = (state: State, action: Action) => {
 };
 
 export const useQuestionsQuery = () => {
-  const { networkId, web3IsLoading } = useWeb3();
-  const { loading: oracleIsLoading, realitio } = useOracle();
+  const { networkId } = useWeb3();
+  const { realitio } = useOracle();
   const fetchQuestion = useFetchQuestionQuery();
   const initialBlock = INITIAL_BLOCKS[networkId];
   const [state, dispatch] = React.useReducer(reducer, initialState);
-  const { incrementIndex, questions, toBlock, loading } = state;
   const fetchBlock = useFetchBlock();
 
   useAsync(async () => {
-    if (web3IsLoading) return;
-
+    const { toBlock } = state;
     const latestBlock = await fetchBlock('latest');
     if (!toBlock) {
       dispatch({ type: 'update', payload: { toBlock: latestBlock.number } });
     }
-  }, [oracleIsLoading, web3IsLoading]);
+  }, [fetchBlock, state]);
 
   React.useEffect(() => {
-    if (oracleIsLoading || web3IsLoading) return;
+    const { incrementIndex, questions, toBlock } = state;
+
     if (!realitio && toBlock) return;
 
     const fetchQuestions = async () => {
@@ -98,19 +97,10 @@ export const useQuestionsQuery = () => {
     };
 
     fetchQuestions();
-  }, [
-    oracleIsLoading,
-    web3IsLoading,
-    incrementIndex,
-    questions,
-    toBlock,
-    loading,
-    realitio,
-    initialBlock,
-  ]);
+  }, [state, realitio, fetchQuestion, initialBlock]);
 
   return {
-    questions,
-    loading,
+    questions: state.questions,
+    loading: state.loading,
   };
 };

@@ -3,7 +3,7 @@ import React from 'react';
 import { useWeb3 } from './Web3Provider';
 
 export const useFetchBlock = () => {
-  const { web3, web3IsLoading } = useWeb3();
+  const { web3 } = useWeb3();
 
   const fetchBlock = React.useCallback(
     async (blockNumber: number | 'latest') => {
@@ -11,7 +11,7 @@ export const useFetchBlock = () => {
 
       return block;
     },
-    [web3IsLoading, web3],
+    [web3],
   );
 
   return fetchBlock;

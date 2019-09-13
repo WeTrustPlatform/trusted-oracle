@@ -1,9 +1,10 @@
 import BigNumber from 'bn.js';
 import React from 'react';
-import { useAsync, useAsyncFn } from 'react-use';
+import { useAsync } from 'react-use';
 
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { Question, QuestionState } from '../oracle/Question';
+import { AsyncResult } from '../types/AsyncResult';
 
 const useMakeQuestionClaim = () => {
   const { account } = useWeb3();
@@ -117,7 +118,7 @@ export interface ClaimArguments {
 const useFetchClaimsQuery = (questions: Question[]) => {
   const makeQuestionClaim = useMakeQuestionClaim();
 
-  const [_, fetch] = useAsyncFn(async () => {
+  const fetch = React.useCallback(async () => {
     let claimable = new BigNumber(0);
 
     const claimArguments: ClaimArguments = {
@@ -153,36 +154,31 @@ const useFetchClaimsQuery = (questions: Question[]) => {
 
 export const useClaimsQuery = (questions: Question[]) => {
   const fetchClaims = useFetchClaimsQuery(questions);
-  const [claims, setClaims] = React.useState<{
-    claimArguments: ClaimArguments;
-    claimable: BigNumber;
-  }>({
-    claimArguments: {
-      questionIds: [],
-      answerLengths: [],
-      answers: [],
-      answerers: [],
-      bonds: [],
-      historyHashes: [],
+  const [result, setResult] = React.useState<
+    AsyncResult<{
+      claimArguments: ClaimArguments;
+      claimable: BigNumber;
+    }>
+  >({
+    loading: true,
+    data: {
+      claimArguments: {
+        questionIds: [],
+        answerLengths: [],
+        answers: [],
+        answerers: [],
+        bonds: [],
+        historyHashes: [],
+      },
+      claimable: new BigNumber(0),
     },
-    claimable: new BigNumber(0),
   });
 
-  const { loading } = useAsync(async () => {
-    const result = await fetchClaims();
+  useAsync(async () => {
+    const value = await fetchClaims();
 
-    setClaims(result);
-  }, [questions]);
+    setResult({ loading: false, data: value });
+  }, [questions, fetchClaims]);
 
-  const refetch = React.useCallback(async () => {
-    const result = await fetchClaims();
-
-    setClaims(result);
-  }, [questions]);
-
-  return {
-    data: claims,
-    loading,
-    refetch,
-  };
+  return result;
 };

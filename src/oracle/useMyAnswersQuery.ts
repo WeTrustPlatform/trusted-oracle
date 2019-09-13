@@ -3,6 +3,7 @@ import React from 'react';
 import { useAsync, useAsyncFn } from 'react-use';
 
 import { useWeb3 } from '../ethereum/Web3Provider';
+import { AsyncResult } from '../types/AsyncResult';
 import { NewAnswerEvent, OracleEventType } from './OracleData';
 import { useOracle } from './OracleProvider';
 import { INITIAL_BLOCKS, Question } from './Question';
@@ -14,8 +15,8 @@ const useFetchMyAnswersQuery = () => {
   const fetchQuestion = useFetchQuestionQuery();
   const initialBlock = INITIAL_BLOCKS[networkId];
 
-  const [state, fetch] = useAsyncFn(async () => {
-    if (!realitio) throw new Error('Expected realitio');
+  const [_, fetch] = useAsyncFn(async () => {
+    if (!realitio) return [];
 
     const events = (await realitio.getPastEvents(OracleEventType.LogNewAnswer, {
       fromBlock: initialBlock,
@@ -36,31 +37,17 @@ const useFetchMyAnswersQuery = () => {
 };
 
 export const useMyAnswersQuery = () => {
-  const { realitio, loading: oracleLoading } = useOracle();
   const fetchMyAnswers = useFetchMyAnswersQuery();
-  const [answeredQuestions, setAnsweredQuestions] = React.useState<Question[]>(
-    [],
-  );
+  const [result, setResult] = React.useState<AsyncResult<Question[]>>({
+    loading: true,
+    data: [],
+  });
 
-  const { loading } = useAsync(async () => {
-    if (realitio) {
-      const value = await fetchMyAnswers();
+  useAsync(async () => {
+    const value = await fetchMyAnswers();
 
-      setAnsweredQuestions(value);
-    }
-  }, [realitio]);
+    setResult({ data: value, loading: false });
+  }, [fetchMyAnswers]);
 
-  const [{ loading: refetchLoading }, refetch] = useAsyncFn(async () => {
-    if (realitio) {
-      const value = await fetchMyAnswers();
-
-      setAnsweredQuestions(value);
-    }
-  }, [realitio]);
-
-  return {
-    loading: loading || oracleLoading || refetchLoading,
-    data: answeredQuestions,
-    refetch,
-  };
+  return result;
 };

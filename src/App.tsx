@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { CustomDialog } from './components/CustomDialog';
 import { MyAccount } from './components/MyAccount';
 import { NavigationBar } from './components/NavigationBar';
+import { Notifications } from './components/Notifications';
 import { CurrencyProvider } from './ethereum/CurrencyProvider';
 import { Web3DialogsProvider } from './ethereum/Web3DialogsProvider';
 import { Web3Provider } from './ethereum/Web3Provider';
@@ -33,6 +34,20 @@ const QuestionDetailsDialog = (
   return (
     <CustomDialog history={history}>
       <QuestionDetails questionId={match.params.questionId} />
+    </CustomDialog>
+  );
+};
+
+const NotificationsDialog = (
+  props: RouteChildrenProps<{ questionId: string }>,
+) => {
+  const { history, match } = props;
+
+  if (!match) return null;
+
+  return (
+    <CustomDialog history={history}>
+      <Notifications />
     </CustomDialog>
   );
 };
@@ -90,11 +105,15 @@ export const App = () => {
           <ToastProvider>
             <Web3Provider>
               <Web3DialogsProvider>
-                <CurrencyProvider initialCurrency="TRST">
+                <CurrencyProvider initialCurrency="ETH">
                   <OracleProvider>
                     <NavigationBar />
                     <Route path="/" component={Home} />
                     <Route path="/my-account" component={MyAccountDialog} />
+                    <Route
+                      path="/notifications"
+                      component={NotificationsDialog}
+                    />
                     <Route
                       path="/question/:questionId"
                       component={QuestionDetailsDialog}

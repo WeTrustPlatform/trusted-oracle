@@ -1,16 +1,8 @@
 import BigNumber from 'bn.js';
-import {
-  Box,
-  Column,
-  Container,
-  Heading,
-  Icon,
-  Row,
-  Text,
-  useTheme,
-} from 'paramount-ui';
+import { Box, Column, Container, Heading, Row, Text } from 'paramount-ui';
 import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
+import { withRouter } from 'react-router';
 import { useAsyncFn } from 'react-use';
 
 import { useCurrency } from '../ethereum/CurrencyProvider';
@@ -18,31 +10,26 @@ import { formatCurrency } from '../ethereum/CurrencyUtils';
 import { useBalanceQuery } from '../ethereum/useBalanceQuery';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from '../oracle/OracleProvider';
-import { Question } from '../oracle/Question';
 import { QuestionCard } from '../oracle/QuestionList';
-import { ClaimArguments, useClaimsQuery } from '../oracle/useClaimsQuery';
+import { useClaimsQuery } from '../oracle/useClaimsQuery';
 import { useMyAnswersQuery } from '../oracle/useMyAnswersQuery';
 import { useMyQuestionsQuery } from '../oracle/useMyQuestionsQuery';
 import { useNotificationsQuery } from '../oracle/useNotificationsQuery';
 import { Background } from './Background';
 import { Tabs } from './CustomTabs';
 
-enum MyAccountTab {
-  QUESTION = 'QUESTION',
-  ANSWER = 'ANSWER',
-}
-
-interface ClaimableProps {
-  claimable: BigNumber;
-  claimArguments: ClaimArguments;
-  refetch: () => Promise<void>;
-}
-
-const Claimable = (props: ClaimableProps) => {
-  const { claimable, claimArguments } = props;
+const Claimable = () => {
   const { realitio } = useOracle();
   const { currency } = useCurrency();
   const { account } = useWeb3();
+  const {
+    data: answeredQuestions,
+    loading: answersLoading,
+  } = useMyAnswersQuery();
+  const {
+    data: { claimArguments, claimable },
+    loading: claimsLoading,
+  } = useClaimsQuery(answeredQuestions);
 
   const [{ loading }, handleClaim] = useAsyncFn(async () => {
     // estimateGas gives us a number that credits the eventual storage refund.
@@ -68,6 +55,7 @@ const Claimable = (props: ClaimableProps) => {
     );
   }, [account, realitio, claimArguments]);
 
+  if (claimsLoading || answersLoading) return null;
   if (claimable.eq(new BigNumber(0))) return null;
 
   return (
@@ -85,13 +73,14 @@ const Claimable = (props: ClaimableProps) => {
   );
 };
 
-interface NotificationsPreviewProps {
-  notifications: React.ReactElement[];
-  onPressSeeAllNotifications: () => void;
-}
+const NotificationPreview = withRouter(props => {
+  const { history } = props;
+  const {
+    data: notifications,
+    loading: notificationsLoading,
+  } = useNotificationsQuery();
 
-const NotificationPreview = (props: NotificationsPreviewProps) => {
-  const { notifications, onPressSeeAllNotifications } = props;
+  if (notificationsLoading) return <Text>Loading...</Text>;
 
   return (
     <Box>
@@ -99,39 +88,45 @@ const NotificationPreview = (props: NotificationsPreviewProps) => {
         <Text weight="bold" color="primary">
           Latest activity
         </Text>
-        <TouchableOpacity onPress={onPressSeeAllNotifications}>
+        <TouchableOpacity onPress={() => history.replace('/notifications')}>
           <Text color="secondary">See all</Text>
         </TouchableOpacity>
       </Box>
-      {notifications.map((notification, index) => (
+      {notifications.slice(0, 1).map((notification, index) => (
         <Box key={index}>{notification}</Box>
       ))}
     </Box>
   );
+});
+
+const Balance = () => {
+  const { currency } = useCurrency();
+  const { data: balance, loading: balanceLoading } = useBalanceQuery();
+
+  if (balanceLoading) return <Text>Loading...</Text>;
+
+  return (
+    <Text color="primary" weight="bold">
+      Your balance: {formatCurrency(balance, currency)} {currency}
+    </Text>
+  );
 };
 
-interface MainProps extends NotificationsPreviewProps, ClaimableProps {
-  tab: MyAccountTab;
-  setTab: (tab: MyAccountTab) => void;
-  questions: Question[];
-  answeredQuestions: Question[];
-  balance: BigNumber;
+enum MyAccountTab {
+  QUESTION = 'QUESTION',
+  ANSWER = 'ANSWER',
 }
 
-const Main = (props: MainProps) => {
+export const MyAccount = () => {
+  const [tab, setTab] = React.useState(MyAccountTab.QUESTION);
+
   const {
-    questions,
-    balance,
-    answeredQuestions,
-    tab,
-    notifications,
-    setTab,
-    onPressSeeAllNotifications,
-    claimArguments,
-    claimable,
-    refetch,
-  } = props;
-  const { currency } = useCurrency();
+    data: answeredQuestions,
+    loading: answersLoading,
+  } = useMyAnswersQuery();
+  const { data: questions, loading: questionsLoading } = useMyQuestionsQuery();
+
+  if (questionsLoading || answersLoading) return <Text>Loading...</Text>;
 
   return (
     <Box>
@@ -147,21 +142,12 @@ const Main = (props: MainProps) => {
           flexDirection="row"
           justifyContent="space-between"
         >
-          <Text color="primary" weight="bold">
-            Your balance: {formatCurrency(balance, currency)} {currency}
-          </Text>
-          <Claimable
-            refetch={refetch}
-            claimArguments={claimArguments}
-            claimable={claimable}
-          />
+          <Balance />
+          <Claimable />
         </Box>
       </Background>
       <Box paddingHorizontal={60} paddingVertical={24}>
-        <NotificationPreview
-          notifications={notifications.slice(0, 1)}
-          onPressSeeAllNotifications={onPressSeeAllNotifications}
-        />
+        <NotificationPreview />
       </Box>
       <Background pattern="dotted">
         <Box paddingHorizontal={60}>
@@ -199,115 +185,6 @@ const Main = (props: MainProps) => {
           </Container>
         </Box>
       </Background>
-    </Box>
-  );
-};
-
-interface AllNotificationsProps {
-  notifications: React.ReactElement[];
-  onClose: () => void;
-}
-
-const AllNotifications = (props: AllNotificationsProps) => {
-  const { notifications, onClose } = props;
-  const theme = useTheme();
-
-  return (
-    <Box>
-      <Box paddingTop={40} paddingLeft={16} alignItems="flex-start">
-        <TouchableOpacity onPress={onClose}>
-          <View style={{ width: 40, height: 40 }}>
-            <Icon
-              size={24}
-              name="arrow-left"
-              color={theme.colors.text.primary}
-            />
-          </View>
-        </TouchableOpacity>
-      </Box>
-      <Box paddingBottom={16} paddingHorizontal={60}>
-        <Heading align="center" color="primary" size="xxlarge">
-          NOTIFICATIONS
-        </Heading>
-      </Box>
-      <Background pattern="dotted">
-        <Box paddingHorizontal={60}>
-          <Container>
-            <Row>
-              {notifications.map((notification, index) => (
-                <Column key={index}>
-                  <Box paddingBottom={24}>{notification}</Box>
-                </Column>
-              ))}
-            </Row>
-          </Container>
-        </Box>
-      </Background>
-    </Box>
-  );
-};
-
-export const MyAccount = () => {
-  const [tab, setTab] = React.useState(MyAccountTab.QUESTION);
-  const {
-    data: notifications,
-    loading: notificationsLoading,
-  } = useNotificationsQuery();
-  const {
-    data: answeredQuestions,
-    loading: answersLoading,
-    refetch: refetchMyAnswers,
-  } = useMyAnswersQuery();
-  const { data: questions, loading: questionsLoading } = useMyQuestionsQuery();
-  const {
-    data: balance,
-    loading: balanceLoading,
-    refetch: refetchBalance,
-  } = useBalanceQuery();
-  const [seeAllNotifications, setSeeAllNotifications] = React.useState(false);
-  const {
-    data: { claimArguments, claimable },
-    loading: claimsLoading,
-    refetch: refetchClaims,
-  } = useClaimsQuery(answeredQuestions);
-
-  const refetch = React.useCallback(async () => {
-    await refetchMyAnswers(); // this will also trigger claims refetch
-    await refetchBalance();
-  }, [refetchBalance, refetchClaims]);
-
-  if (
-    notificationsLoading ||
-    answersLoading ||
-    questionsLoading ||
-    balanceLoading ||
-    claimsLoading
-  ) {
-    return <Text>Loading...</Text>;
-  }
-
-  return (
-    <Box>
-      {!seeAllNotifications && (
-        <Main
-          tab={tab}
-          setTab={setTab}
-          onPressSeeAllNotifications={() => setSeeAllNotifications(true)}
-          notifications={notifications}
-          questions={questions}
-          answeredQuestions={answeredQuestions}
-          balance={balance}
-          claimArguments={claimArguments}
-          claimable={claimable}
-          refetch={refetch}
-        />
-      )}
-      {seeAllNotifications && (
-        <AllNotifications
-          notifications={notifications}
-          onClose={() => setSeeAllNotifications(false)}
-        />
-      )}
     </Box>
   );
 };
