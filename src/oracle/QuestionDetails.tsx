@@ -97,21 +97,21 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
         </Box>
         <QuestionBadge question={question} refetch={refetch} />
       </Box>
-      {question.state !== QuestionState.FINALIZED && (
+      {question.state === QuestionState.OPEN && (
         <Box paddingVertical={16} paddingHorizontal={60}>
           <QuestionAddReward question={question} refetch={refetch} />
         </Box>
       )}
       <QuestionAnswers question={question} />
 
-      {question.state !== QuestionState.FINALIZED && (
+      {question.state === QuestionState.OPEN && (
         <Background pattern="textured">
           <Box paddingVertical={24} paddingHorizontal={60}>
             <QuestionPostAnswer question={question} refetch={refetch} />
           </Box>
         </Background>
       )}
-      {question.state !== QuestionState.FINALIZED && (
+      {question.state === QuestionState.OPEN && (
         <Background pattern="dotted">
           <Box paddingVertical={40} paddingHorizontal={60}>
             <QuestionApplyForArbitration
