@@ -17,7 +17,6 @@ import {
   useTheme,
 } from 'paramount-ui';
 import React from 'react';
-import { useAsync } from 'react-use';
 
 import { Background } from '../components/Background';
 import { CTAButton } from '../components/CTAButton';
@@ -28,6 +27,7 @@ import { useWeb3Dialogs } from '../ethereum/Web3DialogsProvider';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from './OracleProvider';
 import { Answer, Question, QuestionState, QuestionType } from './Question';
+import { useQuestionsCache } from './QuestionsCacheProvider';
 import { useQuestionQuery } from './useQuestionQuery';
 
 interface QuestionDetailsProps {
@@ -36,7 +36,7 @@ interface QuestionDetailsProps {
 
 export const QuestionDetails = (props: QuestionDetailsProps) => {
   const { questionId } = props;
-  const { data: question, loading, refetch } = useQuestionQuery(questionId);
+  const { data: question, loading } = useQuestionQuery(questionId);
 
   if (loading) {
     return (
@@ -68,7 +68,7 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
         justifyContent="space-between"
       >
         <QuestionTooltip question={question} />
-        <QuestionSummary question={question} refetch={refetch} />
+        <QuestionSummary question={question} />
       </Box>
       <Box paddingBottom={24} paddingHorizontal={60}>
         <Text
@@ -95,11 +95,11 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
           </Box>
           <QuestionPostedDate question={question} />
         </Box>
-        <QuestionBadge question={question} refetch={refetch} />
+        <QuestionBadge question={question} />
       </Box>
       {question.state === QuestionState.OPEN && (
         <Box paddingVertical={16} paddingHorizontal={60}>
-          <QuestionAddReward question={question} refetch={refetch} />
+          <QuestionAddReward question={question} />
         </Box>
       )}
       <QuestionAnswers question={question} />
@@ -107,17 +107,14 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
       {question.state === QuestionState.OPEN && (
         <Background pattern="textured">
           <Box paddingVertical={24} paddingHorizontal={60}>
-            <QuestionPostAnswer question={question} refetch={refetch} />
+            <QuestionPostAnswer question={question} />
           </Box>
         </Background>
       )}
       {question.state === QuestionState.OPEN && (
         <Background pattern="dotted">
           <Box paddingVertical={40} paddingHorizontal={60}>
-            <QuestionApplyForArbitration
-              question={question}
-              refetch={refetch}
-            />
+            <QuestionApplyForArbitration question={question} />
           </Box>
         </Background>
       )}
@@ -139,12 +136,8 @@ const isSupported = (question: Question) => {
   return question.type === QuestionType.BINARY;
 };
 
-export interface QuestionBasicProps {
+export interface QuestionProps {
   question: Question;
-}
-
-export interface QuestionProps extends QuestionBasicProps {
-  refetch: () => Promise<void>;
 }
 
 enum BooleanAnswer {
@@ -234,7 +227,7 @@ const QuestionAnswerCard = (props: QuestionAnswerCardProps) => {
   );
 };
 
-export const QuestionAnswers = (props: QuestionBasicProps) => {
+export const QuestionAnswers = (props: QuestionProps) => {
   const { question } = props;
   const { answers } = question;
 
@@ -292,10 +285,11 @@ export const QuestionAnswers = (props: QuestionBasicProps) => {
 };
 
 export const QuestionAddReward = (props: QuestionProps) => {
-  const { question, refetch } = props;
+  const { question } = props;
   const [isOpen, setIsOpen] = React.useState(false);
   const { realitio } = useOracle();
   const { currency, approve } = useCurrency();
+  const { refetch } = useQuestionsCache();
   const { account } = useWeb3();
   const { ensureHasConnected } = useWeb3Dialogs();
   const theme = useTheme();
@@ -341,7 +335,7 @@ export const QuestionAddReward = (props: QuestionProps) => {
             });
           }
 
-          await refetch();
+          await refetch(question.id);
           resetForm();
         } catch (error) {
           console.log(error);
@@ -395,11 +389,12 @@ export const QuestionAddReward = (props: QuestionProps) => {
 };
 
 export const QuestionPostAnswer = (props: QuestionProps) => {
-  const { question, refetch } = props;
+  const { question } = props;
   const theme = useTheme();
   const { realitio } = useOracle();
   const { account } = useWeb3();
   const { currency, approve } = useCurrency();
+  const { refetch } = useQuestionsCache();
   const { ensureHasConnected } = useWeb3Dialogs();
 
   const {
@@ -473,7 +468,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
           }
 
           resetForm();
-          await refetch();
+          await refetch(question.id);
         } catch (error) {
           console.log(error);
         }
@@ -612,41 +607,24 @@ export const QuestionBadge = (props: QuestionProps) => {
 
 export const QuestionApplyForArbitration = (props: QuestionProps) => {
   const { question } = props;
-  const { arbitratorContract } = useOracle();
   const { currency } = useCurrency();
-
-  const { loading, value: disputeFee } = useAsync(async () => {
-    if (!arbitratorContract) throw new Error('Expected arbitrator contract');
-
-    const arbitrator = await arbitratorContract.at(question.arbitrator);
-    const disputeFee = (await arbitrator.getDisputeFee.call(
-      question.id,
-    )) as BigNumber;
-
-    return disputeFee;
-  }, [arbitratorContract]);
 
   return (
     <Box>
       <Box paddingBottom={16} alignItems="center">
-        <CTAButton
-          isLoading={loading}
-          appearance="outline"
-          title={loading ? 'Loading dispute fee' : 'Apply for arbitration'}
-        />
+        <CTAButton appearance="outline" title="Apply for arbitration" />
       </Box>
-      {disputeFee && (
-        <Box>
-          <Text size="small" isItalic align="center">
-            *Applying fee: {formatCurrency(disputeFee, currency)} {currency}
-          </Text>
-        </Box>
-      )}
+      <Box>
+        <Text size="small" isItalic align="center">
+          *Applying fee: {formatCurrency(question.disputeFee, currency)}{' '}
+          {currency}
+        </Text>
+      </Box>
     </Box>
   );
 };
 
-export const QuestionPostedDate = (props: QuestionBasicProps) => {
+export const QuestionPostedDate = (props: QuestionProps) => {
   const { question } = props;
 
   return (
@@ -664,7 +642,7 @@ export const QuestionPostedDate = (props: QuestionBasicProps) => {
   );
 };
 
-export const QuestionReward = (props: QuestionBasicProps) => {
+export const QuestionReward = (props: QuestionProps) => {
   const { question } = props;
   const { currency } = useCurrency();
 
@@ -683,7 +661,7 @@ export const QuestionReward = (props: QuestionBasicProps) => {
   );
 };
 
-export const QuestionTooltip = (props: QuestionBasicProps) => {
+export const QuestionTooltip = (props: QuestionProps) => {
   return <Icon name="alert-circle" color="default" />;
 };
 

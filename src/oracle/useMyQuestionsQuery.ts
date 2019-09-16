@@ -1,53 +1,38 @@
 import React from 'react';
-import { useAsync, useAsyncFn } from 'react-use';
+import { useAsync } from 'react-use';
 
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { NewQuestionEvent, OracleEventType } from '../oracle/OracleData';
 import { useOracle } from '../oracle/OracleProvider';
-import { INITIAL_BLOCKS, Question } from '../oracle/Question';
-import { useFetchQuestionQuery } from '../oracle/useQuestionQuery';
+import { Question } from '../oracle/Question';
 import { AsyncResult } from '../types/AsyncResult';
-
-const useFetchMyQuestionsQuery = () => {
-  const { networkId, account } = useWeb3();
-  const { realitio } = useOracle();
-  const fetchQuestion = useFetchQuestionQuery();
-  const initialBlock = INITIAL_BLOCKS[networkId];
-
-  const [_, fetch] = useAsyncFn(async () => {
-    if (!realitio) return [];
-
-    const events = (await realitio.getPastEvents(
-      OracleEventType.LogNewQuestion,
-      {
-        fromBlock: initialBlock,
-        toBlock: 'latest',
-        filter: { user: account },
-      },
-    )) as NewQuestionEvent[];
-
-    const questions = await Promise.all(
-      events.map(async event => fetchQuestion(event.args.question_id)),
-    );
-
-    return questions.filter(Boolean) as Question[];
-  }, [realitio]);
-
-  return fetch;
-};
+import { useQuestionsCache } from './QuestionsCacheProvider';
 
 export const useMyQuestionsQuery = () => {
-  const fetchMyQuestions = useFetchMyQuestionsQuery();
+  const { account } = useWeb3();
+  const { realitio, initialBlockNumber } = useOracle();
+  const { getManyByIds } = useQuestionsCache();
   const [result, setResult] = React.useState<AsyncResult<Question[]>>({
     loading: true,
     data: [],
   });
 
   useAsync(async () => {
-    const value = await fetchMyQuestions();
+    const events = (await realitio.getPastEvents(
+      OracleEventType.LogNewQuestion,
+      {
+        fromBlock: initialBlockNumber,
+        toBlock: 'latest',
+        filter: { user: account },
+      },
+    )) as NewQuestionEvent[];
 
-    setResult({ data: value, loading: false });
-  }, [fetchMyQuestions]);
+    const questions = await getManyByIds(
+      events.map(event => event.args.question_id),
+    );
+
+    setResult({ data: questions, loading: false });
+  }, [realitio, initialBlockNumber, getManyByIds]);
 
   return result;
 };

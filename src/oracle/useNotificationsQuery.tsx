@@ -11,8 +11,8 @@ import { useFetchBlock } from '../ethereum/useBlockQuery';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { OracleEvent, OracleEventType } from '../oracle/OracleData';
 import { useOracle } from '../oracle/OracleProvider';
-import { INITIAL_BLOCKS, toDate } from '../oracle/Question';
-import { useFetchQuestionQuery } from '../oracle/useQuestionQuery';
+import { toDate } from '../oracle/Question';
+import { useFetchQuestionQuery } from './QuestionsCacheProvider';
 
 const timeAgo = (dateOrBlock: Date | Block) => {
   const date =
@@ -47,17 +47,22 @@ const Notification = (props: NotificationProps) => {
   );
 };
 
-export const useNotificationsQuery = () => {
-  const { networkId, account, web3IsLoading } = useWeb3();
-  const { realitio, loading: oracleLoading } = useOracle();
+export interface UseNotificationsQuery {
+  // TODO:
+  first?: number;
+}
+
+export const useNotificationsQuery = (props: UseNotificationsQuery = {}) => {
+  const { first } = props;
+  const { account, web3IsLoading } = useWeb3();
+  const { realitio, loading: oracleLoading, initialBlockNumber } = useOracle();
   const { currency, isCurrencyLoading } = useCurrency();
   const fetchQuestion = useFetchQuestionQuery();
-  const initialBlock = INITIAL_BLOCKS[networkId];
   const fetchBlock = useFetchBlock();
 
   const { loading, value } = useAsync(async () => {
     const events = (await realitio.getPastEvents('allEvents', {
-      fromBlock: initialBlock,
+      fromBlock: initialBlockNumber,
       toBlock: 'latest',
     })) as OracleEvent[];
 
@@ -331,7 +336,7 @@ export const useNotificationsQuery = () => {
     );
 
     return notifications.filter(notif => notif !== null) as JSX.Element[];
-  }, [realitio]);
+  }, [realitio, initialBlockNumber, fetchQuestion]);
 
   return {
     loading: loading || isCurrencyLoading || oracleLoading || web3IsLoading,

@@ -1,4 +1,3 @@
-import { compareDesc } from 'date-fns';
 import { isEmpty } from 'lodash';
 import {
   Box,
@@ -13,6 +12,7 @@ import {
 import React from 'react';
 
 import { Background } from '../components/Background';
+import { CTAButton } from '../components/CTAButton';
 import { Tabs } from '../components/CustomTabs';
 import { Link } from '../components/Link';
 import { useWeb3 } from '../ethereum/Web3Provider';
@@ -24,7 +24,7 @@ import {
   toBinaryAnswer,
   useAnswerColor,
 } from './QuestionDetails';
-import { useQuestionsQuery } from './useQuestionsQuery';
+import { QuestionCategory, useQuestionsQuery } from './useQuestionsQuery';
 
 export interface QuestionCardProps {
   question: Question;
@@ -116,47 +116,10 @@ export const QuestionCard = (props: QuestionCardProps) => {
   );
 };
 
-export enum QuestionCategory {
-  LATEST = 'LATEST',
-  CLOSING_SOON = 'CLOSING_SOON',
-  HIGH_REWARD = 'HIGH_REWARD',
-  RESOLVED = 'RESOLVED',
-}
-
-const sortQuestions = (questions: Question[], sort: QuestionCategory) => {
-  switch (sort) {
-    case QuestionCategory.LATEST:
-      return questions
-        .filter(q => q.state !== QuestionState.FINALIZED)
-        .sort((a, b) => compareDesc(a.createdAtDate, b.createdAtDate));
-    case QuestionCategory.CLOSING_SOON:
-      return questions
-        .filter(q => q.state !== QuestionState.FINALIZED)
-        .sort((a, b) => {
-          if (
-            a.finalizedAtDate === 'UNANSWERED' ||
-            b.finalizedAtDate === 'UNANSWERED'
-          ) {
-            return -1;
-          }
-
-          return compareDesc(a.finalizedAtDate, b.finalizedAtDate);
-        });
-    case QuestionCategory.HIGH_REWARD:
-      return questions
-        .filter(q => q.state !== QuestionState.FINALIZED)
-        .sort((a, b) => b.bounty.sub(a.bounty).toNumber());
-    case QuestionCategory.RESOLVED:
-      return questions.filter(q => q.state === QuestionState.FINALIZED);
-    default:
-      return questions;
-  }
-};
-
 export const QuestionList = () => {
-  const { questions } = useQuestionsQuery();
-  const [sort, setSort] = React.useState(QuestionCategory.LATEST);
-  const sortedQuestions = sortQuestions(questions, sort);
+  const [first, setFirst] = React.useState(8);
+  const [category, setCategory] = React.useState(QuestionCategory.LATEST);
+  const { data: questions, loading } = useQuestionsQuery({ first, category });
 
   return (
     <Background pattern="dotted">
@@ -168,10 +131,13 @@ export const QuestionList = () => {
         </Box>
         <Box paddingBottom={40}>
           <Tabs
-            // eslint-disable-next-line
-            // @ts-ignore: we know that only QuestionCategory is passed in
-            onChangeTab={setSort}
-            currentValue={sort}
+            onChangeTab={category => {
+              // eslint-disable-next-line
+              // @ts-ignore: we know that only QuestionCategory is passed in
+              setCategory(category);
+              setFirst(8);
+            }}
+            currentValue={category}
             tabs={[
               {
                 label: 'LATEST',
@@ -194,7 +160,7 @@ export const QuestionList = () => {
         </Box>
         <Container>
           <Row>
-            {sortedQuestions.map(question => (
+            {questions.map(question => (
               <Column key={question.id}>
                 <Box paddingBottom={24}>
                   <Link to={`/question/${question.id}`}>
@@ -204,6 +170,18 @@ export const QuestionList = () => {
               </Column>
             ))}
           </Row>
+
+          {loading && <Text>Loading...</Text>}
+
+          {!loading && (
+            <Box alignItems="center">
+              <CTAButton
+                appearance="outline"
+                title="View more"
+                onPress={() => setFirst(first + 8)}
+              />
+            </Box>
+          )}
         </Container>
       </Box>
     </Background>

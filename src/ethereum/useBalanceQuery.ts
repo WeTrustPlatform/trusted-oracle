@@ -2,6 +2,8 @@ import BigNumber from 'bn.js';
 import React from 'react';
 import { useAsync, useAsyncFn } from 'react-use';
 
+import { useQuestionsCache } from '../oracle/QuestionsCacheProvider';
+import { AsyncResult } from '../types/AsyncResult';
 import { useCurrency } from './CurrencyProvider';
 import { useWeb3 } from './Web3Provider';
 
@@ -10,11 +12,13 @@ export const useFetchBalanceQuery = () => {
   const { currency, tokenInstance } = useCurrency();
 
   const [_, fetch] = useAsyncFn(async () => {
-    if (!account) throw new Error('Expected account');
+    if (!account) return null;
 
     const balance = await (currency === 'ETH'
-      ? web3.eth.getBalance(account)
-      : tokenInstance.balanceOf.call(account));
+      ? new BigNumber(await web3.eth.getBalance(account))
+      : tokenInstance
+      ? tokenInstance.balanceOf.call(account)
+      : null);
 
     return balance as BigNumber;
   }, [account, web3, currency, tokenInstance]);
@@ -23,28 +27,21 @@ export const useFetchBalanceQuery = () => {
 };
 
 export const useBalanceQuery = () => {
-  const { account, web3, web3IsLoading } = useWeb3();
-  const { currency, tokenInstance, isCurrencyLoading } = useCurrency();
+  const { account, web3 } = useWeb3();
+  const { currency, tokenInstance } = useCurrency();
   const fetchBalance = useFetchBalanceQuery();
-  const [balance, setBalance] = React.useState(new BigNumber(0));
+  const { questions } = useQuestionsCache();
+  const [result, setBalance] = React.useState<AsyncResult<BigNumber>>({
+    loading: true,
+    data: new BigNumber(0),
+  });
 
-  const { loading } = useAsync(async () => {
+  useAsync(async () => {
     if (account) {
       const value = await fetchBalance();
-
-      setBalance(value);
+      if (value) setBalance({ data: value, loading: false });
     }
-  }, [account, web3, currency, tokenInstance]);
+  }, [account, web3, currency, tokenInstance, questions]);
 
-  const refetch = React.useCallback(async () => {
-    const value = await fetchBalance();
-
-    setBalance(value);
-  }, [fetchBalance]);
-
-  return {
-    data: balance,
-    loading: loading || web3IsLoading || isCurrencyLoading,
-    refetch,
-  };
+  return result;
 };

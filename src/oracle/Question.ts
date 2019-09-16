@@ -9,14 +9,6 @@ import {
 } from './OracleData';
 import { QuestionUtils } from './QuestionUtils';
 
-export const INITIAL_BLOCKS = {
-  1: 6531147,
-  3: 0,
-  4: 3175028, // for quicker loading start more like 4800000,
-  42: 10350865,
-  1337: 0,
-} as const;
-
 export interface QuestionFromContract {
   content_hash: string;
   opening_ts: BigNumber;
@@ -59,6 +51,7 @@ export interface Question extends QuestionFromNewQuestionEvent {
   bestAnswer: string;
   historyHash: string;
   bond: BigNumber;
+  disputeFee: BigNumber;
   category: string | null;
   language: string | null;
   type: QuestionType;
@@ -154,6 +147,7 @@ const toQuestionType = (type: string) => {
 export const toQuestion = (
   questionFromNewQuestionEvent: QuestionFromNewQuestionEvent,
   questionFromContract: QuestionFromContract,
+  disputeFee: BigNumber,
   answers: Answer[],
 ): Question => {
   const questionJson = QuestionUtils.populatedJSONForTemplate(
@@ -172,6 +166,7 @@ export const toQuestion = (
     bounty: questionFromContract.bounty,
     bestAnswer: questionFromContract.best_answer,
     historyHash: questionFromContract.history_hash,
+    disputeFee,
     bond: questionFromContract.bond,
     type: toQuestionType(questionJson.type),
     rawType: questionJson.type,

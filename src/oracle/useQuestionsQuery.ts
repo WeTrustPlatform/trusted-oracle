@@ -1,106 +1,65 @@
+import { sortBy } from 'lodash';
 import React from 'react';
 import { useAsync } from 'react-use';
 
-import { useFetchBlock } from '../ethereum/useBlockQuery';
-import { useWeb3 } from '../ethereum/Web3Provider';
 import { NewQuestionEvent, OracleEventType } from './OracleData';
 import { useOracle } from './OracleProvider';
-import { INITIAL_BLOCKS, Question } from './Question';
-import { useFetchQuestionQuery } from './useQuestionQuery';
+import { Question } from './Question';
+import { useQuestionsCache } from './QuestionsCacheProvider';
 
-interface State {
-  questions: Question[];
-  toBlock: number;
-  incrementIndex: number;
-  loading: boolean;
+export enum QuestionCategory {
+  LATEST = 'LATEST',
+  CLOSING_SOON = 'CLOSING_SOON',
+  HIGH_REWARD = 'HIGH_REWARD',
+  RESOLVED = 'RESOLVED',
 }
 
-const initialState: State = {
-  questions: [],
-  toBlock: 0,
-  incrementIndex: 0,
-  loading: true,
-};
-
-const BLOCK_INCREMENTS = [100, 2500, 5000];
-
-interface Action {
-  type: 'update';
-  payload: Partial<State>;
+export interface UseQuestionsQueryProps {
+  first: number;
+  category: QuestionCategory;
 }
 
-const reducer = (state: State, action: Action) => {
-  switch (action.type) {
-    case 'update':
-      return { ...state, ...action.payload };
-    default:
-      throw new Error();
-  }
-};
+export const useQuestionsQuery = (props: UseQuestionsQueryProps) => {
+  const { first, category } = props;
+  const { realitio, initialBlockNumber } = useOracle();
+  const { getManyByIds } = useQuestionsCache();
+  const [newQuestionEvents, setNewQuestionEvents] = React.useState<
+    NewQuestionEvent[]
+  >([]);
 
-export const useQuestionsQuery = () => {
-  const { networkId } = useWeb3();
-  const { realitio } = useOracle();
-  const fetchQuestion = useFetchQuestionQuery();
-  const initialBlock = INITIAL_BLOCKS[networkId];
-  const [state, dispatch] = React.useReducer(reducer, initialState);
-  const fetchBlock = useFetchBlock();
+  const [result, setResult] = React.useState<{
+    loading: boolean;
+    data: Question[];
+  }>({
+    loading: true,
+    data: [],
+  });
 
   useAsync(async () => {
-    const { toBlock } = state;
-    const latestBlock = await fetchBlock('latest');
-    if (!toBlock) {
-      dispatch({ type: 'update', payload: { toBlock: latestBlock.number } });
-    }
-  }, [fetchBlock, state]);
+    if (!realitio) return;
+    const events = (await realitio.getPastEvents(
+      OracleEventType.LogNewQuestion,
+      { fromBlock: initialBlockNumber, toBlock: 'latest' },
+    )) as NewQuestionEvent[];
+
+    const descendingEvents = sortBy(events, 'blockNumber').reverse();
+
+    setNewQuestionEvents(descendingEvents);
+  }, [realitio, initialBlockNumber]);
 
   React.useEffect(() => {
-    const { incrementIndex, questions, toBlock } = state;
+    setResult({ loading: true, data: result.data });
+  }, [first]);
 
-    if (!realitio && toBlock) return;
+  useAsync(async () => {
+    if (!newQuestionEvents.length) return;
 
-    const fetchQuestions = async () => {
-      const numberOfBlocksToFetch =
-        incrementIndex < BLOCK_INCREMENTS.length
-          ? BLOCK_INCREMENTS[incrementIndex]
-          : BLOCK_INCREMENTS[BLOCK_INCREMENTS.length - 1];
+    const questions = await getManyByIds(
+      newQuestionEvents.slice(0, first).map(event => event.args.question_id),
+    );
 
-      let fromBlock = toBlock - numberOfBlocksToFetch;
-      if (fromBlock < initialBlock) fromBlock = initialBlock;
+    setResult({ loading: false, data: questions });
+  }, [newQuestionEvents, getManyByIds, first]);
 
-      if (toBlock <= initialBlock) {
-        dispatch({ type: 'update', payload: { loading: false } });
-        return;
-      }
-
-      const newQuestionsEvents = (await realitio.getPastEvents(
-        OracleEventType.LogNewQuestion,
-        { fromBlock, toBlock },
-      )) as NewQuestionEvent[];
-
-      const questionsFromEvents = await Promise.all(
-        newQuestionsEvents.map(async event =>
-          fetchQuestion(event.args.question_id),
-        ),
-      );
-
-      const newQuestions = questionsFromEvents.filter(Boolean) as Question[];
-
-      dispatch({
-        type: 'update',
-        payload: {
-          toBlock: fromBlock - 1,
-          incrementIndex: incrementIndex + 1,
-          questions: questions.concat(newQuestions),
-        },
-      });
-    };
-
-    fetchQuestions();
-  }, [state, realitio, fetchQuestion, initialBlock]);
-
-  return {
-    questions: state.questions,
-    loading: state.loading,
-  };
+  return result;
 };

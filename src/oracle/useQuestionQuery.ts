@@ -1,108 +1,32 @@
 import React from 'react';
 import { useAsync } from 'react-use';
 
-import { useWeb3 } from '../ethereum/Web3Provider';
-import {
-  NewAnswerEvent,
-  NewQuestionEvent,
-  OracleEventType,
-} from './OracleData';
-import { useOracle } from './OracleProvider';
-import {
-  INITIAL_BLOCKS,
-  Question,
-  QuestionFromContract,
-  toAnswer,
-  toQuestion,
-  transformNewQuestionEventToQuestion,
-} from './Question';
+import { Question } from './Question';
+import { useQuestionsCache } from './QuestionsCacheProvider';
 
-export type FetchQuestion = (questionId: string) => Promise<Question | null>;
-
-export const useFetchQuestionQuery = () => {
-  const { networkId } = useWeb3();
-  const { realitio } = useOracle();
-  const initialBlock = INITIAL_BLOCKS[networkId];
-
-  const fetchQuestion: FetchQuestion = React.useCallback(
-    async (questionId: string) => {
-      if (!realitio) {
-        throw new Error(
-          'Oracle and Web3 needs to be loaded first before fetching',
-        );
-      }
-
-      const newQuestionsEvents = (await realitio.getPastEvents(
-        OracleEventType.LogNewQuestion,
-        {
-          fromBlock: initialBlock,
-          toBlock: 'latest',
-          // eslint-disable-next-line
-          filter: { question_id: questionId },
-        },
-      )) as NewQuestionEvent[];
-
-      if (newQuestionsEvents.length === 0) {
-        return null;
-      }
-      if (newQuestionsEvents.length > 1) {
-        throw new Error(
-          'There should only be one NewQuestion event tied to the questionId',
-        );
-      }
-
-      const newQuestionEvent = newQuestionsEvents[0];
-
-      const questionBase = transformNewQuestionEventToQuestion(
-        newQuestionEvent,
-      );
-
-      const questionFromContract = (await realitio.questions.call(
-        newQuestionEvent.args.question_id,
-      )) as QuestionFromContract;
-
-      const answerEvents = (await realitio.getPastEvents(
-        OracleEventType.LogNewAnswer,
-        {
-          fromBlock: initialBlock,
-          toBlock: 'latest',
-          // eslint-disable-next-line
-          filter: { question_id: newQuestionEvent.args.question_id },
-        },
-      )) as NewAnswerEvent[];
-
-      return toQuestion(
-        questionBase,
-        questionFromContract,
-        toAnswer(answerEvents),
-      );
-    },
-    [realitio, initialBlock],
-  );
-
-  return fetchQuestion;
-};
+export type FetchQuestion = (
+  questionId: string,
+  forceFetch?: boolean,
+) => Promise<Question | null>;
 
 export const useQuestionQuery = (questionId: string) => {
-  const { web3IsLoading } = useWeb3();
-  const { loading: oracleIsLoading, realitio } = useOracle();
-  const fetchQuestion = useFetchQuestionQuery();
-  const [question, setQuestion] = React.useState<Question | null>(null);
+  const { getById } = useQuestionsCache();
+  const [result, setQuestion] = React.useState<{
+    loading: boolean;
+    data: Question | null;
+  }>({
+    loading: true,
+    data: null,
+  });
 
-  const { loading } = useAsync(async () => {
-    const result = await fetchQuestion(questionId);
-    setQuestion(result);
-  }, [fetchQuestion, questionId]);
+  useAsync(async () => {
+    const question = await getById(questionId);
 
-  const refetch = React.useCallback(async () => {
-    const result = await fetchQuestion(questionId);
-
-    setQuestion(result);
-  }, [fetchQuestion, questionId]);
+    setQuestion({ loading: false, data: question });
+  }, [getById, questionId]);
 
   return {
-    data: question,
-    loading: oracleIsLoading || web3IsLoading || !realitio || loading,
-    refetch,
+    data: result.data,
+    loading: result.loading,
   };
 };

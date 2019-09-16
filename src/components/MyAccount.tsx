@@ -11,6 +11,7 @@ import { useBalanceQuery } from '../ethereum/useBalanceQuery';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from '../oracle/OracleProvider';
 import { QuestionCard } from '../oracle/QuestionList';
+import { useQuestionsCache } from '../oracle/QuestionsCacheProvider';
 import { useClaimsQuery } from '../oracle/useClaimsQuery';
 import { useMyAnswersQuery } from '../oracle/useMyAnswersQuery';
 import { useMyQuestionsQuery } from '../oracle/useMyQuestionsQuery';
@@ -30,6 +31,7 @@ const Claimable = () => {
     data: { claimArguments, claimable },
     loading: claimsLoading,
   } = useClaimsQuery(answeredQuestions);
+  const { refetchIds } = useQuestionsCache();
 
   const [{ loading }, handleClaim] = useAsyncFn(async () => {
     // estimateGas gives us a number that credits the eventual storage refund.
@@ -53,6 +55,9 @@ const Claimable = () => {
       claimArguments.answers,
       { from: account, gas },
     );
+
+    // Fetching one will trigger cache refresh throughout application
+    refetchIds(claimArguments.questionIds);
   }, [account, realitio, claimArguments]);
 
   if (claimsLoading || answersLoading) return null;
@@ -78,7 +83,7 @@ const NotificationPreview = withRouter(props => {
   const {
     data: notifications,
     loading: notificationsLoading,
-  } = useNotificationsQuery();
+  } = useNotificationsQuery({ first: 1 });
 
   if (notificationsLoading) return <Text>Loading...</Text>;
 
@@ -117,16 +122,51 @@ enum MyAccountTab {
   ANSWER = 'ANSWER',
 }
 
-export const MyAccount = () => {
-  const [tab, setTab] = React.useState(MyAccountTab.QUESTION);
-
+const MyAnswers = () => {
   const {
     data: answeredQuestions,
     loading: answersLoading,
   } = useMyAnswersQuery();
+
+  if (answersLoading) return <Text>Loading...</Text>;
+
+  return (
+    <Container>
+      <Row>
+        {answeredQuestions.map(question => (
+          <Column key={question.id}>
+            <Box paddingBottom={24}>
+              <QuestionCard question={question} />
+            </Box>
+          </Column>
+        ))}
+      </Row>
+    </Container>
+  );
+};
+
+const MyQuestions = () => {
   const { data: questions, loading: questionsLoading } = useMyQuestionsQuery();
 
-  if (questionsLoading || answersLoading) return <Text>Loading...</Text>;
+  if (questionsLoading) return <Text>Loading...</Text>;
+
+  return (
+    <Container>
+      <Row>
+        {questions.map(question => (
+          <Column key={question.id}>
+            <Box paddingBottom={24}>
+              <QuestionCard question={question} />
+            </Box>
+          </Column>
+        ))}
+      </Row>
+    </Container>
+  );
+};
+
+export const MyAccount = () => {
+  const [tab, setTab] = React.useState(MyAccountTab.QUESTION);
 
   return (
     <Box>
@@ -169,20 +209,7 @@ export const MyAccount = () => {
               ]}
             />
           </Box>
-          <Container>
-            <Row>
-              {(tab === MyAccountTab.ANSWER
-                ? answeredQuestions
-                : questions
-              ).map(question => (
-                <Column key={question.id}>
-                  <Box paddingBottom={24}>
-                    <QuestionCard question={question} />
-                  </Box>
-                </Column>
-              ))}
-            </Row>
-          </Container>
+          {tab === MyAccountTab.ANSWER ? <MyAnswers /> : <MyQuestions />}
         </Box>
       </Background>
     </Box>
