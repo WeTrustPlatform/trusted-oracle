@@ -199,3 +199,7 @@ export const toAnswer = (events: NewAnswerEvent[]): Answer[] => {
     user: e.args.user,
   }));
 };
+
+export const isSupported = (question: Question) => {
+  return question.type === QuestionType.BINARY;
+};

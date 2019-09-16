@@ -16,12 +16,13 @@ import { CTAButton } from '../components/CTAButton';
 import { Tabs } from '../components/CustomTabs';
 import { Link } from '../components/Link';
 import { useWeb3 } from '../ethereum/Web3Provider';
-import { Question, QuestionState } from './Question';
+import { isSupported, Question, QuestionState } from './Question';
 import {
   QuestionPostedDate,
   QuestionReward,
   QuestionTooltip,
   toBinaryAnswer,
+  UnsupportedQuestion,
   useAnswerColor,
 } from './QuestionDetails';
 import { QuestionCategory, useQuestionsQuery } from './useQuestionsQuery';
@@ -67,7 +68,7 @@ export const QuestionCard = (props: QuestionCardProps) => {
         </Box>
       </Box>
       <Box paddingTop={24}>
-        {question.state !== QuestionState.NOT_OPEN && (
+        {question.state !== QuestionState.NOT_OPEN && isSupported(question) && (
           <Background pattern="textured">
             <Box
               paddingVertical={16}
@@ -111,6 +112,18 @@ export const QuestionCard = (props: QuestionCardProps) => {
             </Box>
           </Background>
         )}
+        {!isSupported(question) && (
+          <Background pattern="textured">
+            <Box
+              paddingVertical={16}
+              paddingHorizontal={40}
+              flexDirection="row"
+              justifyContent="space-between"
+            >
+              <UnsupportedQuestion />
+            </Box>
+          </Background>
+        )}
       </Box>
     </Box>
   );
@@ -119,7 +132,10 @@ export const QuestionCard = (props: QuestionCardProps) => {
 export const QuestionList = () => {
   const [first, setFirst] = React.useState(8);
   const [category, setCategory] = React.useState(QuestionCategory.LATEST);
-  const { data: questions, loading } = useQuestionsQuery({ first, category });
+  const { data: questions, loading, total } = useQuestionsQuery({
+    first,
+    category,
+  });
 
   return (
     <Background pattern="dotted">
@@ -173,7 +189,7 @@ export const QuestionList = () => {
 
           {loading && <Text>Loading...</Text>}
 
-          {!loading && (
+          {first < total.length && (
             <Box alignItems="center">
               <CTAButton
                 appearance="outline"

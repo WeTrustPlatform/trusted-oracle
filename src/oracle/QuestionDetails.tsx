@@ -26,7 +26,7 @@ import { formatCurrency, toBigNumber } from '../ethereum/CurrencyUtils';
 import { useWeb3Dialogs } from '../ethereum/Web3DialogsProvider';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from './OracleProvider';
-import { Answer, Question, QuestionState, QuestionType } from './Question';
+import { Answer, isSupported, Question, QuestionState } from './Question';
 import { useQuestionsCache } from './QuestionsCacheProvider';
 import { useQuestionQuery } from './useQuestionQuery';
 
@@ -122,18 +122,14 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
   );
 };
 
-const UnsupportedQuestion = () => {
+export const UnsupportedQuestion = () => {
   return (
     <Box>
       <Text>
-        Trusted Oracle does not support answering this type of question yet.
+        Trusted Oracle does not support answers to this type of question yet.
       </Text>
     </Box>
   );
-};
-
-const isSupported = (question: Question) => {
-  return question.type === QuestionType.BINARY;
 };
 
 export interface QuestionProps {
@@ -233,7 +229,9 @@ export const QuestionAnswers = (props: QuestionProps) => {
 
   if (!answers.length) return null;
 
-  if (!isSupported(question)) return <UnsupportedQuestion />;
+  if (!isSupported(question)) {
+    return <UnsupportedQuestion />;
+  }
 
   if (question.finalizedAtDate === 'UNANSWERED') {
     throw new Error('Expected answers');
@@ -478,7 +476,9 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
     },
   });
 
-  if (!isSupported(question)) return <UnsupportedQuestion />;
+  if (!isSupported(question)) {
+    return <UnsupportedQuestion />;
+  }
 
   return (
     <Box>
