@@ -99,7 +99,7 @@ export const DesktopFooter = () => {
       <Paragraph>
         <FooterLink to="/">Home</FooterLink>
         <FooterLink to="https://www.wetrust.io">About us</FooterLink>
-        <FooterLink to="/_Crypto_Unlocked_Terms_and_Conditions_v1.3.pdf">
+        <FooterLink to="https://cryptounlocked.wetrust.io/_Crypto_Unlocked_Terms_and_Conditions_v1.3.pdf">
           Terms and Conditions
         </FooterLink>
         <FooterLink to="https://github.com/WeTrustPlatform/documents/blob/master/FinclusionLabs_PrivacyPolicy_October92018_GDPRCompliant.pdf">
@@ -140,7 +140,7 @@ export const FooterLink = (props: FooterLinkProps) => {
     padding: '0 15px',
   } as const;
 
-  return <Link style={style} {...props} />;
+  return <Link style={style} isExternal {...props} />;
 };
 
 export const Footer = () => {

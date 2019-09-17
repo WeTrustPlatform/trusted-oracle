@@ -33,7 +33,7 @@ const initialState: State = {
   loading: true,
 };
 
-const BLOCK_INCREMENTS = [100, 2500, 5000];
+const BLOCK_INCREMENTS = [500, 2500, 5000, 7500, 10000, 12500, 15000];
 
 interface Action {
   type: 'update';

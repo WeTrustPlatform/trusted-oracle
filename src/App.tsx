@@ -106,7 +106,7 @@ export const App = () => {
           <ToastProvider>
             <Web3Provider>
               <Web3DialogsProvider>
-                <CurrencyProvider initialCurrency="ETH">
+                <CurrencyProvider initialCurrency="TRST">
                   <OracleProvider>
                     <StoreProvider>
                       <NavigationBar />

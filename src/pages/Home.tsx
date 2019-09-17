@@ -27,7 +27,12 @@ const HeroSection = () => {
               <Link to="/how-it-works">See how it works</Link>
             </Box>
             <Box alignItems="flex-start">
-              <CTAButton title="Ask a question" />
+              <CTAButton
+                title="Ask a question"
+                onPress={() => {
+                  window.open('https://cryptounlocked.wetrust.io', '_blank');
+                }}
+              />
             </Box>
           </Column>
           <Column medium={6}>
@@ -61,12 +66,21 @@ const AskAQuestionSection = () => {
                   incentivize reporters to answer. If you plan to answer the
                   question yourself, you can leave the reward as zero.
                 </Text>
-                <Link style={{ textAlign: 'center' }} to="/ask-a-question">
+                <Link
+                  style={{ textAlign: 'center' }}
+                  to="https://cryptounlocked.wetrust.io/"
+                  isExternal
+                >
                   View more details
                 </Link>
               </Box>
               <Box alignItems="center">
-                <CTAButton title="Ask a Question" />
+                <CTAButton
+                  title="Ask a question"
+                  onPress={() => {
+                    window.open('https://cryptounlocked.wetrust.io', '_blank');
+                  }}
+                />
               </Box>
             </Column>
           </Row>
