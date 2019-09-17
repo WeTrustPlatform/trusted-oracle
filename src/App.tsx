@@ -1,7 +1,7 @@
 import { LayoutProvider, ThemeProvider, ToastProvider } from 'paramount-ui';
 import React from 'react';
 import { Route, RouteChildrenProps } from 'react-router';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 
 import { CustomDialog } from './components/CustomDialog';
 import { MyAccount } from './components/MyAccount';
@@ -55,7 +55,7 @@ const NotificationsDialog = (
 
 export const App = () => {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <ThemeProvider
         value={{
           colors: {
@@ -128,6 +128,6 @@ export const App = () => {
           </ToastProvider>
         </LayoutProvider>
       </ThemeProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 };

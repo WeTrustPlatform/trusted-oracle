@@ -93,3 +93,4 @@ dist
 .DS_STORE
 
 *.code-workspace
+build
