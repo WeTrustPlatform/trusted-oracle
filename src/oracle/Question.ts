@@ -46,7 +46,6 @@ type Unanswered = 'UNANSWERED';
 export interface Question extends QuestionFromNewQuestionEvent {
   timeout: Date;
   finalizedAtDate: Date | Unanswered;
-  isPendingArbitration: boolean;
   bounty: BigNumber;
   bestAnswer: string;
   historyHash: string;
@@ -165,7 +164,6 @@ export const toQuestion = (
     finalizedAtDate: isAnswered(questionFromContract)
       ? toDate(questionFromContract.finalize_ts)
       : 'UNANSWERED',
-    isPendingArbitration: questionFromContract.is_pending_arbitration,
     bounty: questionFromContract.bounty,
     bestAnswer: questionFromContract.best_answer,
     historyHash: questionFromContract.history_hash,

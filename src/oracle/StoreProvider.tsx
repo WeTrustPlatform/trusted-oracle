@@ -120,245 +120,256 @@ export const useFetchNotificationsQuery = () => {
   const fetchBlock = useFetchBlock();
 
   const [_, fetch] = useAsyncFn(async () => {
+    if (!realitio) return [];
+
     const events = (await realitio.getPastEvents('allEvents', {
       fromBlock: initialBlockNumber,
       toBlock: 'latest',
     })) as OracleEvent[];
 
     const notifications = await Promise.all(
-      events.reverse().map(async event => {
-        switch (event.event) {
-          case OracleEventType.LogNewQuestion:
-            if (event.args.user === account) {
-              const question = await fetchQuestion(event.args.question_id);
+      events
+        .sort((a, b) => b.blockNumber - a.blockNumber)
+        .map(async event => {
+          switch (event.event) {
+            case OracleEventType.LogNewQuestion:
+              if (event.args.user === account) {
+                const question = await fetchQuestion(event.args.question_id);
 
-              if (!question) throw new Error('Question not found');
+                if (!question) throw new Error('Question not found');
 
-              return {
-                questionId: question.id,
-                date: timeAgo(question.createdAtDate),
-                questionTitle: question.questionTitle,
-                message: 'You asked a question',
-              };
-            }
-
-            return null;
-          case OracleEventType.LogNewAnswer:
-            const answeredQuestion = await fetchQuestion(
-              event.args.question_id,
-            );
-            if (!answeredQuestion) throw new Error('Question not found');
-
-            if (event.args.user === account) {
-              if (event.args.is_commitment) {
                 return {
-                  questionId: answeredQuestion.id,
-                  date: timeAgo(toDate(event.args.ts)),
-                  questionTitle: answeredQuestion.questionTitle,
-                  message: 'You committed to answering a question',
-                };
-              } else {
-                return {
-                  questionId: answeredQuestion.id,
-                  date: timeAgo(toDate(event.args.ts)),
-                  questionTitle: answeredQuestion.questionTitle,
-                  message: 'You answered a question',
+                  questionId: question.id,
+                  date: timeAgo(question.createdAtDate),
+                  questionTitle: question.questionTitle,
+                  message: 'You asked a question',
                 };
               }
-            }
 
-            if (answeredQuestion.user === account) {
-              return {
-                questionId: answeredQuestion.id,
-                date: timeAgo(toDate(event.args.ts)),
-                questionTitle: answeredQuestion.questionTitle,
-                message: 'Someone answered your question',
-              };
-            } else if (
-              answeredQuestion.answers
-                .slice(1)
-                .some(answer => answer.user === account)
-            ) {
-              return {
-                questionId: answeredQuestion.id,
-                date: timeAgo(toDate(event.args.ts)),
-                questionTitle: answeredQuestion.questionTitle,
-                message: 'Your answer was overwritten',
-              };
-            }
+              return null;
+            case OracleEventType.LogNewAnswer:
+              const answeredQuestion = await fetchQuestion(
+                event.args.question_id,
+              );
+              if (!answeredQuestion) throw new Error('Question not found');
 
-            return null;
+              if (event.args.user === account) {
+                if (event.args.is_commitment) {
+                  return {
+                    questionId: answeredQuestion.id,
+                    date: timeAgo(toDate(event.args.ts)),
+                    questionTitle: answeredQuestion.questionTitle,
+                    message: 'You committed to answering a question',
+                  };
+                } else {
+                  return {
+                    questionId: answeredQuestion.id,
+                    date: timeAgo(toDate(event.args.ts)),
+                    questionTitle: answeredQuestion.questionTitle,
+                    message: 'You answered a question',
+                  };
+                }
+              }
 
-          case OracleEventType.LogAnswerReveal:
-            const answerRevealedQuestion = await fetchQuestion(
-              event.args.question_id,
-            );
-            if (!answerRevealedQuestion) throw new Error('Question not found');
-            const answerRevealBlock = await fetchBlock(event.blockNumber);
-
-            if (event.args.user === account) {
-              return {
-                questionId: answerRevealedQuestion.id,
-                date: timeAgo(answerRevealBlock),
-                questionTitle: answerRevealedQuestion.questionTitle,
-                message: 'You revealed an answer to a question',
-              };
-            }
-
-            if (answerRevealedQuestion.user === account) {
-              return {
-                questionId: answerRevealedQuestion.id,
-                date: timeAgo(answerRevealBlock),
-                questionTitle: answerRevealedQuestion.questionTitle,
-                message: 'Someone revealed their answer to your question',
-              };
-            } else if (
-              answerRevealedQuestion.answers
-                .slice(1)
-                .some(answer => answer.user === account)
-            ) {
-              return {
-                questionId: answerRevealedQuestion.id,
-                date: timeAgo(answerRevealBlock),
-                questionTitle: answerRevealedQuestion.questionTitle,
-                message: 'Your answer was overwritten',
-              };
-            }
-
-            return null;
-
-          case OracleEventType.LogFundAnswerBounty:
-            const rewardBlock = await fetchBlock(event.blockNumber);
-            const fundedQuestion = await fetchQuestion(event.args.question_id);
-            if (!fundedQuestion) throw new Error('Question not found');
-            const reward = formatCurrency(event.args.bounty, currency);
-
-            if (event.args.user === account) {
-              return {
-                questionId: fundedQuestion.id,
-                date: timeAgo(rewardBlock),
-                questionTitle: fundedQuestion.questionTitle,
-                message: `You added ${reward} ${currency} reward`,
-              };
-            }
-
-            if (fundedQuestion.user === account) {
-              return {
-                questionId: fundedQuestion.id,
-                date: timeAgo(rewardBlock),
-                questionTitle: fundedQuestion.questionTitle,
-                message: `Someone added ${reward} ${currency} reward to your question`,
-              };
-            } else {
-              if (
-                fundedQuestion.answers.some(answer => answer.user === account)
+              if (answeredQuestion.user === account) {
+                return {
+                  questionId: answeredQuestion.id,
+                  date: timeAgo(toDate(event.args.ts)),
+                  questionTitle: answeredQuestion.questionTitle,
+                  message: 'Someone answered your question',
+                };
+              } else if (
+                answeredQuestion.answers
+                  .slice(1)
+                  .some(answer => answer.user === account)
               ) {
+                return {
+                  questionId: answeredQuestion.id,
+                  date: timeAgo(toDate(event.args.ts)),
+                  questionTitle: answeredQuestion.questionTitle,
+                  message: 'Your answer was overwritten',
+                };
+              }
+
+              return null;
+
+            case OracleEventType.LogAnswerReveal:
+              const answerRevealedQuestion = await fetchQuestion(
+                event.args.question_id,
+              );
+              if (!answerRevealedQuestion)
+                throw new Error('Question not found');
+              const answerRevealBlock = await fetchBlock(event.blockNumber);
+
+              if (event.args.user === account) {
+                return {
+                  questionId: answerRevealedQuestion.id,
+                  date: timeAgo(answerRevealBlock),
+                  questionTitle: answerRevealedQuestion.questionTitle,
+                  message: 'You revealed an answer to a question',
+                };
+              }
+
+              if (answerRevealedQuestion.user === account) {
+                return {
+                  questionId: answerRevealedQuestion.id,
+                  date: timeAgo(answerRevealBlock),
+                  questionTitle: answerRevealedQuestion.questionTitle,
+                  message: 'Someone revealed their answer to your question',
+                };
+              } else if (
+                answerRevealedQuestion.answers
+                  .slice(1)
+                  .some(answer => answer.user === account)
+              ) {
+                return {
+                  questionId: answerRevealedQuestion.id,
+                  date: timeAgo(answerRevealBlock),
+                  questionTitle: answerRevealedQuestion.questionTitle,
+                  message: 'Your answer was overwritten',
+                };
+              }
+
+              return null;
+
+            case OracleEventType.LogFundAnswerBounty:
+              const rewardBlock = await fetchBlock(event.blockNumber);
+              const fundedQuestion = await fetchQuestion(
+                event.args.question_id,
+              );
+              if (!fundedQuestion) throw new Error('Question not found');
+              const reward = formatCurrency(event.args.bounty, currency);
+
+              if (event.args.user === account) {
                 return {
                   questionId: fundedQuestion.id,
                   date: timeAgo(rewardBlock),
                   questionTitle: fundedQuestion.questionTitle,
-                  message: `Someone added ${reward} ${currency} reward to the question you answered`,
+                  message: `You added ${reward} ${currency} reward`,
                 };
               }
-            }
 
-            return null;
+              if (fundedQuestion.user === account) {
+                return {
+                  questionId: fundedQuestion.id,
+                  date: timeAgo(rewardBlock),
+                  questionTitle: fundedQuestion.questionTitle,
+                  message: `Someone added ${reward} ${currency} reward to your question`,
+                };
+              } else {
+                if (
+                  fundedQuestion.answers.some(answer => answer.user === account)
+                ) {
+                  return {
+                    questionId: fundedQuestion.id,
+                    date: timeAgo(rewardBlock),
+                    questionTitle: fundedQuestion.questionTitle,
+                    message: `Someone added ${reward} ${currency} reward to the question you answered`,
+                  };
+                }
+              }
 
-          case OracleEventType.LogNotifyOfArbitrationRequest:
-            const arbitrationRequestedQuestion = await fetchQuestion(
-              event.args.question_id,
-            );
-            if (!arbitrationRequestedQuestion)
-              throw new Error('Question not found');
-            const arbitrationRequestBlock = await fetchBlock(event.blockNumber);
+              return null;
 
-            if (event.args.user === account) {
-              return {
-                questionId: arbitrationRequestedQuestion.id,
-                date: timeAgo(arbitrationRequestBlock),
-                questionTitle: arbitrationRequestedQuestion.questionTitle,
-                message: 'You requested arbitration',
-              };
-            }
+            case OracleEventType.LogNotifyOfArbitrationRequest:
+              const arbitrationRequestedQuestion = await fetchQuestion(
+                event.args.question_id,
+              );
+              if (!arbitrationRequestedQuestion)
+                throw new Error('Question not found');
+              const arbitrationRequestBlock = await fetchBlock(
+                event.blockNumber,
+              );
 
-            if (arbitrationRequestedQuestion.user === account) {
-              return {
-                questionId: arbitrationRequestedQuestion.id,
-                date: timeAgo(arbitrationRequestBlock),
-                questionTitle: arbitrationRequestedQuestion.questionTitle,
-                message: 'Someone requested arbitration to your question',
-              };
-            }
+              if (event.args.user === account) {
+                return {
+                  questionId: arbitrationRequestedQuestion.id,
+                  date: timeAgo(arbitrationRequestBlock),
+                  questionTitle: arbitrationRequestedQuestion.questionTitle,
+                  message: 'You requested arbitration',
+                };
+              }
 
-            if (
-              arbitrationRequestedQuestion.answers.some(
-                answer => answer.user === account,
-              )
-            ) {
-              return {
-                questionId: arbitrationRequestedQuestion.id,
-                date: timeAgo(arbitrationRequestBlock),
-                questionTitle: arbitrationRequestedQuestion.questionTitle,
-                message:
-                  'Someone requested arbitration to the question you answered',
-              };
-            }
+              if (arbitrationRequestedQuestion.user === account) {
+                return {
+                  questionId: arbitrationRequestedQuestion.id,
+                  date: timeAgo(arbitrationRequestBlock),
+                  questionTitle: arbitrationRequestedQuestion.questionTitle,
+                  message: 'Someone requested arbitration to your question',
+                };
+              }
 
-            return null;
+              if (
+                arbitrationRequestedQuestion.answers.some(
+                  answer => answer.user === account,
+                )
+              ) {
+                return {
+                  questionId: arbitrationRequestedQuestion.id,
+                  date: timeAgo(arbitrationRequestBlock),
+                  questionTitle: arbitrationRequestedQuestion.questionTitle,
+                  message:
+                    'Someone requested arbitration to the question you answered',
+                };
+              }
 
-          case OracleEventType.LogFinalize:
-            const finalizedBlock = await fetchBlock(event.blockNumber);
-            const finalizedQuestion = await fetchQuestion(
-              event.args.question_id,
-            );
+              return null;
 
-            if (!finalizedQuestion) throw new Error('Question not found');
-
-            if (finalizedQuestion.user === account) {
-              return {
-                questionId: finalizedQuestion.id,
-                date: timeAgo(finalizedBlock),
-                questionTitle: finalizedQuestion.questionTitle,
-                message: 'Your question is finalized',
-              };
-            } else if (
-              finalizedQuestion.answers.some(answer => answer.user === account)
-            ) {
-              return {
-                questionId: finalizedQuestion.id,
-                date: timeAgo(finalizedBlock),
-                questionTitle: finalizedQuestion.questionTitle,
-                message: 'The question you answered is finalized',
-              };
-            }
-
-            return null;
-          case OracleEventType.LogClaim:
-            if (event.args.user === account) {
-              const claimedBlock = await fetchBlock(event.blockNumber);
-              const claimedQuestion = await fetchQuestion(
+            case OracleEventType.LogFinalize:
+              const finalizedBlock = await fetchBlock(event.blockNumber);
+              const finalizedQuestion = await fetchQuestion(
                 event.args.question_id,
               );
 
-              if (!claimedQuestion) throw new Error('Question not found');
+              if (!finalizedQuestion) throw new Error('Question not found');
 
-              return {
-                questionId: claimedQuestion.id,
-                date: timeAgo(claimedBlock),
-                questionTitle: claimedQuestion.questionTitle,
-                message: `You claimed ${formatCurrency(
-                  event.args.amount,
-                  currency,
-                )}, ${currency}`,
-              };
-            }
+              if (finalizedQuestion.user === account) {
+                return {
+                  questionId: finalizedQuestion.id,
+                  date: timeAgo(finalizedBlock),
+                  questionTitle: finalizedQuestion.questionTitle,
+                  message: 'Your question is finalized',
+                };
+              } else if (
+                finalizedQuestion.answers.some(
+                  answer => answer.user === account,
+                )
+              ) {
+                return {
+                  questionId: finalizedQuestion.id,
+                  date: timeAgo(finalizedBlock),
+                  questionTitle: finalizedQuestion.questionTitle,
+                  message: 'The question you answered is finalized',
+                };
+              }
 
-            return null;
+              return null;
+            case OracleEventType.LogClaim:
+              if (event.args.user === account) {
+                const claimedBlock = await fetchBlock(event.blockNumber);
+                const claimedQuestion = await fetchQuestion(
+                  event.args.question_id,
+                );
 
-          default:
-            return null;
-        }
-      }),
+                if (!claimedQuestion) throw new Error('Question not found');
+
+                return {
+                  questionId: claimedQuestion.id,
+                  date: timeAgo(claimedBlock),
+                  questionTitle: claimedQuestion.questionTitle,
+                  message: `You claimed ${formatCurrency(
+                    event.args.amount,
+                    currency,
+                  )}, ${currency}`,
+                };
+              }
+
+              return null;
+
+            default:
+              return null;
+          }
+        }),
     );
 
     return notifications.filter(notif => notif !== null) as NotificationData[];
@@ -565,7 +576,7 @@ export const StoreProvider = (props: StoreProviderProps) => {
   );
 
   const [_, fetch] = useAsyncFn(async () => {
-    if (state.notifications) return;
+    if (state.notifications.length) return;
 
     const notifications = await fetchNotifications();
 

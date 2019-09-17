@@ -48,7 +48,7 @@ export const Notifications = withRouter(props => {
 
   useAsync(async () => {
     getNotifications();
-  }, []);
+  }, [getNotifications]);
 
   return (
     <Box>

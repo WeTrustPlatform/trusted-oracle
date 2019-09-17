@@ -84,7 +84,7 @@ const NotificationPreview = withRouter(props => {
 
   useAsync(async () => {
     getNotifications();
-  }, []);
+  }, [getNotifications]);
 
   if (!notifications.length) return null;
 
