@@ -7,7 +7,7 @@ import { useFetchBlock } from '../ethereum/useBlockQuery';
 import { NewQuestionEvent, OracleEventType } from './OracleData';
 import { useOracle } from './OracleProvider';
 import { Question, QuestionState } from './Question';
-import { useQuestionsCache } from './QuestionsCacheProvider';
+import { useStore } from './StoreProvider';
 
 export enum QuestionCategory {
   LATEST = 'LATEST',
@@ -111,7 +111,7 @@ const segregateQuestions = (
 export const useQuestionsQuery = (props: UseQuestionsQueryProps) => {
   const { first, category } = props;
   const { realitio, initialBlockNumber } = useOracle();
-  const { getManyByIds, questions } = useQuestionsCache();
+  const { getManyByIds, questions } = useStore();
   const [state, dispatch] = React.useReducer(reducer, initialState);
   const fetchBlock = useFetchBlock();
 

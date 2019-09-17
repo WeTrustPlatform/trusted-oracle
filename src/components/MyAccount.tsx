@@ -11,13 +11,13 @@ import { useBalanceQuery } from '../ethereum/useBalanceQuery';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from '../oracle/OracleProvider';
 import { QuestionCard } from '../oracle/QuestionList';
-import { useQuestionsCache } from '../oracle/QuestionsCacheProvider';
+import { useStore } from '../oracle/StoreProvider';
 import { useClaimsQuery } from '../oracle/useClaimsQuery';
 import { useMyAnswersQuery } from '../oracle/useMyAnswersQuery';
 import { useMyQuestionsQuery } from '../oracle/useMyQuestionsQuery';
-import { useNotificationsQuery } from '../oracle/useNotificationsQuery';
 import { Background } from './Background';
 import { Tabs } from './CustomTabs';
+import { Notification } from './Notifications';
 
 const Claimable = () => {
   const { realitio } = useOracle();
@@ -31,7 +31,7 @@ const Claimable = () => {
     data: { claimArguments, claimable },
     loading: claimsLoading,
   } = useClaimsQuery(answeredQuestions);
-  const { refetchIds } = useQuestionsCache();
+  const { refetchIds } = useStore();
 
   const [{ loading }, handleClaim] = useAsyncFn(async () => {
     // estimateGas gives us a number that credits the eventual storage refund.
@@ -80,12 +80,9 @@ const Claimable = () => {
 
 const NotificationPreview = withRouter(props => {
   const { history } = props;
-  const {
-    data: notifications,
-    loading: notificationsLoading,
-  } = useNotificationsQuery({ first: 1 });
+  const { notifications } = useStore();
 
-  if (notificationsLoading) return <Text>Loading...</Text>;
+  if (!notifications.length) return null;
 
   return (
     <Box>
@@ -98,7 +95,9 @@ const NotificationPreview = withRouter(props => {
         </TouchableOpacity>
       </Box>
       {notifications.slice(0, 1).map((notification, index) => (
-        <Box key={index}>{notification}</Box>
+        <Box key={index}>
+          <Notification {...notification} />
+        </Box>
       ))}
     </Box>
   );

@@ -2,7 +2,7 @@ import BigNumber from 'bn.js';
 import React from 'react';
 import { useAsync, useAsyncFn } from 'react-use';
 
-import { useQuestionsCache } from '../oracle/QuestionsCacheProvider';
+import { useStore } from '../oracle/StoreProvider';
 import { AsyncResult } from '../types/AsyncResult';
 import { useCurrency } from './CurrencyProvider';
 import { useWeb3 } from './Web3Provider';
@@ -30,7 +30,7 @@ export const useBalanceQuery = () => {
   const { account, web3 } = useWeb3();
   const { currency, tokenInstance } = useCurrency();
   const fetchBalance = useFetchBalanceQuery();
-  const { questions } = useQuestionsCache();
+  const { questions } = useStore();
   const [result, setBalance] = React.useState<AsyncResult<BigNumber>>({
     loading: true,
     data: new BigNumber(0),

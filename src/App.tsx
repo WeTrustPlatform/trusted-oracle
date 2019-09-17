@@ -12,7 +12,7 @@ import { Web3DialogsProvider } from './ethereum/Web3DialogsProvider';
 import { Web3Provider } from './ethereum/Web3Provider';
 import { OracleProvider } from './oracle/OracleProvider';
 import { QuestionDetails } from './oracle/QuestionDetails';
-import { QuestionsCacheProvider } from './oracle/QuestionsCacheProvider';
+import { StoreProvider } from './oracle/StoreProvider';
 import { Home } from './pages/Home';
 
 const MyAccountDialog = (props: RouteChildrenProps<{ questionId: string }>) => {
@@ -106,9 +106,9 @@ export const App = () => {
           <ToastProvider>
             <Web3Provider>
               <Web3DialogsProvider>
-                <CurrencyProvider initialCurrency="ETH">
+                <CurrencyProvider initialCurrency="TRST">
                   <OracleProvider>
-                    <QuestionsCacheProvider>
+                    <StoreProvider>
                       <NavigationBar />
                       <Route path="/" component={Home} />
                       <Route path="/my-account" component={MyAccountDialog} />
@@ -120,7 +120,7 @@ export const App = () => {
                         path="/question/:questionId"
                         component={QuestionDetailsDialog}
                       />
-                    </QuestionsCacheProvider>
+                    </StoreProvider>
                   </OracleProvider>
                 </CurrencyProvider>
               </Web3DialogsProvider>

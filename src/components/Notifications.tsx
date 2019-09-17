@@ -12,18 +12,38 @@ import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { withRouter } from 'react-router';
 
-import { useNotificationsQuery } from '../oracle/useNotificationsQuery';
+import { useStore } from '../oracle/StoreProvider';
 import { Background } from './Background';
+import { Link } from './Link';
+
+interface NotificationProps {
+  questionId: string;
+  questionTitle: string;
+  date: string;
+  message: string;
+}
+
+export const Notification = (props: NotificationProps) => {
+  const { questionId, questionTitle, date, message } = props;
+
+  return (
+    <Link to={`/question/${questionId}`}>
+      <Box>
+        <Box paddingBottom={16}>
+          <Text color="muted">
+            {message} {date}
+          </Text>
+          <Text weight="bold">{questionTitle}</Text>
+        </Box>
+      </Box>
+    </Link>
+  );
+};
 
 export const Notifications = withRouter(props => {
   const { history } = props;
-  const {
-    data: notifications,
-    loading: notificationsLoading,
-  } = useNotificationsQuery();
+  const { notifications } = useStore();
   const theme = useTheme();
-
-  if (notificationsLoading) return <Text>Loading...</Text>;
 
   return (
     <Box>
@@ -49,7 +69,9 @@ export const Notifications = withRouter(props => {
             <Row>
               {notifications.map((notification, index) => (
                 <Column key={index}>
-                  <Box paddingBottom={24}>{notification}</Box>
+                  <Box paddingBottom={24}>
+                    <Notification {...notification} />
+                  </Box>
                 </Column>
               ))}
             </Row>

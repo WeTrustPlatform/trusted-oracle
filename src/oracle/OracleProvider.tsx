@@ -19,6 +19,7 @@ const INITIAL_BLOCKS = {
   42: 10350865,
   1337: 0,
 } as const;
+
 export interface OracleContext {
   /** Realitio contract instance */
   realitio: any;

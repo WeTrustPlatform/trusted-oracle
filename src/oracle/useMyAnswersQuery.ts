@@ -7,11 +7,11 @@ import { AsyncResult } from '../types/AsyncResult';
 import { NewAnswerEvent, OracleEventType } from './OracleData';
 import { useOracle } from './OracleProvider';
 import { Question } from './Question';
-import { useQuestionsCache } from './QuestionsCacheProvider';
+import { useStore } from './StoreProvider';
 
 export const useMyAnswersQuery = () => {
   const { account } = useWeb3();
-  const { getManyByIds } = useQuestionsCache();
+  const { getManyByIds } = useStore();
   const { realitio, initialBlockNumber } = useOracle();
   const [result, setResult] = React.useState<AsyncResult<Question[]>>({
     loading: true,

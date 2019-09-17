@@ -1,3 +1,4 @@
+import QuestionUtils from '@realitio/realitio-lib/formatters/question.js';
 import BigNumber from 'bn.js';
 import { isAfter, isBefore } from 'date-fns';
 
@@ -7,7 +8,6 @@ import {
   NewQuestionEvent,
   QuestionJson,
 } from './OracleData';
-import { QuestionUtils } from './QuestionUtils';
 
 export interface QuestionFromContract {
   content_hash: string;

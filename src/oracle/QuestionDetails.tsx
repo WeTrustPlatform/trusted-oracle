@@ -1,5 +1,10 @@
 import BigNumber from 'bn.js';
-import { format, formatDistanceToNow, formatRelative } from 'date-fns';
+import {
+  compareDesc,
+  format,
+  formatDistanceToNow,
+  formatRelative,
+} from 'date-fns';
 import { useFormik } from 'formik';
 import {
   Badge,
@@ -28,7 +33,7 @@ import { useWeb3Dialogs } from '../ethereum/Web3DialogsProvider';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { useOracle } from './OracleProvider';
 import { Answer, isSupported, Question, QuestionState } from './Question';
-import { useQuestionsCache } from './QuestionsCacheProvider';
+import { useStore } from './StoreProvider';
 import { useQuestionQuery } from './useQuestionQuery';
 
 interface QuestionDetailsProps {
@@ -146,9 +151,9 @@ enum BooleanAnswer {
 
 const binaryAnswerMap = {
   [BooleanAnswer.NO]:
-    '0x0000000000000000000000000000000000000000000000000000000000000001',
-  [BooleanAnswer.YES]:
     '0x0000000000000000000000000000000000000000000000000000000000000000',
+  [BooleanAnswer.YES]:
+    '0x0000000000000000000000000000000000000000000000000000000000000001',
   [BooleanAnswer.INVALID]:
     '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
 } as const;
@@ -239,7 +244,9 @@ export const QuestionAnswers = (props: QuestionProps) => {
     throw new Error('Expected answers');
   }
 
-  const [currentAnswer, ...previousAnswers] = answers.slice().reverse();
+  const [currentAnswer, ...previousAnswers] = answers.sort((a, b) =>
+    compareDesc(a.createdAtDate, b.createdAtDate),
+  );
 
   return (
     <Box>
@@ -288,7 +295,7 @@ export const QuestionAddReward = (props: QuestionProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const { realitio } = useOracle();
   const { currency, approve } = useCurrency();
-  const { refetch } = useQuestionsCache();
+  const { refetch } = useStore();
   const { account } = useWeb3();
   const { ensureHasConnected } = useWeb3Dialogs();
   const theme = useTheme();
@@ -393,7 +400,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
   const { realitio } = useOracle();
   const { account } = useWeb3();
   const { currency, approve } = useCurrency();
-  const { refetch } = useQuestionsCache();
+  const { refetch } = useStore();
   const { ensureHasConnected } = useWeb3Dialogs();
 
   const {
@@ -619,7 +626,7 @@ export const QuestionApplyForArbitration = (props: QuestionProps) => {
   const { account } = useWeb3();
   const { currency } = useCurrency();
   const { arbitratorContract } = useOracle();
-  const { refetch } = useQuestionsCache();
+  const { refetch } = useStore();
 
   const [{ loading }, handleApplyForArbitration] = useAsyncFn(async () => {
     const arbitrator = await arbitratorContract.at(question.arbitrator);

@@ -2,7 +2,7 @@ import React from 'react';
 import { useAsync } from 'react-use';
 
 import { Question } from './Question';
-import { useQuestionsCache } from './QuestionsCacheProvider';
+import { useStore } from './StoreProvider';
 
 export type FetchQuestion = (
   questionId: string,
@@ -10,7 +10,7 @@ export type FetchQuestion = (
 ) => Promise<Question | null>;
 
 export const useQuestionQuery = (questionId: string) => {
-  const { getById } = useQuestionsCache();
+  const { getById } = useStore();
   const [result, setQuestion] = React.useState<{
     loading: boolean;
     data: Question | null;
