@@ -55,7 +55,7 @@ const NotificationsDialog = (
 
 export const App = () => {
   return (
-    <HashRouter>
+    <HashRouter basename="/">
       <ThemeProvider
         value={{
           colors: {
