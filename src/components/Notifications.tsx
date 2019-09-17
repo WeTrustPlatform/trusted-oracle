@@ -11,6 +11,7 @@ import {
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { withRouter } from 'react-router';
+import { useAsync } from 'react-use';
 
 import { useStore } from '../oracle/StoreProvider';
 import { Background } from './Background';
@@ -42,8 +43,12 @@ export const Notification = (props: NotificationProps) => {
 
 export const Notifications = withRouter(props => {
   const { history } = props;
-  const { notifications } = useStore();
+  const { notifications, getNotifications } = useStore();
   const theme = useTheme();
+
+  useAsync(async () => {
+    getNotifications();
+  }, []);
 
   return (
     <Box>

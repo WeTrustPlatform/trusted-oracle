@@ -1,7 +1,7 @@
 import BigNumber from 'bn.js';
 import { formatDistanceToNow } from 'date-fns';
 import React from 'react';
-import { useAsync, useAsyncFn } from 'react-use';
+import { useAsyncFn } from 'react-use';
 import { Block } from 'web3/eth/types';
 
 import { useCurrency } from '../ethereum/CurrencyProvider';
@@ -374,6 +374,7 @@ export interface StoreContext {
   getById: (id: string) => Promise<Question | null>;
   getManyByIds: (ids: string[]) => Promise<Question[]>;
   refetchIds: (ids: string[]) => Promise<void>;
+  getNotifications: () => Promise<void>;
 }
 
 const StoreContext = React.createContext<StoreContext>({
@@ -383,6 +384,7 @@ const StoreContext = React.createContext<StoreContext>({
   refetchIds: async () => {},
   getById: async () => null,
   getManyByIds: async () => [],
+  getNotifications: async () => {},
 });
 
 export const useStore = () => {
@@ -562,7 +564,9 @@ export const StoreProvider = (props: StoreProviderProps) => {
     [fetchQuestion, state],
   );
 
-  useAsync(async () => {
+  const [_, fetch] = useAsyncFn(async () => {
+    if (state.notifications) return;
+
     const notifications = await fetchNotifications();
 
     if (notifications.length) {
@@ -579,6 +583,7 @@ export const StoreProvider = (props: StoreProviderProps) => {
         refetchIds,
         questions: state.questions,
         notifications: state.notifications,
+        getNotifications: fetch,
       }}
     >
       {children}

@@ -3,7 +3,7 @@ import { Box, Column, Container, Heading, Row, Text } from 'paramount-ui';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { withRouter } from 'react-router';
-import { useAsyncFn } from 'react-use';
+import { useAsync, useAsyncFn } from 'react-use';
 
 import { useCurrency } from '../ethereum/CurrencyProvider';
 import { formatCurrency } from '../ethereum/CurrencyUtils';
@@ -80,7 +80,11 @@ const Claimable = () => {
 
 const NotificationPreview = withRouter(props => {
   const { history } = props;
-  const { notifications } = useStore();
+  const { notifications, getNotifications } = useStore();
+
+  useAsync(async () => {
+    getNotifications();
+  }, []);
 
   if (!notifications.length) return null;
 
