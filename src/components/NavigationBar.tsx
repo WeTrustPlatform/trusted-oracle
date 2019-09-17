@@ -12,9 +12,9 @@ import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 
 import { BlockchainAccountStatus } from './BlockchainAccountStatus';
-import { FamilyOfProducts } from './FamilyOfProducts';
 import { Link, LinkProps } from './Link';
 import { Logo } from './Logo';
+import { WeTrustProductsBanner } from './WeTrustProductsBanner';
 
 const DesktopNavigationBarDivider = () => (
   <Divider
@@ -54,7 +54,7 @@ const DesktopNavigationBar = () => {
         flexWrap="wrap"
         height={55}
       >
-        <FamilyOfProducts />
+        <WeTrustProductsBanner />
       </Box>
       <Box
         flexDirection="row"
@@ -181,7 +181,7 @@ const MobileNavigationBar = () => {
           </Box>
           <Box paddingTop={48} backgroundColor="#222222" height="100%">
             <Box flexWrap="wrap" flexDirection="row" justifyContent="center">
-              <FamilyOfProducts />
+              <WeTrustProductsBanner />
             </Box>
           </Box>
         </Modal>

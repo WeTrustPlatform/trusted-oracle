@@ -19,7 +19,7 @@ const ProductLink = (props: LinkProps) => {
   );
 };
 
-export const FamilyOfProducts = () => {
+export const WeTrustProductsBanner = () => {
   const { getResponsiveValue } = useLayout();
 
   const paddingBottom = getResponsiveValue({
