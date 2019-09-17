@@ -60,7 +60,12 @@ const segregateQuestions = (
         .sort((a, b) => compareDesc(a.createdAtDate, b.createdAtDate));
     case QuestionCategory.CLOSING_SOON:
       return questions
-        .filter(q => q.state !== QuestionState.FINALIZED)
+        .filter(
+          q =>
+            q.state === QuestionState.OPEN ||
+            q.state === QuestionState.PENDING_ARBITRATION,
+        )
+        .filter(q => q.finalizedAtDate !== 'UNANSWERED')
         .sort((a, b) => {
           if (
             a.finalizedAtDate === 'UNANSWERED' ||
@@ -74,6 +79,7 @@ const segregateQuestions = (
     case QuestionCategory.HIGH_REWARD:
       return questions
         .filter(q => q.state !== QuestionState.FINALIZED)
+        .filter(q => q.bounty.gt(new BigNumber(0)))
         .sort((a, b) => {
           if (b.bounty.sub(a.bounty).gt(new BigNumber(0))) {
             return 1;
@@ -85,7 +91,18 @@ const segregateQuestions = (
           return 0;
         });
     case QuestionCategory.RESOLVED:
-      return questions.filter(q => q.state === QuestionState.FINALIZED);
+      return questions
+        .filter(q => q.state === QuestionState.FINALIZED)
+        .sort((a, b) => {
+          if (
+            a.finalizedAtDate === 'UNANSWERED' ||
+            b.finalizedAtDate === 'UNANSWERED'
+          ) {
+            return -1;
+          }
+
+          return compareDesc(a.finalizedAtDate, b.finalizedAtDate);
+        });
     default:
       return questions;
   }
@@ -104,7 +121,10 @@ export const useQuestionsQuery = (props: UseQuestionsQueryProps) => {
     const { toBlock } = state;
     const latestBlock = await fetchBlock('latest');
     if (!toBlock) {
-      dispatch({ type: 'update', payload: { toBlock: latestBlock.number } });
+      dispatch({
+        type: 'update',
+        payload: { toBlock: latestBlock.number, loading: true },
+      });
     }
   }, [fetchBlock, state]);
 
@@ -145,9 +165,11 @@ export const useQuestionsQuery = (props: UseQuestionsQueryProps) => {
     });
   }, [realitio, getManyByIds, incrementIndex, toBlock, initialBlockNumber]);
 
+  const segregatedQuestions = segregateQuestions(questions, category);
+
   return {
-    data: segregateQuestions(questions, category).slice(0, first),
-    total: questions,
+    data: segregatedQuestions.slice(0, first),
+    total: segregatedQuestions.length,
     loading,
   };
 };

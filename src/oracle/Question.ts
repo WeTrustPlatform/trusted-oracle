@@ -61,6 +61,7 @@ export interface Question extends QuestionFromNewQuestionEvent {
 }
 
 export enum QuestionState {
+  PENDING_ARBITRATION = 'PENDING_ARBITRATION',
   NOT_OPEN = 'NOT_OPEN',
   OPEN = 'OPEN',
   FINALIZED = 'FINALIZED',
@@ -130,6 +131,8 @@ export const isFinalized = (question: QuestionFromContract) => {
 const getQuestionState = (question: QuestionFromContract): QuestionState => {
   if (isFinalized(question)) return QuestionState.FINALIZED;
   if (isOpen(question)) return QuestionState.OPEN;
+
+  if (question.is_pending_arbitration) return QuestionState.PENDING_ARBITRATION;
 
   return QuestionState.NOT_OPEN;
 };

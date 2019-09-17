@@ -17,6 +17,7 @@ import {
   useTheme,
 } from 'paramount-ui';
 import React from 'react';
+import { useAsyncFn } from 'react-use';
 
 import { Background } from '../components/Background';
 import { CTAButton } from '../components/CTAButton';
@@ -140,6 +141,7 @@ enum BooleanAnswer {
   YES = 'Yes',
   NO = 'No',
   INVALID = 'Invalid',
+  UNKNOWN = 'Unknown',
 }
 
 const binaryAnswerMap = {
@@ -160,7 +162,7 @@ export const toBinaryAnswer = (answer: string) => {
     case binaryAnswerMap[BooleanAnswer.INVALID]:
       return BooleanAnswer.INVALID;
     default:
-      throw new Error('Invalid binary answer');
+      return BooleanAnswer.UNKNOWN;
   }
 };
 
@@ -248,7 +250,6 @@ export const QuestionAnswers = (props: QuestionProps) => {
               Deadline {formatRelative(question.finalizedAtDate, new Date())}
             </Text>
           )}
-
           <QuestionAnswerCard
             answer={currentAnswer}
             order={
@@ -564,6 +565,10 @@ export const getQuestionBadgeTitle = (question: Question) => {
     return 'OPEN FOR ANSWERS';
   }
 
+  if (state === QuestionState.PENDING_ARBITRATION) {
+    return 'AWAITING ARBITRATION';
+  }
+
   return `OPEN FOR ANSWERS ON ${format(openingDate, 'MMM d, yyyy')}`;
 };
 
@@ -575,6 +580,10 @@ export const getQuestionBadgeColor = (question: Question, theme: Theme) => {
   }
 
   if (state === QuestionState.OPEN) {
+    return theme.colors.text.primary;
+  }
+
+  if (state === QuestionState.PENDING_ARBITRATION) {
     return theme.colors.text.primary;
   }
 
@@ -607,12 +616,31 @@ export const QuestionBadge = (props: QuestionProps) => {
 
 export const QuestionApplyForArbitration = (props: QuestionProps) => {
   const { question } = props;
+  const { account } = useWeb3();
   const { currency } = useCurrency();
+  const { arbitratorContract } = useOracle();
+  const { refetch } = useQuestionsCache();
+
+  const [{ loading }, handleApplyForArbitration] = useAsyncFn(async () => {
+    const arbitrator = await arbitratorContract.at(question.arbitrator);
+
+    await arbitrator.requestArbitration(question.id, question.bond, {
+      from: account,
+      value: question.disputeFee,
+    });
+
+    await refetch(question.id);
+  }, [arbitratorContract, question, account]);
 
   return (
     <Box>
       <Box paddingBottom={16} alignItems="center">
-        <CTAButton appearance="outline" title="Apply for arbitration" />
+        <CTAButton
+          isLoading={loading}
+          appearance="outline"
+          title="Apply for arbitration"
+          onPress={handleApplyForArbitration}
+        />
       </Box>
       <Box>
         <Text size="small" isItalic align="center">

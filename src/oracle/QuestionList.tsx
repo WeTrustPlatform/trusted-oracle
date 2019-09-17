@@ -187,9 +187,9 @@ export const QuestionList = () => {
             ))}
           </Row>
 
-          {loading && <Text>Loading...</Text>}
+          {loading && first > total && <Text>Loading...</Text>}
 
-          {first < total.length && (
+          {first < total && (
             <Box alignItems="center">
               <CTAButton
                 appearance="outline"

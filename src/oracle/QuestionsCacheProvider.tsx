@@ -15,30 +15,6 @@ import {
   transformNewQuestionEventToQuestion,
 } from './Question';
 
-export interface QuestionsCacheContext {
-  questions: Question[];
-  refetch: (id: string) => Promise<void>;
-  getById: (id: string) => Promise<Question | null>;
-  getManyByIds: (ids: string[]) => Promise<Question[]>;
-  refetchIds: (ids: string[]) => Promise<void>;
-}
-
-const QuestionsCacheContext = React.createContext<QuestionsCacheContext>({
-  questions: [],
-  refetch: async () => {},
-  refetchIds: async () => {},
-  getById: async () => null,
-  getManyByIds: async () => [],
-});
-
-export const useQuestionsCache = () => {
-  return React.useContext(QuestionsCacheContext);
-};
-
-export interface QuestionsCacheProviderProps {
-  children?: React.ReactNode;
-}
-
 export type FetchQuestion = (questionId: string) => Promise<Question | null>;
 
 export const useFetchQuestionQuery = () => {
@@ -111,13 +87,103 @@ export const useFetchQuestionQuery = () => {
   return fetchQuestion;
 };
 
+export interface QuestionsCacheContext {
+  questions: Question[];
+  refetch: (id: string) => Promise<void>;
+  getById: (id: string) => Promise<Question | null>;
+  getManyByIds: (ids: string[]) => Promise<Question[]>;
+  refetchIds: (ids: string[]) => Promise<void>;
+}
+
+const QuestionsCacheContext = React.createContext<QuestionsCacheContext>({
+  questions: [],
+  refetch: async () => {},
+  refetchIds: async () => {},
+  getById: async () => null,
+  getManyByIds: async () => [],
+});
+
+export const useQuestionsCache = () => {
+  return React.useContext(QuestionsCacheContext);
+};
+
+export interface QuestionsCacheProviderProps {
+  children?: React.ReactNode;
+}
+
+interface State {
+  questions: Question[];
+}
+
+const initialState: State = {
+  questions: [],
+};
+
+type Action =
+  | {
+      type: 'update';
+      payload: { question: Question };
+    }
+  | {
+      type: 'updateBatch';
+      payload: { questions: Question[] };
+    }
+  | {
+      type: 'insert';
+      payload: { question: Question };
+    }
+  | {
+      type: 'insertBatch';
+      payload: { questions: Question[] };
+    };
+
+const reducer = (state: State, action: Action) => {
+  switch (action.type) {
+    case 'insert':
+      return {
+        ...state,
+        questions: state.questions
+          .filter(q => q.id !== action.payload.question.id)
+          .concat(action.payload.question),
+      };
+    case 'insertBatch':
+      return {
+        ...state,
+        questions: state.questions
+          .filter(
+            q => !action.payload.questions.map(rq => rq.id).includes(q.id),
+          )
+          .concat(action.payload.questions),
+      };
+    case 'update':
+      return {
+        ...state,
+        questions: state.questions
+          .filter(q => q.id !== action.payload.question.id)
+          .concat(action.payload.question),
+      };
+    case 'updateBatch':
+      return {
+        ...state,
+        questions: state.questions
+          .filter(
+            q => !action.payload.questions.map(rq => rq.id).includes(q.id),
+          )
+          .concat(action.payload.questions),
+      };
+    default:
+      throw new Error();
+  }
+};
+
 export const QuestionsCacheProvider = (props: QuestionsCacheProviderProps) => {
   const { children } = props;
   const fetchQuestion = useFetchQuestionQuery();
-  const [questions, setQuestions] = React.useState<Question[]>([]);
+  const [state, dispatch] = React.useReducer(reducer, initialState);
 
   const getById = React.useCallback(
     async (id: string) => {
+      const { questions } = state;
       const existingQuestion = questions.find(q => q.id === id);
 
       if (existingQuestion) return existingQuestion;
@@ -126,32 +192,35 @@ export const QuestionsCacheProvider = (props: QuestionsCacheProviderProps) => {
 
       if (!question) return null;
 
-      setQuestions(questions.concat(question));
+      dispatch({ type: 'insert', payload: { question } });
 
       return question;
     },
-    [fetchQuestion, questions],
+    [fetchQuestion, state],
   );
 
   const refetch = React.useCallback(
     async (id: string) => {
+      const { questions } = state;
       const refetchedQuestion = await fetchQuestion(id);
 
       if (refetchedQuestion) {
         const existingQuestion = questions.find(q => q.id === id);
 
         if (existingQuestion) {
-          setQuestions(
-            questions
-              .filter(q => q.id !== refetchedQuestion.id)
-              .concat(refetchedQuestion),
-          );
+          dispatch({
+            type: 'update',
+            payload: { question: refetchedQuestion },
+          });
         } else {
-          setQuestions(questions.concat(refetchedQuestion));
+          dispatch({
+            type: 'insert',
+            payload: { question: refetchedQuestion },
+          });
         }
       }
     },
-    [fetchQuestion, questions],
+    [fetchQuestion, state],
   );
 
   const refetchIds = React.useCallback(
@@ -164,17 +233,17 @@ export const QuestionsCacheProvider = (props: QuestionsCacheProviderProps) => {
         }),
       )).filter(Boolean) as Question[];
 
-      setQuestions(
-        questions
-          .filter(q => !refetchedQuestions.map(rq => rq.id).includes(q.id))
-          .concat(refetchedQuestions),
-      );
+      dispatch({
+        type: 'updateBatch',
+        payload: { questions: refetchedQuestions },
+      });
     },
-    [fetchQuestion, questions],
+    [fetchQuestion, state],
   );
 
   const getManyByIds = React.useCallback(
     async (ids: string[]) => {
+      const { questions } = state;
       const newQuestions: Question[] = [];
 
       const returnedQuestions = (await Promise.all(
@@ -191,17 +260,25 @@ export const QuestionsCacheProvider = (props: QuestionsCacheProviderProps) => {
       )).filter(Boolean) as Question[];
 
       if (newQuestions.length) {
-        setQuestions(questions.concat(newQuestions));
+        dispatch({ type: 'insertBatch', payload: { questions: newQuestions } });
       }
 
       return returnedQuestions;
     },
-    [fetchQuestion, questions],
+    [fetchQuestion, state],
   );
+
+  // console.log(state, 'state');
 
   return (
     <QuestionsCacheContext.Provider
-      value={{ getById, getManyByIds, refetch, refetchIds, questions }}
+      value={{
+        getById,
+        getManyByIds,
+        refetch,
+        refetchIds,
+        questions: state.questions,
+      }}
     >
       {children}
     </QuestionsCacheContext.Provider>
