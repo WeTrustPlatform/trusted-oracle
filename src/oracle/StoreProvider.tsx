@@ -545,7 +545,7 @@ export const StoreProvider = (props: StoreProviderProps) => {
         payload: { questions: refetchedQuestions },
       });
     },
-    [fetchQuestion, state],
+    [fetchQuestion],
   );
 
   const getManyByIds = React.useCallback(

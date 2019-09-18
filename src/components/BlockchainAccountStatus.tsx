@@ -17,7 +17,7 @@ export const BlockchainAccountStatus = withRouter(props => {
     if (ensureHasConnected()) {
       history.push('/my-account');
     }
-  }, [hasWallet, account, ensureHasConnected]);
+  }, [ensureHasConnected, history]);
 
   return (
     <TouchableOpacity onPress={handlePress}>

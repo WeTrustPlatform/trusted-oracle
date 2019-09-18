@@ -66,7 +66,7 @@ export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
     }
 
     return true;
-  }, [account, hasWallet]);
+  }, [account, hasWallet, isConnected]);
 
   return (
     <Web3DialogsContext.Provider
