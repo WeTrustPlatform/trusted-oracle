@@ -9,7 +9,7 @@ import { useWeb3 } from '../ethereum/Web3Provider';
 
 export const BlockchainAccountStatus = withRouter(props => {
   const { history } = props;
-  const { account, hasWallet, web3IsLoading } = useWeb3();
+  const { account, hasWallet, isConnected, web3IsLoading } = useWeb3();
   const { ensureHasConnected } = useWeb3Dialogs();
   const theme = React.useContext(ThemeContext);
 
@@ -50,10 +50,12 @@ export const BlockchainAccountStatus = withRouter(props => {
             {web3IsLoading
               ? 'Loading...'
               : hasWallet
-              ? account
-                ? trimAddress(account)
-                : `Sign in your wallet`
-              : `Connect to a wallet`}
+              ? isConnected
+                ? account
+                  ? trimAddress(account)
+                  : `Sign in your wallet`
+                : 'Connect to app'
+              : `Connect to wallet`}
           </Text>
         </Box>
       </Box>

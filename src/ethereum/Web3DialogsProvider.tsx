@@ -30,7 +30,7 @@ export interface Web3DialogsProviderProps {
 
 export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
   const { children } = props;
-  const { account, hasWallet } = useWeb3();
+  const { account, hasWallet, isConnected } = useWeb3();
   const [
     showRequireMetamaskSetup,
     setShowRequireMetamaskSetup,
@@ -54,6 +54,12 @@ export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
       setShowRequireMetamaskSetup(true);
       return false;
     }
+
+    if (!isConnected) {
+      setShowPrivacyWallet(true);
+      return false;
+    }
+
     if (!account) {
       setShowRequireWalletSignIn(true);
       return false;

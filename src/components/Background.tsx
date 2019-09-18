@@ -10,11 +10,23 @@ export const Background = (props: BackgroundProps) => {
 
   if (pattern === 'dotted') {
     return (
-      <div style={{ backgroundImage: `url('/dotted-bg.png')` }}>{children}</div>
+      <div
+        style={{
+          backgroundImage: `url('https://res.cloudinary.com/wetrust-cryptounlocked/image/upload/c_crop,w_400/v1568706049/dotted-bg.png')`,
+        }}
+      >
+        {children}
+      </div>
     );
   }
 
   return (
-    <div style={{ backgroundImage: `url('/textured-bg.jpg')` }}>{children}</div>
+    <div
+      style={{
+        backgroundImage: `url('https://res.cloudinary.com/wetrust-cryptounlocked/image/upload/c_crop,w_400/v1568706049/textured-bg.png')`,
+      }}
+    >
+      {children}
+    </div>
   );
 };

@@ -53,6 +53,12 @@ const NotificationsDialog = (
   );
 };
 
+// @ts-ignore
+if (window.ethereum && window.ethereum.enable) {
+  // @ts-ignore
+  window.ethereum.enable();
+}
+
 export const App = () => {
   return (
     <HashRouter basename="/">

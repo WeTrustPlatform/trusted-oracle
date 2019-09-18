@@ -12,7 +12,7 @@ const getNetworkId = async (web3: Web3): Promise<NetworkId> => {
 const getAccount = async (web3: Web3) => {
   const accounts = await web3.eth.getAccounts();
   // Always use the first as current account
-  return accounts[0];
+  return accounts[0] || null;
 };
 
 const getHasWallet = (web3: Web3) => {
@@ -52,6 +52,7 @@ interface State {
   account: string | null;
   networkId: NetworkId;
   hasWallet: boolean;
+  isConnected: boolean;
   isUsingFallback: boolean;
 }
 
@@ -61,6 +62,7 @@ const initialState: State = {
   providerName: null,
   account: null,
   networkId: 1,
+  isConnected: false,
   hasWallet: false,
   isUsingFallback: false,
 };
@@ -74,6 +76,7 @@ const getWeb3State = async (
   if (!hasWallet) {
     return {
       ...initialState,
+      isConnected: false,
       web3: new Web3(fallbackRPCEndpoint),
       isUsingFallback: true,
     };
@@ -82,10 +85,14 @@ const getWeb3State = async (
   const account = await getAccount(web3);
   const networkId = await getNetworkId(web3);
   const providerName = await getProviderName(web3);
+  // eslint-disable-next-line
+  // @ts-ignore
+  const isConnected = await window.ethereum._metamask.isApproved();
 
   return {
     web3,
     hasWallet,
+    isConnected,
     account,
     networkId,
     providerName,
@@ -130,6 +137,7 @@ export const Web3Provider = (props: Web3ProviderProps) => {
     web3IsLoading,
     web3,
     providerName,
+    isConnected,
     isUsingFallback,
   } = state;
 
@@ -144,7 +152,7 @@ export const Web3Provider = (props: Web3ProviderProps) => {
   React.useEffect(() => {
     const updateWeb3State = () => {
       getAccount(web3).then(currentAccount => {
-        if (account && account !== currentAccount) {
+        if (account && currentAccount && account !== currentAccount) {
           document.location.href = '/';
           return;
         }
@@ -180,6 +188,7 @@ export const Web3Provider = (props: Web3ProviderProps) => {
         providerName,
         hasWallet,
         isUsingFallback,
+        isConnected,
       }}
     >
       {children}

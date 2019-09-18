@@ -145,36 +145,36 @@ export const QuestionList = () => {
             QUESTION LIST
           </Heading>
         </Box>
-        <Box paddingBottom={40}>
-          <Tabs
-            onChangeTab={category => {
-              // eslint-disable-next-line
-              // @ts-ignore: we know that only QuestionCategory is passed in
-              setCategory(category);
-              setFirst(8);
-            }}
-            currentValue={category}
-            tabs={[
-              {
-                label: 'LATEST',
-                value: QuestionCategory.LATEST,
-              },
-              {
-                label: 'CLOSING SOON',
-                value: QuestionCategory.CLOSING_SOON,
-              },
-              {
-                label: 'HIGH REWARD',
-                value: QuestionCategory.HIGH_REWARD,
-              },
-              {
-                label: 'RESOLVED',
-                value: QuestionCategory.RESOLVED,
-              },
-            ]}
-          />
-        </Box>
         <Container>
+          <Box paddingBottom={40}>
+            <Tabs
+              onChangeTab={category => {
+                // eslint-disable-next-line
+                // @ts-ignore: we know that only QuestionCategory is passed in
+                setCategory(category);
+                setFirst(8);
+              }}
+              currentValue={category}
+              tabs={[
+                {
+                  label: 'LATEST',
+                  value: QuestionCategory.LATEST,
+                },
+                {
+                  label: 'CLOSING SOON',
+                  value: QuestionCategory.CLOSING_SOON,
+                },
+                {
+                  label: 'HIGH REWARD',
+                  value: QuestionCategory.HIGH_REWARD,
+                },
+                {
+                  label: 'RESOLVED',
+                  value: QuestionCategory.RESOLVED,
+                },
+              ]}
+            />
+          </Box>
           <Row>
             {questions.map(question => (
               <Column key={question.id}>

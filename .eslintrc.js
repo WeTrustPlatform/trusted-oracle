@@ -6,4 +6,7 @@ module.exports = {
     'prettier',
     'prettier/@typescript-eslint',
   ],
+  rules: {
+    '@typescript-eslint/ban-ts-ignore': 0,
+  },
 };
