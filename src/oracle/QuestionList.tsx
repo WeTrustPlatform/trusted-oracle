@@ -7,6 +7,7 @@ import {
   Heading,
   Row,
   Text,
+  useLayout,
   useTheme,
 } from 'paramount-ui';
 import React from 'react';
@@ -34,6 +35,7 @@ export interface QuestionCardProps {
 export const QuestionCard = (props: QuestionCardProps) => {
   const theme = useTheme();
   const { account } = useWeb3();
+  const { getResponsiveValue } = useLayout();
   const answerColor = useAnswerColor();
   const { question } = props;
 
@@ -50,17 +52,45 @@ export const QuestionCard = (props: QuestionCardProps) => {
       <Box alignItems="flex-end" paddingRight={8} paddingTop={8} zIndex={1}>
         <QuestionTooltip position="bottom-right" question={question} />
       </Box>
-      <Box flexDirection="row" alignItems="center" paddingHorizontal={40}>
+      <Box
+        {...getResponsiveValue({
+          large: {
+            flexDirection: 'row',
+            alignItems: 'center',
+          },
+        })}
+        paddingHorizontal={40}
+      >
         <Box flex={1} paddingRight={24}>
           <Text weight="bold" size="large">
             {question.questionTitle}
           </Text>
         </Box>
         <Divider
-          position="vertical"
-          getStyles={() => ({ dividerStyle: { height: 70 } })}
+          position={getResponsiveValue({
+            large: 'vertical',
+            xsmall: 'horizontal',
+          })}
+          getStyles={() => ({
+            dividerStyle: getResponsiveValue({
+              large: { height: 70 },
+              xsmall: {
+                marginTop: 24,
+              },
+            }),
+          })}
         />
-        <Box flexBasis="15%" paddingLeft={24}>
+        <Box
+          {...getResponsiveValue({
+            large: {
+              flexBasis: '15%',
+              paddingLeft: 24,
+            },
+            xsmall: {
+              paddingTop: 24,
+            },
+          })}
+        >
           <Box paddingBottom={24}>
             <QuestionReward question={question} />
           </Box>
@@ -73,7 +103,11 @@ export const QuestionCard = (props: QuestionCardProps) => {
             <Box
               paddingVertical={16}
               paddingHorizontal={40}
-              flexDirection="row"
+              {...getResponsiveValue({
+                large: {
+                  flexDirection: 'row',
+                },
+              })}
               justifyContent="space-between"
             >
               {isEmpty(answers) && (

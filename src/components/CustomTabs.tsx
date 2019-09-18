@@ -1,6 +1,6 @@
-import { Box, Divider, Heading, useTheme } from 'paramount-ui';
+import { Box, Divider, Heading, useLayout, useTheme } from 'paramount-ui';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native';
 
 interface TabProps {
   label: string;
@@ -12,9 +12,16 @@ interface TabProps {
 const Tab = (props: TabProps) => {
   const { label, value, onPress, isActive } = props;
   const theme = useTheme();
+  const { getResponsiveValue } = useLayout();
 
   return (
-    <TouchableOpacity style={{ flex: 1 }} onPress={() => onPress(value)}>
+    <TouchableOpacity
+      style={getResponsiveValue({
+        large: { flex: 1 },
+        xsmall: { paddingHorizontal: 16 },
+      })}
+      onPress={() => onPress(value)}
+    >
       <Box paddingBottom={16}>
         <Heading
           align="center"
@@ -50,9 +57,13 @@ export interface TabsProps {
 
 export const Tabs = (props: TabsProps) => {
   const { onChangeTab, tabs, currentValue } = props;
+  const { getResponsiveValue } = useLayout();
 
   return (
-    <Box flexDirection="row">
+    <ScrollView
+      horizontal
+      contentContainerStyle={getResponsiveValue({ xlarge: { flex: 1 } })}
+    >
       {tabs.map(tab => (
         <Tab
           key={tab.value}
@@ -62,6 +73,6 @@ export const Tabs = (props: TabsProps) => {
           onPress={onChangeTab}
         />
       ))}
-    </Box>
+    </ScrollView>
   );
 };

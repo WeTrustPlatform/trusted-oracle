@@ -1,4 +1,12 @@
-import { Box, Column, Container, Heading, Row, Text } from 'paramount-ui';
+import {
+  Box,
+  Column,
+  Container,
+  Heading,
+  Row,
+  Text,
+  useLayout,
+} from 'paramount-ui';
 import React from 'react';
 
 import { Background } from '../components/Background';
@@ -26,7 +34,7 @@ const HeroSection = () => {
               </Text>
               <Link to="/how-it-works">See how it works</Link>
             </Box>
-            <Box alignItems="flex-start">
+            <Box alignItems="flex-start" paddingBottom={24}>
               <CTAButton
                 title="Ask a question"
                 onPress={() => {
@@ -91,6 +99,8 @@ const AskAQuestionSection = () => {
 };
 
 const HowItWorksSection = () => {
+  const { getResponsiveValue } = useLayout();
+
   return (
     <Background pattern="dotted">
       <Box paddingVertical={60}>
@@ -109,7 +119,10 @@ const HowItWorksSection = () => {
               <Box paddingBottom={60}>
                 <WebImage
                   alt="trusted-oracle how it works"
-                  src={require('../assets/images/how-it-works.png')}
+                  src={getResponsiveValue({
+                    xlarge: require('../assets/images/how-it-works.png'),
+                    xsmall: require('../assets/images/how-it-works-mobile.svg'),
+                  })}
                 />
               </Box>
             </Column>
@@ -128,6 +141,8 @@ const HowItWorksSection = () => {
 };
 
 const GetTRSTSection = () => {
+  const { getResponsiveValue } = useLayout();
+
   return (
     <Background pattern="textured">
       <Box paddingVertical={60}>
@@ -145,19 +160,25 @@ const GetTRSTSection = () => {
                 </Text>
               </Box>
               <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
+                {...getResponsiveValue({
+                  large: {
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  },
+                })}
               >
-                <CTAButton
-                  appearance="outline"
-                  icon={
-                    <WebImage
-                      alt="get trst via banchor"
-                      src={require('../assets/images/banchor.png')}
-                    />
-                  }
-                />
+                <Box paddingBottom={24}>
+                  <CTAButton
+                    appearance="outline"
+                    icon={
+                      <WebImage
+                        alt="get trst via banchor"
+                        src={require('../assets/images/banchor.png')}
+                      />
+                    }
+                  />
+                </Box>
                 <CTAButton
                   appearance="outline"
                   icon={

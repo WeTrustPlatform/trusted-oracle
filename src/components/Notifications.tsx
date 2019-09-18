@@ -6,6 +6,7 @@ import {
   Icon,
   Row,
   Text,
+  useLayout,
   useTheme,
 } from 'paramount-ui';
 import React from 'react';
@@ -45,6 +46,7 @@ export const Notifications = withRouter(props => {
   const { history } = props;
   const { notifications, getNotifications } = useStore();
   const theme = useTheme();
+  const { getResponsiveValue } = useLayout();
 
   useAsync(async () => {
     getNotifications();
@@ -63,13 +65,32 @@ export const Notifications = withRouter(props => {
           </View>
         </TouchableOpacity>
       </Box>
-      <Box paddingBottom={16} paddingHorizontal={60}>
+      <Box
+        paddingBottom={16}
+        {...getResponsiveValue({
+          large: {
+            paddingHorizontal: 60,
+          },
+          xsmall: {
+            paddingHorizontal: 16,
+          },
+        })}
+      >
         <Heading align="center" color="primary" size="xxlarge">
           NOTIFICATIONS
         </Heading>
       </Box>
       <Background pattern="dotted">
-        <Box paddingHorizontal={60}>
+        <Box
+          {...getResponsiveValue({
+            large: {
+              paddingHorizontal: 60,
+            },
+            xsmall: {
+              paddingHorizontal: 16,
+            },
+          })}
+        >
           <Container>
             <Row>
               {notifications.map((notification, index) => (

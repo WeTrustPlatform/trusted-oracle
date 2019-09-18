@@ -12,7 +12,7 @@ export const CTAButton = (props: ButtonProps) => {
               backgroundColor: 'transparent',
               borderColor: '#eb7209',
               borderWidth: 1,
-              width: 280,
+              minWidth: 280,
             },
             textStyle: {
               color: '#eb7209',
@@ -23,7 +23,7 @@ export const CTAButton = (props: ButtonProps) => {
 
         return {
           touchableStyle: {
-            width: 280,
+            minWidth: 280,
             backgroundColor: '#e98100',
           },
           textStyle: {

@@ -20,6 +20,7 @@ import {
   Text,
   TextInput,
   Theme,
+  useLayout,
   useTheme,
 } from 'paramount-ui';
 import React from 'react';
@@ -46,6 +47,7 @@ interface QuestionDetailsProps {
 export const QuestionDetails = (props: QuestionDetailsProps) => {
   const { questionId } = props;
   const { data: question, loading } = useQuestionQuery(questionId);
+  const { getResponsiveValue } = useLayout();
 
   if (loading) {
     return (
@@ -64,43 +66,103 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
   }
 
   return (
-    <Box>
-      <Box paddingBottom={16} paddingHorizontal={60} paddingTop={40}>
+    <Box backgroundColor="content">
+      <Box
+        paddingBottom={16}
+        paddingTop={40}
+        {...getResponsiveValue({
+          large: {
+            paddingHorizontal: 60,
+          },
+          xsmall: {
+            paddingHorizontal: 16,
+          },
+        })}
+      >
         <Heading align="center" color="primary" size="xxlarge">
           QUESTION DETAILS
         </Heading>
       </Box>
       <Box
         paddingBottom={16}
-        paddingHorizontal={60}
         flexDirection="row"
         justifyContent="space-between"
         zIndex={1}
+        {...getResponsiveValue({
+          large: {
+            paddingHorizontal: 60,
+          },
+          xsmall: {
+            paddingHorizontal: 16,
+          },
+        })}
       >
         <QuestionTooltip position="bottom-left" question={question} />
         <QuestionSummary question={question} />
       </Box>
-      <Box paddingBottom={24} paddingHorizontal={60}>
+      <Box
+        paddingBottom={24}
+        {...getResponsiveValue({
+          large: {
+            paddingHorizontal: 60,
+          },
+          xsmall: {
+            paddingHorizontal: 16,
+          },
+        })}
+      >
         <Text
           weight="bold"
           getStyles={() => ({
-            textStyle: {
-              fontSize: 32,
-              lineHeight: 40,
-            },
+            textStyle: getResponsiveValue({
+              xlarge: {
+                fontSize: 32,
+                lineHeight: 40,
+              },
+              xsmall: {
+                fontSize: 24,
+                lineHeight: 28,
+              },
+            }),
           })}
         >
           {question.questionTitle}
         </Text>
       </Box>
       <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        paddingHorizontal={60}
+        {...getResponsiveValue({
+          large: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            paddingHorizontal: 60,
+          },
+          xsmall: {
+            paddingHorizontal: 16,
+          },
+        })}
         paddingVertical={16}
       >
-        <Box flexDirection="row" alignItems="center">
-          <Box paddingRight={24}>
+        <Box
+          {...getResponsiveValue({
+            large: {
+              flexDirection: 'row',
+              alignItems: 'center',
+            },
+            xsmall: {
+              paddingBottom: 16,
+            },
+          })}
+        >
+          <Box
+            {...getResponsiveValue({
+              large: {
+                paddingRight: 24,
+              },
+              xsmall: {
+                paddingBottom: 16,
+              },
+            })}
+          >
             <QuestionReward question={question} />
           </Box>
           <QuestionPostedDate question={question} />
@@ -108,7 +170,17 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
         <QuestionBadge question={question} />
       </Box>
       {question.state === QuestionState.OPEN && (
-        <Box paddingVertical={16} paddingHorizontal={60}>
+        <Box
+          paddingVertical={16}
+          {...getResponsiveValue({
+            large: {
+              paddingHorizontal: 60,
+            },
+            xsmall: {
+              paddingHorizontal: 16,
+            },
+          })}
+        >
           <QuestionAddReward question={question} />
         </Box>
       )}
@@ -116,14 +188,34 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
 
       {question.state === QuestionState.OPEN && (
         <Background pattern="textured">
-          <Box paddingVertical={24} paddingHorizontal={60}>
+          <Box
+            paddingVertical={24}
+            {...getResponsiveValue({
+              large: {
+                paddingHorizontal: 60,
+              },
+              xsmall: {
+                paddingHorizontal: 16,
+              },
+            })}
+          >
             <QuestionPostAnswer question={question} />
           </Box>
         </Background>
       )}
       {question.state === QuestionState.OPEN && (
         <Background pattern="dotted">
-          <Box paddingVertical={40} paddingHorizontal={60}>
+          <Box
+            paddingVertical={40}
+            {...getResponsiveValue({
+              large: {
+                paddingHorizontal: 60,
+              },
+              xsmall: {
+                paddingHorizontal: 16,
+              },
+            })}
+          >
             <QuestionApplyForArbitration question={question} />
           </Box>
         </Background>
@@ -195,12 +287,18 @@ export const useAnswerColor = () => {
 
 const QuestionAnswerCard = (props: QuestionAnswerCardProps) => {
   const { answer, order } = props;
+  const { getResponsiveValue } = useLayout();
   const { currency } = useCurrency();
   const getAnswerColor = useAnswerColor();
 
   return (
     <Box>
-      <Box flexDirection="row" alignItems="center" paddingVertical={16}>
+      <Box
+        {...getResponsiveValue({
+          large: { flexDirection: 'row', alignItems: 'center' },
+        })}
+        paddingVertical={16}
+      >
         <Box flexBasis="20%">{order}</Box>
         <Box flex={1}>
           <Text
@@ -212,7 +310,11 @@ const QuestionAnswerCard = (props: QuestionAnswerCardProps) => {
             {toBinaryAnswer(answer.answer)}
           </Text>
         </Box>
-        <Box flexBasis="20%" alignItems="flex-end">
+        <Box
+          {...getResponsiveValue({
+            large: { flexBasis: '20%', alignItems: 'flex-end' },
+          })}
+        >
           <Text>
             <Text size="small">
               Posted {formatDistanceToNow(answer.createdAtDate)} ago
@@ -220,7 +322,12 @@ const QuestionAnswerCard = (props: QuestionAnswerCardProps) => {
           </Text>
         </Box>
       </Box>
-      <Box flexDirection="row" alignItems="center" paddingBottom={16}>
+      <Box
+        {...getResponsiveValue({
+          large: { flexDirection: 'row', alignItems: 'center' },
+        })}
+        paddingBottom={16}
+      >
         <Text>
           <Text weight="bold">User </Text>
           {answer.user}{' '}
@@ -237,6 +344,7 @@ const QuestionAnswerCard = (props: QuestionAnswerCardProps) => {
 export const QuestionAnswers = (props: QuestionProps) => {
   const { question } = props;
   const { answers } = question;
+  const { getResponsiveValue } = useLayout();
 
   if (!answers.length) return null;
 
@@ -255,7 +363,17 @@ export const QuestionAnswers = (props: QuestionProps) => {
   return (
     <Box>
       <Background pattern="textured">
-        <Box paddingHorizontal={60} paddingTop={16}>
+        <Box
+          {...getResponsiveValue({
+            large: {
+              paddingHorizontal: 60,
+            },
+            xsmall: {
+              paddingHorizontal: 16,
+            },
+          })}
+          paddingTop={16}
+        >
           {question.state !== QuestionState.FINALIZED && (
             <Text weight="bold">
               Deadline {formatRelative(question.finalizedAtDate, new Date())}
@@ -278,7 +396,16 @@ export const QuestionAnswers = (props: QuestionProps) => {
         </Box>
       </Background>
       <Background pattern="dotted">
-        <Box paddingHorizontal={60}>
+        <Box
+          {...getResponsiveValue({
+            large: {
+              paddingHorizontal: 60,
+            },
+            xsmall: {
+              paddingHorizontal: 16,
+            },
+          })}
+        >
           {previousAnswers.map((answer, index) => (
             <Box key={String(answer.bond)}>
               <QuestionAnswerCard
@@ -302,6 +429,7 @@ export const QuestionAddReward = (props: QuestionProps) => {
   const { refetch } = useStore();
   const { account } = useWeb3();
   const { ensureHasConnected } = useWeb3Dialogs();
+  const { getResponsiveValue } = useLayout();
   const theme = useTheme();
 
   const {
@@ -375,7 +503,13 @@ export const QuestionAddReward = (props: QuestionProps) => {
           },
         })}
       >
-        <Box flexDirection="row">
+        <Box
+          {...getResponsiveValue({
+            xlarge: {
+              flexDirection: 'row',
+            },
+          })}
+        >
           <Box paddingRight={16}>
             <FormField error={touched.reward && errors.reward}>
               <TextInput
@@ -406,6 +540,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
   const { currency, approve } = useCurrency();
   const { refetch } = useStore();
   const { ensureHasConnected } = useWeb3Dialogs();
+  const { getResponsiveValue } = useLayout();
 
   const {
     values,
@@ -494,7 +629,13 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
 
   return (
     <Box>
-      <Box flexDirection="row">
+      <Box
+        {...getResponsiveValue({
+          xlarge: {
+            flexDirection: 'row',
+          },
+        })}
+      >
         <Box paddingRight={16} flex={1}>
           <FormField
             label="Do you know the answer to this question?"

@@ -1,5 +1,13 @@
 import BigNumber from 'bn.js';
-import { Box, Column, Container, Heading, Row, Text } from 'paramount-ui';
+import {
+  Box,
+  Column,
+  Container,
+  Heading,
+  Row,
+  Text,
+  useLayout,
+} from 'paramount-ui';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { withRouter } from 'react-router';
@@ -81,6 +89,7 @@ const Claimable = () => {
 const NotificationPreview = withRouter(props => {
   const { history } = props;
   const { notifications, getNotifications } = useStore();
+  const { getResponsiveValue } = useLayout();
 
   useAsync(async () => {
     getNotifications();
@@ -89,7 +98,17 @@ const NotificationPreview = withRouter(props => {
   if (!notifications.length) return null;
 
   return (
-    <Box>
+    <Box
+      {...getResponsiveValue({
+        large: {
+          paddingHorizontal: 60,
+        },
+        xsmall: {
+          paddingHorizontal: 16,
+        },
+      })}
+      paddingVertical={24}
+    >
       <Box flexDirection="row" justifyContent="space-between">
         <Text weight="bold" color="primary">
           Latest activity
@@ -170,17 +189,36 @@ const MyQuestions = () => {
 
 export const MyAccount = () => {
   const [tab, setTab] = React.useState(MyAccountTab.QUESTION);
+  const { getResponsiveValue } = useLayout();
 
   return (
     <Box>
-      <Box paddingBottom={16} paddingHorizontal={60} paddingTop={40}>
+      <Box
+        paddingBottom={16}
+        {...getResponsiveValue({
+          large: {
+            paddingHorizontal: 60,
+          },
+          xsmall: {
+            paddingHorizontal: 16,
+          },
+        })}
+        paddingTop={40}
+      >
         <Heading align="center" color="primary" size="xxlarge">
           MY ACCOUNT
         </Heading>
       </Box>
       <Background pattern="textured">
         <Box
-          paddingHorizontal={60}
+          {...getResponsiveValue({
+            large: {
+              paddingHorizontal: 60,
+            },
+            xsmall: {
+              paddingHorizontal: 16,
+            },
+          })}
           paddingVertical={24}
           flexDirection="row"
           justifyContent="space-between"
@@ -189,11 +227,19 @@ export const MyAccount = () => {
           <Claimable />
         </Box>
       </Background>
-      <Box paddingHorizontal={60} paddingVertical={24}>
-        <NotificationPreview />
-      </Box>
+      <NotificationPreview />
+
       <Background pattern="dotted">
-        <Box paddingHorizontal={60}>
+        <Box
+          {...getResponsiveValue({
+            large: {
+              paddingHorizontal: 60,
+            },
+            xsmall: {
+              paddingHorizontal: 16,
+            },
+          })}
+        >
           <Box paddingBottom={40} paddingTop={24}>
             <Tabs
               // eslint-disable-next-line
