@@ -1,11 +1,9 @@
 import { isEmpty } from 'lodash';
 import {
   Box,
-  Column,
   Container,
   Divider,
   Heading,
-  Row,
   Text,
   useLayout,
   useTheme,
@@ -209,17 +207,13 @@ export const QuestionList = () => {
               ]}
             />
           </Box>
-          <Row>
-            {questions.map(question => (
-              <Column key={question.id}>
-                <Box paddingBottom={24}>
-                  <Link to={`/question/${question.id}`}>
-                    <QuestionCard question={question} />
-                  </Link>
-                </Box>
-              </Column>
-            ))}
-          </Row>
+          {questions.map(question => (
+            <Box key={question.id} paddingBottom={24}>
+              <Link to={`/question/${question.id}`}>
+                <QuestionCard question={question} />
+              </Link>
+            </Box>
+          ))}
 
           {loading && first > total && <Text>Loading...</Text>}
 

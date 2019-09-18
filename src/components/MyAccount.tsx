@@ -1,13 +1,5 @@
 import BigNumber from 'bn.js';
-import {
-  Box,
-  Column,
-  Container,
-  Heading,
-  Row,
-  Text,
-  useLayout,
-} from 'paramount-ui';
+import { Box, Heading, Text, useLayout } from 'paramount-ui';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { withRouter } from 'react-router';
@@ -153,17 +145,13 @@ const MyAnswers = () => {
   if (answersLoading) return <Text>Loading...</Text>;
 
   return (
-    <Container>
-      <Row>
-        {answeredQuestions.map(question => (
-          <Column key={question.id}>
-            <Box paddingBottom={24}>
-              <QuestionCard question={question} />
-            </Box>
-          </Column>
-        ))}
-      </Row>
-    </Container>
+    <Box>
+      {answeredQuestions.map(question => (
+        <Box key={question.id} paddingBottom={24}>
+          <QuestionCard question={question} />
+        </Box>
+      ))}
+    </Box>
   );
 };
 
@@ -173,17 +161,13 @@ const MyQuestions = () => {
   if (questionsLoading) return <Text>Loading...</Text>;
 
   return (
-    <Container>
-      <Row>
-        {questions.map(question => (
-          <Column key={question.id}>
-            <Box paddingBottom={24}>
-              <QuestionCard question={question} />
-            </Box>
-          </Column>
-        ))}
-      </Row>
-    </Container>
+    <Box>
+      {questions.map(question => (
+        <Box key={question.id} paddingBottom={24}>
+          <QuestionCard question={question} />
+        </Box>
+      ))}
+    </Box>
   );
 };
 
