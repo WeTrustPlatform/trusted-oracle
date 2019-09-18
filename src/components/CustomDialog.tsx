@@ -16,9 +16,13 @@ export const CustomDialog = (props: CustomDialogProps) => {
     <Dialog
       isVisible
       onRequestClose={() => history.replace('/')}
-      getStyles={() => ({
+      getStyles={(_, theme) => ({
         modalContainerStyle: {
           overflow: 'scroll',
+          backgroundColor: theme.colors.background.overlay,
+        },
+        overlayStyle: {
+          backgroundColor: 'transparent',
         },
         containerStyle: {
           width: '100%',

@@ -7,12 +7,10 @@ const currencyInfoMap = {
   ETH: {
     decimalsBn: new BigNumber('1000000000000000000'),
     decimals: 1000000000000000000,
-    smallNumber: 0.01 * 1000000000000000000,
   },
   TRST: {
     decimalsBn: new BigNumber('1000000'),
     decimals: 1000000,
-    smallNumber: 100 * 1000000,
   },
 };
 

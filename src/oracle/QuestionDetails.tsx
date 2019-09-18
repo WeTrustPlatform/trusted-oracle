@@ -16,6 +16,7 @@ import {
   Icon,
   NativePicker,
   NativePickerItem,
+  Position,
   Text,
   TextInput,
   Theme,
@@ -23,9 +24,11 @@ import {
 } from 'paramount-ui';
 import React from 'react';
 import { useAsyncFn } from 'react-use';
+import Web3 from 'web3';
 
 import { Background } from '../components/Background';
 import { CTAButton } from '../components/CTAButton';
+import { Tooltip } from '../components/Tooltip';
 import { WebImage } from '../components/WebImage';
 import { useCurrency } from '../ethereum/CurrencyProvider';
 import { formatCurrency, toBigNumber } from '../ethereum/CurrencyUtils';
@@ -72,8 +75,9 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
         paddingHorizontal={60}
         flexDirection="row"
         justifyContent="space-between"
+        zIndex={1}
       >
-        <QuestionTooltip question={question} />
+        <QuestionTooltip position="bottom-left" question={question} />
         <QuestionSummary question={question} />
       </Box>
       <Box paddingBottom={24} paddingHorizontal={60}>
@@ -696,8 +700,61 @@ export const QuestionReward = (props: QuestionProps) => {
   );
 };
 
-export const QuestionTooltip = (props: QuestionProps) => {
-  return <Icon name="alert-circle" color="default" />;
+const smallNumberMap = {
+  ETH: new BigNumber(Web3.utils.toWei('0.01')),
+  TRST: new BigNumber(100 * 1000000),
+};
+
+// const isArbitratorValidFast = (arbitrator: string, networkId: string) => {
+//   for (let a in arbitrator_list[""+network_id]) {
+//       if (a.toLowerCase() == arbitrator.toLowerCase()) {
+//           return true;
+//       }
+//   }
+
+//   return false;
+// }
+
+export interface QuestionTooltipProps extends QuestionProps {
+  position: Position;
+}
+
+export const QuestionTooltip = (props: QuestionTooltipProps) => {
+  const { question, position } = props;
+  const { currency } = useCurrency();
+
+  let text = '';
+
+  if (question.timeout.lt(new BigNumber(86400))) {
+    text =
+      'The timeout is very low. This means there may not be enough time for people to correct mistakes or lies. \n';
+  }
+
+  if (question.bounty.lt(smallNumberMap[currency])) {
+    text +=
+      'The reward is very low. This means there may not be enough incentive to enter the correct answer and back it up with a bond.\n';
+  }
+
+  // TODO: Add this validation
+  // let valid_arbirator = isArbitratorValidFast(question_data[Qi_arbitrator]);
+  //   if (!valid_arbirator) {
+  //     text += 'This arbitrator is unknown.';
+  //   }
+
+  if (text === '') return null;
+
+  return (
+    <Tooltip
+      position={position}
+      content={
+        <Box width={400}>
+          <Text>{text}</Text>
+        </Box>
+      }
+    >
+      <Icon name="alert-circle" color="default" />
+    </Tooltip>
+  );
 };
 
 export const QuestionSummary = (props: QuestionProps) => {

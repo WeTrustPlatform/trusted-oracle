@@ -47,8 +47,8 @@ export const QuestionCard = (props: QuestionCardProps) => {
       borderColor={theme.colors.border.default}
       borderRadius={8}
     >
-      <Box alignItems="flex-end" paddingRight={8} paddingTop={8}>
-        <QuestionTooltip question={question} />
+      <Box alignItems="flex-end" paddingRight={8} paddingTop={8} zIndex={1}>
+        <QuestionTooltip position="bottom-right" question={question} />
       </Box>
       <Box flexDirection="row" alignItems="center" paddingHorizontal={40}>
         <Box flex={1} paddingRight={24}>

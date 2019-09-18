@@ -44,7 +44,7 @@ type Unanswered = 'UNANSWERED';
  * Question with all the necessary information to display in QuestionDetails
  */
 export interface Question extends QuestionFromNewQuestionEvent {
-  timeout: Date;
+  timeout: BigNumber;
   finalizedAtDate: Date | Unanswered;
   bounty: BigNumber;
   bestAnswer: string;
@@ -160,7 +160,7 @@ export const toQuestion = (
   return {
     ...questionFromNewQuestionEvent,
     questionTitle: questionJson.title,
-    timeout: toDate(questionFromContract.timeout),
+    timeout: questionFromContract.timeout,
     finalizedAtDate: isAnswered(questionFromContract)
       ? toDate(questionFromContract.finalize_ts)
       : 'UNANSWERED',
