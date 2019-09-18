@@ -26,15 +26,15 @@ export const formatCurrency = (
     // bn.js does not support decimals
     // so for small enough numbers (less than 1 rounded to 0) we use normal division
     if (number === 0) {
-      return (
+      return `${(
         bigNumber.toNumber() / currencyInfoMap[currency].decimals
-      ).toString();
+      ).toString()} ${currency}`;
     }
 
-    return number.toString();
+    return `${number.toString()} ${currency}`;
   }
 
-  return Web3.utils.fromWei(bigNumber.toString(), 'ether');
+  return `${Web3.utils.fromWei(bigNumber.toString(), 'ether')} ${currency}`;
 };
 
 export const toBigNumber = (amount: string, currency: Currency) => {

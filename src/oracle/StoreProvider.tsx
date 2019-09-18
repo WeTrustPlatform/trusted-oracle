@@ -245,7 +245,7 @@ export const useFetchNotificationsQuery = () => {
                   questionId: fundedQuestion.id,
                   date: timeAgo(rewardBlock),
                   questionTitle: fundedQuestion.questionTitle,
-                  message: `You added ${reward} ${currency} reward`,
+                  message: `You added ${reward} reward`,
                 };
               }
 
@@ -254,7 +254,7 @@ export const useFetchNotificationsQuery = () => {
                   questionId: fundedQuestion.id,
                   date: timeAgo(rewardBlock),
                   questionTitle: fundedQuestion.questionTitle,
-                  message: `Someone added ${reward} ${currency} reward to your question`,
+                  message: `Someone added ${reward} reward to your question`,
                 };
               } else {
                 if (
@@ -264,7 +264,7 @@ export const useFetchNotificationsQuery = () => {
                     questionId: fundedQuestion.id,
                     date: timeAgo(rewardBlock),
                     questionTitle: fundedQuestion.questionTitle,
-                    message: `Someone added ${reward} ${currency} reward to the question you answered`,
+                    message: `Someone added ${reward} reward to the question you answered`,
                   };
                 }
               }
@@ -360,7 +360,7 @@ export const useFetchNotificationsQuery = () => {
                   message: `You claimed ${formatCurrency(
                     event.args.amount,
                     currency,
-                  )}, ${currency}`,
+                  )}`,
                 };
               }
 

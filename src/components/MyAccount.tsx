@@ -70,7 +70,7 @@ const Claimable = () => {
           <Text color="secondary">Loading...</Text>
         ) : (
           <Text color="secondary">
-            Claim {formatCurrency(claimable, currency)} {currency}
+            Claim {formatCurrency(claimable, currency)}
           </Text>
         )}
       </TouchableOpacity>
@@ -115,7 +115,7 @@ const Balance = () => {
 
   return (
     <Text color="primary" weight="bold">
-      Your balance: {formatCurrency(balance, currency)} {currency}
+      Your balance: {formatCurrency(balance, currency)}
     </Text>
   );
 };

@@ -227,7 +227,7 @@ const QuestionAnswerCard = (props: QuestionAnswerCardProps) => {
         </Text>
         <Text>
           <Text weight="bold">Bond </Text>
-          {formatCurrency(answer.bond, currency)} {currency}
+          {formatCurrency(answer.bond, currency)}
         </Text>
       </Box>
     </Box>
@@ -440,7 +440,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
         errors.bond = `Bond must be equal or greater than ${formatCurrency(
           question.bond.mul(new BigNumber(2)),
           currency,
-        )} ${currency}`;
+        )}`;
       } else if (
         toBigNumber(values.bond, currency)
           .toString()
@@ -533,7 +533,7 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
                 ? `(minimum ${formatCurrency(
                     question.bond.mul(new BigNumber(2)),
                     currency,
-                  )} ${currency})`
+                  )})`
                 : ''
             }`}
             getStyles={() => ({
@@ -655,8 +655,7 @@ export const QuestionApplyForArbitration = (props: QuestionProps) => {
       </Box>
       <Box>
         <Text size="small" isItalic align="center">
-          *Applying fee: {formatCurrency(question.disputeFee, currency)}{' '}
-          {currency}
+          *Applying fee: {formatCurrency(question.disputeFee, currency)}
         </Text>
       </Box>
     </Box>
@@ -693,9 +692,7 @@ export const QuestionReward = (props: QuestionProps) => {
           src={require('../assets/images/card-trst.svg')}
         />
       </Box>
-      <Text size="small">
-        {formatCurrency(question.bounty, currency)} {currency}
-      </Text>
+      <Text size="small">{formatCurrency(question.bounty, currency)}</Text>
     </Box>
   );
 };
@@ -757,6 +754,52 @@ export const QuestionTooltip = (props: QuestionTooltipProps) => {
   );
 };
 
+const secondsTodHms = (sec: number) => {
+  const d = Math.floor(sec / (3600 * 24));
+  const h = Math.floor((sec % (3600 * 24)) / 3600);
+  const m = Math.floor(((sec % (3600 * 24)) % 3600) / 60);
+  const s = Math.floor(((sec % (3600 * 24)) % 3600) % 60);
+
+  const dDisplay = d > 0 ? d + (d == 1 ? ' day ' : ' days ') : '';
+  const hDisplay = h > 0 ? h + (h == 1 ? ' hour ' : ' hours ') : '';
+  const mDisplay = m > 0 ? m + (m == 1 ? ' minute ' : ' minutes ') : '';
+  const sDisplay = s > 0 ? s + (s == 1 ? ' second' : ' seconds') : '';
+
+  return dDisplay + hDisplay + mDisplay + sDisplay;
+};
+
 export const QuestionSummary = (props: QuestionProps) => {
-  return <Icon name="more-horizontal" color="default" />;
+  const { question } = props;
+  const { currency } = useCurrency();
+
+  return (
+    <Tooltip
+      position="bottom-right"
+      content={
+        <Box width={400}>
+          <Text size="small">
+            Reward: {formatCurrency(question.bounty, currency)}
+          </Text>
+          <Box height={8} />
+          <Text size="small">
+            Highest bond: {formatCurrency(question.bond, currency)}
+          </Text>
+          <Box height={8} />
+          <Text size="small">
+            Timeout: {secondsTodHms(question.timeout.toNumber())}
+          </Text>
+          <Box height={8} />
+          <Text size="small">Content hash: {question.contentHash}</Text>
+          <Box height={8} />
+          <Text size="small">Question ID: {question.id}</Text>
+          <Box height={8} />
+          <Text size="small">Arbitrator: {question.arbitrator}</Text>
+          <Box height={8} />
+          <Text size="small">Author: {question.user}</Text>
+        </Box>
+      }
+    >
+      <Icon name="more-horizontal" color="default" />
+    </Tooltip>
+  );
 };
