@@ -23,3 +23,18 @@ code {
   src: url(https://wetrustplatform.github.io/hosted-fonts/fonts/MicrobrewSoftOneHatch.otf)
     format('opentype');
 }
+
+.DayPickerInput input {
+  display: flex;
+  width: 100%;
+  height: 44px;
+  border-radius: 4px;
+  outline: none;
+  border-width: 1px;
+  padding-left: 16px;
+  box-shadow: none;
+  border-color: rgb(238, 238, 238);
+  border-style: solid;
+  color: #7e7e7e;
+  font-size: 18px;
+}

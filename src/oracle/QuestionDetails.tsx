@@ -441,16 +441,16 @@ export const QuestionAddReward = (props: QuestionProps) => {
     isSubmitting,
   } = useFormik({
     initialValues: {
-      reward: '',
+      bounty: '',
     },
 
     validate: values => {
       const errors: {
-        reward?: string;
+        bounty?: string;
       } = {};
 
-      if (!values.reward) {
-        errors.reward = 'Please enter a reward';
+      if (!values.bounty) {
+        errors.bounty = 'Please enter a bounty';
       }
 
       return errors;
@@ -458,17 +458,17 @@ export const QuestionAddReward = (props: QuestionProps) => {
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       if (ensureHasConnected()) {
-        const reward = toBigNumber(values.reward, currency);
+        const bounty = toBigNumber(values.bounty, currency);
 
         try {
           if (currency === 'ETH') {
             await realitio.fundAnswerBounty(question.id, {
               from: account,
-              value: reward,
+              value: bounty,
             });
           } else {
-            await approve(realitio.address, reward);
-            await realitio.fundAnswerBountyERC20(question.id, reward, {
+            await approve(realitio.address, bounty);
+            await realitio.fundAnswerBountyERC20(question.id, bounty, {
               from: account,
             });
           }
@@ -511,11 +511,11 @@ export const QuestionAddReward = (props: QuestionProps) => {
           })}
         >
           <Box paddingRight={16}>
-            <FormField error={touched.reward && errors.reward}>
+            <FormField error={touched.bounty && errors.bounty}>
               <TextInput
-                value={values.reward}
+                value={values.bounty}
                 keyboardType="number-pad"
-                onChangeText={text => setFieldValue('reward', text)}
+                onChangeText={text => setFieldValue('bounty', text)}
                 placeholder="Enter amount"
               />
             </FormField>
@@ -639,12 +639,6 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
         <Box paddingRight={16} flex={1}>
           <FormField
             label="Do you know the answer to this question?"
-            getStyles={() => ({
-              labelTextStyle: {
-                color: theme.colors.text.primary,
-                fontWeight: 'bold',
-              },
-            })}
             error={touched.answer && errors.answer}
           >
             <NativePicker
@@ -677,12 +671,6 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
                   )})`
                 : ''
             }`}
-            getStyles={() => ({
-              labelTextStyle: {
-                color: theme.colors.text.primary,
-                fontWeight: 'bold',
-              },
-            })}
             error={touched.bond && errors.bond}
           >
             <TextInput
@@ -870,7 +858,7 @@ export const QuestionTooltip = (props: QuestionTooltipProps) => {
 
   if (question.bounty.lt(smallNumberMap[currency])) {
     text +=
-      'The reward is very low. This means there may not be enough incentive to enter the correct answer and back it up with a bond.\n';
+      'The bounty is very low. This means there may not be enough incentive to enter the correct answer and back it up with a bond.\n';
   }
 
   // TODO: Add this validation

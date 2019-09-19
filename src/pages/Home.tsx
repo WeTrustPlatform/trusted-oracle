@@ -8,6 +8,7 @@ import {
   useLayout,
 } from 'paramount-ui';
 import React from 'react';
+import { withRouter } from 'react-router';
 
 import { Background } from '../components/Background';
 import { BlogSection } from '../components/BlogSection';
@@ -17,7 +18,9 @@ import { Link } from '../components/Link';
 import { WebImage } from '../components/WebImage';
 import { QuestionList } from '../oracle/QuestionList';
 
-const HeroSection = () => {
+const HeroSection = withRouter(props => {
+  const { history } = props;
+
   return (
     <Box paddingVertical={40}>
       <Container>
@@ -38,7 +41,7 @@ const HeroSection = () => {
               <CTAButton
                 title="Ask a question"
                 onPress={() => {
-                  window.open('https://cryptounlocked.wetrust.io', '_blank');
+                  history.push('/ask-question');
                 }}
               />
             </Box>
@@ -53,9 +56,11 @@ const HeroSection = () => {
       </Container>
     </Box>
   );
-};
+});
 
-const AskAQuestionSection = () => {
+const AskAQuestionSection = withRouter(props => {
+  const { history } = props;
+
   return (
     <Background pattern="textured">
       <Box paddingVertical={60}>
@@ -86,7 +91,7 @@ const AskAQuestionSection = () => {
                 <CTAButton
                   title="Ask a question"
                   onPress={() => {
-                    window.open('https://cryptounlocked.wetrust.io', '_blank');
+                    history.push('/ask-question');
                   }}
                 />
               </Box>
@@ -96,7 +101,7 @@ const AskAQuestionSection = () => {
       </Box>
     </Background>
   );
-};
+});
 
 const HowItWorksSection = () => {
   const { getResponsiveValue } = useLayout();

@@ -67,10 +67,7 @@ const DesktopNavigationBar = () => {
         <Box flexDirection="row" alignItems="center">
           <DesktopNavigationBarLink to="/">Home</DesktopNavigationBarLink>
           <DesktopNavigationBarDivider />
-          <DesktopNavigationBarLink
-            to="https://cryptounlocked.wetrust.io/"
-            isExternal
-          >
+          <DesktopNavigationBarLink to="/ask-question">
             Ask a Question
           </DesktopNavigationBarLink>
           <DesktopNavigationBarDivider />
@@ -125,11 +122,7 @@ const MobileNavigationMenu = (props: MobileNavigationMenuProps) => {
       <MobileNavigationMenuLink onClick={onClick} to="/">
         Home
       </MobileNavigationMenuLink>
-      <MobileNavigationMenuLink
-        onClick={onClick}
-        to="https://cryptounlocked.wetrust.io/"
-        isExternal
-      >
+      <MobileNavigationMenuLink onClick={onClick} to="/ask-question">
         Ask a Question
       </MobileNavigationMenuLink>
       <MobileNavigationMenuLink onClick={onClick} to="/how-it-works" isExternal>

@@ -3,10 +3,8 @@ import React from 'react';
 import { useCurrency } from '../ethereum/CurrencyProvider';
 import { useWeb3 } from '../ethereum/Web3Provider';
 import { useArbitratorContract } from './useArbitratorContract';
+import { useArbitratorList } from './useArbitratorList';
 import { useRealitioInstance } from './useRealitioInstance';
-
-// import ArbitratorList from '@realitio/realitio-contracts/config/arbitrators.json';
-// import ArbitratorTRSTList from '@realitio/realitio-contracts/config/arbitrators.TRST.json';
 
 interface OracleProviderProps {
   children?: React.ReactNode;
@@ -20,11 +18,17 @@ const INITIAL_BLOCKS = {
   1337: 0,
 } as const;
 
+export interface Arbitrator {
+  name: string;
+  address: string;
+}
+
 export interface OracleContext {
   /** Realitio contract instance */
   realitio: any;
   /** Arbitrator contract */
   arbitratorContract: any;
+  arbitratorList: Arbitrator[];
   initialBlockNumber: number;
   loading: boolean;
 }
@@ -32,6 +36,7 @@ export interface OracleContext {
 const OracleContext = React.createContext<OracleContext>({
   realitio: null,
   arbitratorContract: null,
+  arbitratorList: [],
   loading: true,
   initialBlockNumber: 0,
 });
@@ -51,6 +56,7 @@ export const OracleProvider = (props: OracleProviderProps) => {
     contract: arbitratorContract,
     loading: arbitratorContractLoading,
   } = useArbitratorContract(currency);
+  const arbitratorList = useArbitratorList(currency, networkId);
   const initialBlockNumber = INITIAL_BLOCKS[networkId];
 
   return (
@@ -60,6 +66,7 @@ export const OracleProvider = (props: OracleProviderProps) => {
         arbitratorContract,
         loading: arbitratorContractLoading || realitioLoading,
         initialBlockNumber,
+        arbitratorList,
       }}
     >
       {children}

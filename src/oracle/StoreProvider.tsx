@@ -233,28 +233,28 @@ export const useFetchNotificationsQuery = () => {
               return null;
 
             case OracleEventType.LogFundAnswerBounty:
-              const rewardBlock = await fetchBlock(event.blockNumber);
+              const bountyBlock = await fetchBlock(event.blockNumber);
               const fundedQuestion = await fetchQuestion(
                 event.args.question_id,
               );
               if (!fundedQuestion) throw new Error('Question not found');
-              const reward = formatCurrency(event.args.bounty, currency);
+              const bounty = formatCurrency(event.args.bounty, currency);
 
               if (event.args.user === account) {
                 return {
                   questionId: fundedQuestion.id,
-                  date: timeAgo(rewardBlock),
+                  date: timeAgo(bountyBlock),
                   questionTitle: fundedQuestion.questionTitle,
-                  message: `You added ${reward} reward`,
+                  message: `You added ${bounty} bounty`,
                 };
               }
 
               if (fundedQuestion.user === account) {
                 return {
                   questionId: fundedQuestion.id,
-                  date: timeAgo(rewardBlock),
+                  date: timeAgo(bountyBlock),
                   questionTitle: fundedQuestion.questionTitle,
-                  message: `Someone added ${reward} reward to your question`,
+                  message: `Someone added ${bounty} bounty to your question`,
                 };
               } else {
                 if (
@@ -262,9 +262,9 @@ export const useFetchNotificationsQuery = () => {
                 ) {
                   return {
                     questionId: fundedQuestion.id,
-                    date: timeAgo(rewardBlock),
+                    date: timeAgo(bountyBlock),
                     questionTitle: fundedQuestion.questionTitle,
-                    message: `Someone added ${reward} reward to the question you answered`,
+                    message: `Someone added ${bounty} bounty to the question you answered`,
                   };
                 }
               }

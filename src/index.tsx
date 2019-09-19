@@ -1,4 +1,5 @@
 import './index.css';
+import 'react-day-picker/lib/style.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

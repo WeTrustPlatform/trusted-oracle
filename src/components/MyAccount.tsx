@@ -118,7 +118,7 @@ const NotificationPreview = withRouter(props => {
   );
 });
 
-const Balance = () => {
+export const Balance = () => {
   const { currency } = useCurrency();
   const { data: balance, loading: balanceLoading } = useBalanceQuery();
 

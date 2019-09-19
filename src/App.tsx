@@ -3,6 +3,7 @@ import React from 'react';
 import { Route, RouteChildrenProps } from 'react-router';
 import { HashRouter } from 'react-router-dom';
 
+import { AskQuestion } from './components/AskQuestion';
 import { CustomDialog } from './components/CustomDialog';
 import { MyAccount } from './components/MyAccount';
 import { NavigationBar } from './components/NavigationBar';
@@ -15,7 +16,7 @@ import { QuestionDetails } from './oracle/QuestionDetails';
 import { StoreProvider } from './oracle/StoreProvider';
 import { Home } from './pages/Home';
 
-const MyAccountDialog = (props: RouteChildrenProps<{ questionId: string }>) => {
+const MyAccountDialog = (props: RouteChildrenProps) => {
   const { history } = props;
 
   return (
@@ -39,16 +40,22 @@ const QuestionDetailsDialog = (
   );
 };
 
-const NotificationsDialog = (
-  props: RouteChildrenProps<{ questionId: string }>,
-) => {
-  const { history, match } = props;
-
-  if (!match) return null;
+const NotificationsDialog = (props: RouteChildrenProps) => {
+  const { history } = props;
 
   return (
     <CustomDialog history={history}>
       <Notifications />
+    </CustomDialog>
+  );
+};
+
+const AskQuestionDialog = (props: RouteChildrenProps) => {
+  const { history } = props;
+
+  return (
+    <CustomDialog history={history}>
+      <AskQuestion />
     </CustomDialog>
   );
 };
@@ -97,6 +104,17 @@ export const App = () => {
               fontSize: 20,
             },
           },
+          components: {
+            getFormFieldStyles: () => ({
+              labelTextStyle: {
+                color: '#2985cf',
+                fontWeight: 'bold',
+              },
+              descriptionTextStyle: {
+                fontSize: 14,
+              },
+            }),
+          },
         }}
       >
         <LayoutProvider
@@ -118,6 +136,10 @@ export const App = () => {
                       <NavigationBar />
                       <Route path="/" component={Home} />
                       <Route path="/my-account" component={MyAccountDialog} />
+                      <Route
+                        path="/ask-question"
+                        component={AskQuestionDialog}
+                      />
                       <Route
                         path="/notifications"
                         component={NotificationsDialog}
