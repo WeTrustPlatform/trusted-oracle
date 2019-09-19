@@ -867,7 +867,7 @@ export const QuestionTooltip = (props: QuestionTooltipProps) => {
   //     text += 'This arbitrator is unknown.';
   //   }
 
-  if (text === '') return null;
+  if (text === '') return <Box height={24} />;
 
   return (
     <Tooltip
