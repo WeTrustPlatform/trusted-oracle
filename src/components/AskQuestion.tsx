@@ -31,9 +31,9 @@ import { CTAButton } from './CTAButton';
 
 export const Balance = () => {
   const { currency } = useCurrency();
-  const { data: balance, loading: balanceLoading } = useBalanceQuery();
+  const { data: balance } = useBalanceQuery();
 
-  if (balanceLoading) return <Text>Loading...</Text>;
+  if (!balance) return null;
 
   return (
     <Text color="primary" weight="bold">
@@ -55,9 +55,14 @@ export const AskQuestion = withRouter(props => {
   const { currency, approve } = useCurrency();
   const { ensureHasConnected } = useWeb3Dialogs();
 
-  const { loading, value: arbitratorListWithFees } = useAsync(async () => {
+  const { value: arbitratorListWithFees } = useAsync(async () => {
     try {
-      if (!arbitratorContract || !realitio) return;
+      if (!arbitratorContract || !realitio) {
+        return arbitratorList.map(a => ({
+          ...a,
+          fee: new BigNumber(0),
+        })) as ArbitratorWithFee[];
+      }
 
       const arbitratorListWithFees = (await Promise.all(
         arbitratorList.map(async arbitrator => {
@@ -77,10 +82,6 @@ export const AskQuestion = withRouter(props => {
             return { ...arbitrator, fee };
           }
 
-          console.log(
-            'Arbitrator does not work for this contract:',
-            arbitrator.address,
-          );
           return arbitrator;
         }),
       )) as ArbitratorWithFee[];
@@ -234,10 +235,6 @@ export const AskQuestion = withRouter(props => {
       history.replace('/');
     },
   });
-
-  if (loading || arbitratorListWithFees === undefined) {
-    return <Text>Loading...</Text>;
-  }
 
   return (
     <Box>
@@ -406,7 +403,7 @@ export const AskQuestion = withRouter(props => {
                       label="Select arbitrator"
                     />
                     {/* */}
-                    {arbitratorListWithFees.map(arbitrator => (
+                    {(arbitratorListWithFees || []).map(arbitrator => (
                       <NativePickerItem
                         key={arbitrator.address}
                         value={arbitrator.address}
