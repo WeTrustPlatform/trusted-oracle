@@ -14,9 +14,7 @@ export const BlockchainAccountStatus = withRouter(props => {
   const theme = React.useContext(ThemeContext);
 
   const handlePress = React.useCallback(() => {
-    if (ensureHasConnected()) {
-      history.push('/my-account');
-    }
+    if (ensureHasConnected()) history.push('/my-account');
   }, [ensureHasConnected, history]);
 
   return (

@@ -33,9 +33,6 @@ const useMakeQuestionClaim = () => {
       let isYours = false;
 
       for (let i = question.answers.length - 1; i >= 0; i--) {
-        // TODO: Check the history hash, and if we haven't reached it, keep going until we do
-        // ...since someone may have claimed partway through
-
         const { answer, bond, user: answerer, historyHash } = question.answers[
           i
         ];
@@ -87,8 +84,6 @@ const useMakeQuestionClaim = () => {
       // So delete the first item, and add 0x0 to the end.
       historyHashes.shift();
       historyHashes.push('0x0');
-
-      // TODO: Someone may have claimed partway, so we should really be checking against the contract state
 
       return {
         total,

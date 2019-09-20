@@ -757,11 +757,14 @@ export const QuestionBadge = (props: QuestionProps) => {
 export const QuestionApplyForArbitration = (props: QuestionProps) => {
   const { question } = props;
   const { account } = useWeb3();
+  const { ensureHasConnected } = useWeb3Dialogs();
   const { currency } = useCurrency();
   const { arbitratorContract } = useOracle();
   const { refetch } = useStore();
 
   const [{ loading }, handleApplyForArbitration] = useAsyncFn(async () => {
+    if (!ensureHasConnected()) return;
+
     const arbitrator = await arbitratorContract.at(question.arbitrator);
 
     await arbitrator.requestArbitration(question.id, question.bond, {
@@ -831,16 +834,6 @@ const smallNumberMap = {
   TRST: new BigNumber(100 * 1000000),
 };
 
-// const isArbitratorValidFast = (arbitrator: string, networkId: string) => {
-//   for (let a in arbitrator_list[""+network_id]) {
-//       if (a.toLowerCase() == arbitrator.toLowerCase()) {
-//           return true;
-//       }
-//   }
-
-//   return false;
-// }
-
 export interface QuestionTooltipProps extends QuestionProps {
   position: Position;
 }
@@ -860,12 +853,6 @@ export const QuestionTooltip = (props: QuestionTooltipProps) => {
     text +=
       'The bounty is very low. This means there may not be enough incentive to enter the correct answer and back it up with a bond.\n';
   }
-
-  // TODO: Add this validation
-  // let valid_arbirator = isArbitratorValidFast(question_data[Qi_arbitrator]);
-  //   if (!valid_arbirator) {
-  //     text += 'This arbitrator is unknown.';
-  //   }
 
   if (text === '') return <Box height={24} />;
 

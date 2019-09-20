@@ -15,10 +15,6 @@ const getAccount = async (web3: Web3) => {
   return accounts[0] || null;
 };
 
-const getHasWallet = (web3: Web3) => {
-  return !!web3.currentProvider;
-};
-
 type ProviderName =
   | 'equal'
   | 'metamask'
@@ -47,61 +43,54 @@ const getProviderName = (web3: any): ProviderName | null => {
 
 interface State {
   web3IsLoading: boolean;
-  web3: Web3;
   providerName: string | null;
   account: string | null;
   networkId: NetworkId;
-  hasWallet: boolean;
   isConnected: boolean;
-  isUsingFallback: boolean;
 }
 
 const initialState: State = {
   web3IsLoading: true,
-  web3: new Web3(Web3.givenProvider),
   providerName: null,
   account: null,
   networkId: 1,
   isConnected: false,
-  hasWallet: false,
-  isUsingFallback: false,
 };
 
 const getWeb3State = async (
   web3: Web3,
   fallbackRPCEndpoint = `https://mainnet.infura.io/v3/022f489bd91a47f3960f6f70333bdb76`,
 ): Promise<State> => {
-  const hasWallet = getHasWallet(web3);
-
-  if (!hasWallet) {
-    return {
-      ...initialState,
-      isConnected: false,
-      web3: new Web3(fallbackRPCEndpoint),
-      isUsingFallback: true,
-    };
-  }
-
   const account = await getAccount(web3);
   const networkId = await getNetworkId(web3);
   const providerName = await getProviderName(web3);
-  // eslint-disable-next-line
+
+  let isConnected = false;
   // @ts-ignore
-  const isConnected = await window.ethereum._metamask.isApproved();
+  if (window.ethereum && window.ethereum._metamask) {
+    // @ts-ignore
+    isConnected = await window.ethereum._metamask.isApproved();
+  }
 
   return {
-    web3,
-    hasWallet,
     isConnected,
     account,
     networkId,
     providerName,
     web3IsLoading: false,
-    isUsingFallback: false,
   };
 };
 
-export const Web3Context = React.createContext(initialState);
+export interface Web3Context extends State {
+  hasWallet: boolean;
+  web3: Web3;
+}
+
+export const Web3Context = React.createContext<Web3Context>({
+  ...initialState,
+  hasWallet: false,
+  web3: new Web3(Web3.givenProvider),
+});
 
 export const useWeb3 = () => {
   return React.useContext(Web3Context);
@@ -128,67 +117,66 @@ interface Web3ProviderProps {
 }
 
 export const Web3Provider = (props: Web3ProviderProps) => {
-  const { children, fallbackRPCEndpoint } = props;
+  const {
+    children,
+    fallbackRPCEndpoint = `https://mainnet.infura.io/v3/022f489bd91a47f3960f6f70333bdb76`,
+  } = props;
   const [state, dispatch] = React.useReducer(reducer, initialState);
+  const [web3] = React.useState(
+    new Web3(Web3.givenProvider || fallbackRPCEndpoint),
+  );
   const {
     account,
     networkId,
-    hasWallet,
     web3IsLoading,
-    web3,
     providerName,
     isConnected,
-    isUsingFallback,
   } = state;
 
   // Load
   React.useEffect(() => {
-    getWeb3State(web3, fallbackRPCEndpoint).then(web3State =>
-      dispatch({ type: 'load', payload: web3State }),
-    );
-  }, [fallbackRPCEndpoint, web3]);
+    getWeb3State(web3, fallbackRPCEndpoint).then(web3State => {
+      dispatch({ type: 'load', payload: web3State });
+    });
+  }, [fallbackRPCEndpoint]);
 
   // Subscribe
   React.useEffect(() => {
     const updateWeb3State = () => {
-      getAccount(web3).then(currentAccount => {
-        if (account && currentAccount && account !== currentAccount) {
+      getWeb3State(web3, fallbackRPCEndpoint).then(web3State => {
+        const { account: newAccount, networkId: newNetworkId } = web3State;
+
+        // Changed account
+        if (account && newAccount && account !== newAccount) {
           document.location.href = '/';
           return;
         }
 
-        getWeb3State(web3, fallbackRPCEndpoint).then(web3State => {
-          const { account: newAccount, networkId: newNetworkId } = web3State;
-          if (
-            String(account).toLowerCase() !==
-              String(newAccount).toLowerCase() ||
-            networkId !== newNetworkId
-          ) {
-            dispatch({ type: 'update', payload: web3State });
-          }
-        });
+        // Changed network
+        if (networkId !== newNetworkId) {
+          dispatch({ type: 'update', payload: web3State });
+        }
       });
     };
 
     // Only Metamask provides a listener
     const currentProvider = web3.currentProvider as any;
 
-    if (hasWallet && currentProvider.publicConfigStore) {
+    if (currentProvider.publicConfigStore) {
       currentProvider.publicConfigStore.on('update', updateWeb3State);
     }
-  }, [account, networkId, fallbackRPCEndpoint, hasWallet, web3]);
+  }, [account, networkId, fallbackRPCEndpoint]);
 
   return (
     <Web3Context.Provider
       value={{
-        web3,
         web3IsLoading,
         account,
         networkId,
         providerName,
-        hasWallet,
-        isUsingFallback,
+        hasWallet: !!Web3.givenProvider,
         isConnected,
+        web3,
       }}
     >
       {children}

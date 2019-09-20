@@ -39,8 +39,8 @@ export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
     false,
   );
   const [
+    showRequireMetamaskPrivacyApproval,
     setShowRequireMetamaskPrivacyApproval,
-    setShowPrivacyWallet,
   ] = React.useState(false);
 
   React.useEffect(() => {
@@ -56,7 +56,7 @@ export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
     }
 
     if (!isConnected) {
-      setShowPrivacyWallet(true);
+      setShowRequireMetamaskPrivacyApproval(true);
       return false;
     }
 
@@ -76,7 +76,7 @@ export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
         setShowRequireWalletSignIn: isVisible =>
           setShowRequireWalletSignIn(isVisible),
         setShowRequireMetamaskPrivacyApproval: isVisible =>
-          setShowPrivacyWallet(isVisible),
+          setShowRequireMetamaskPrivacyApproval(isVisible),
         ensureHasConnected,
       }}
     >
@@ -91,8 +91,11 @@ export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
         </Dialog>
       )}
 
-      {setShowRequireMetamaskPrivacyApproval && (
-        <Dialog onRequestClose={() => setShowPrivacyWallet(false)}>
+      {showRequireMetamaskPrivacyApproval && (
+        <Dialog
+          isVisible
+          onRequestClose={() => setShowRequireMetamaskPrivacyApproval(false)}
+        >
           <RequireMetamaskPrivacyApproval />
         </Dialog>
       )}
