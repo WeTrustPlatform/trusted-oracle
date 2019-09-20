@@ -57,10 +57,7 @@ const initialState: State = {
   isConnected: false,
 };
 
-const getWeb3State = async (
-  web3: Web3,
-  fallbackRPCEndpoint = `https://mainnet.infura.io/v3/022f489bd91a47f3960f6f70333bdb76`,
-): Promise<State> => {
+const getWeb3State = async (web3: Web3): Promise<State> => {
   const account = await getAccount(web3);
   const networkId = await getNetworkId(web3);
   const providerName = await getProviderName(web3);
@@ -137,7 +134,7 @@ export const Web3Provider = (props: Web3ProviderProps) => {
 
   // Load
   React.useEffect(() => {
-    getWeb3State(web3, fallbackRPCEndpoint).then(web3State => {
+    getWeb3State(web3).then(web3State => {
       dispatch({ type: 'load', payload: web3State });
     });
   }, [fallbackRPCEndpoint, web3]);
@@ -145,7 +142,7 @@ export const Web3Provider = (props: Web3ProviderProps) => {
   // Subscribe
   React.useEffect(() => {
     const updateWeb3State = () => {
-      getWeb3State(web3, fallbackRPCEndpoint).then(web3State => {
+      getWeb3State(web3).then(web3State => {
         const { account: newAccount, networkId: newNetworkId } = web3State;
 
         // Changed account

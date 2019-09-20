@@ -30,10 +30,15 @@ import { Background } from './Background';
 import { CTAButton } from './CTAButton';
 
 export const Balance = () => {
+  const { account, web3IsLoading } = useWeb3();
   const { currency } = useCurrency();
   const { data: balance } = useBalanceQuery();
 
-  if (!balance) return null;
+  if (web3IsLoading) return null;
+
+  if (!account) {
+    return <Text weight="bold">Connect to wallet</Text>;
+  }
 
   return (
     <Text color="primary" weight="bold">
