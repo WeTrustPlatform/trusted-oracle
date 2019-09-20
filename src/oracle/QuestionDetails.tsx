@@ -184,25 +184,44 @@ export const QuestionDetails = (props: QuestionDetailsProps) => {
           <QuestionAddReward question={question} />
         </Box>
       )}
-      <QuestionAnswers question={question} />
+      {isSupported(question) ? (
+        <>
+          <QuestionAnswers question={question} />
 
-      {question.state === QuestionState.OPEN && (
-        <Background pattern="textured">
-          <Box
-            paddingVertical={24}
-            {...getResponsiveValue({
-              large: {
-                paddingHorizontal: 60,
-              },
-              xsmall: {
-                paddingHorizontal: 16,
-              },
-            })}
-          >
-            <QuestionPostAnswer question={question} />
-          </Box>
-        </Background>
+          {question.state === QuestionState.OPEN && (
+            <Background pattern="textured">
+              <Box
+                paddingVertical={24}
+                {...getResponsiveValue({
+                  large: {
+                    paddingHorizontal: 60,
+                  },
+                  xsmall: {
+                    paddingHorizontal: 16,
+                  },
+                })}
+              >
+                <QuestionPostAnswer question={question} />
+              </Box>
+            </Background>
+          )}
+        </>
+      ) : (
+        <Box
+          paddingVertical={24}
+          {...getResponsiveValue({
+            large: {
+              paddingHorizontal: 60,
+            },
+            xsmall: {
+              paddingHorizontal: 16,
+            },
+          })}
+        >
+          <UnsupportedQuestion />
+        </Box>
       )}
+
       {question.state === QuestionState.OPEN && (
         <Background pattern="dotted">
           <Box
@@ -347,10 +366,6 @@ export const QuestionAnswers = (props: QuestionProps) => {
   const { getResponsiveValue } = useLayout();
 
   if (!answers.length) return null;
-
-  if (!isSupported(question)) {
-    return <UnsupportedQuestion />;
-  }
 
   if (question.finalizedAtDate === 'UNANSWERED') {
     throw new Error('Expected answers');
@@ -622,10 +637,6 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
       setSubmitting(false);
     },
   });
-
-  if (!isSupported(question)) {
-    return <UnsupportedQuestion />;
-  }
 
   return (
     <Box>
