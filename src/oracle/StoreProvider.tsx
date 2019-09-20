@@ -373,7 +373,7 @@ export const useFetchNotificationsQuery = () => {
     );
 
     return notifications.filter(notif => notif !== null) as NotificationData[];
-  }, [realitio, initialBlockNumber, fetchQuestion]);
+  }, [realitio, initialBlockNumber, fetchQuestion, account]);
 
   return fetch;
 };
@@ -576,13 +576,9 @@ export const StoreProvider = (props: StoreProviderProps) => {
   );
 
   const [_, fetch] = useAsyncFn(async () => {
-    if (state.notifications.length) return;
-
     const notifications = await fetchNotifications();
 
-    if (notifications.length) {
-      dispatch({ type: 'loadNotifications', payload: { notifications } });
-    }
+    dispatch({ type: 'loadNotifications', payload: { notifications } });
   }, [fetchNotifications]);
 
   return (

@@ -114,12 +114,14 @@ const reducer = (state: State, action: Action) => {
 interface Web3ProviderProps {
   children?: React.ReactNode;
   fallbackRPCEndpoint?: string;
+  onChangeAccount?: (account: string) => void;
 }
 
 export const Web3Provider = (props: Web3ProviderProps) => {
   const {
     children,
     fallbackRPCEndpoint = `https://mainnet.infura.io/v3/022f489bd91a47f3960f6f70333bdb76`,
+    onChangeAccount = () => {},
   } = props;
   const [state, dispatch] = React.useReducer(reducer, initialState);
   const [web3] = React.useState(
@@ -148,8 +150,8 @@ export const Web3Provider = (props: Web3ProviderProps) => {
 
         // Changed account
         if (account && newAccount && account !== newAccount) {
-          document.location.href = '/';
-          return;
+          onChangeAccount(newAccount);
+          dispatch({ type: 'update', payload: web3State });
         }
 
         // Changed network
@@ -165,7 +167,7 @@ export const Web3Provider = (props: Web3ProviderProps) => {
     if (currentProvider.publicConfigStore) {
       currentProvider.publicConfigStore.on('update', updateWeb3State);
     }
-  }, [account, networkId, fallbackRPCEndpoint, web3]);
+  }, [account, networkId, fallbackRPCEndpoint, web3, onChangeAccount]);
 
   return (
     <Web3Context.Provider

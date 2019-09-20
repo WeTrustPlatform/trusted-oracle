@@ -184,15 +184,17 @@ const GetTRSTSection = () => {
                     }
                   />
                 </Box>
-                <CTAButton
-                  appearance="outline"
-                  icon={
-                    <WebImage
-                      alt="get trst via uniswap"
-                      src={require('../assets/images/uniswap.png')}
-                    />
-                  }
-                />
+                <Box paddingBottom={24}>
+                  <CTAButton
+                    appearance="outline"
+                    icon={
+                      <WebImage
+                        alt="get trst via uniswap"
+                        src={require('../assets/images/uniswap.png')}
+                      />
+                    }
+                  />
+                </Box>
               </Box>
             </Column>
           </Row>

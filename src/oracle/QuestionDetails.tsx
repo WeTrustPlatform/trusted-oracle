@@ -468,6 +468,13 @@ export const QuestionAddReward = (props: QuestionProps) => {
         errors.bounty = 'Please enter a bounty';
       }
 
+      if (
+        currency === 'TRST' &&
+        toBigNumber(values.bounty, currency).lte(new BigNumber(0))
+      ) {
+        errors.bounty = 'Bounty for TRST must be greater than 0';
+      }
+
       return errors;
     },
 
@@ -591,11 +598,10 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
           currency,
         )}`;
       } else if (
-        toBigNumber(values.bond, currency)
-          .toString()
-          .includes('undefined')
+        currency === 'TRST' &&
+        toBigNumber(values.bond, currency).lte(new BigNumber(0))
       ) {
-        errors.bond = 'Invalid bond value. The value may be too small';
+        errors.bond = 'Bond for TRST must be greater than 0';
       }
 
       return errors;

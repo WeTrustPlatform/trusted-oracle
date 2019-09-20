@@ -32,7 +32,7 @@ export const useMyAnswersQuery = () => {
     );
 
     setResult({ data: questions, loading: false });
-  }, [realitio, initialBlockNumber, getManyByIds]);
+  }, [realitio, initialBlockNumber, getManyByIds, account]);
 
   return result;
 };

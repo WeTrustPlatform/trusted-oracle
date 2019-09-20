@@ -39,7 +39,12 @@ export const formatCurrency = (
 
 export const toBigNumber = (amount: string, currency: Currency) => {
   if (currency !== 'ETH') {
-    return new BigNumber(amount).mul(currencyInfoMap[currency].decimalsBn);
+    const bigNumber = new BigNumber(amount).mul(
+      currencyInfoMap[currency].decimalsBn,
+    );
+    if (bigNumber.toString().includes('undefined')) return new BigNumber(0);
+
+    return bigNumber;
   }
 
   return new BigNumber(Web3.utils.toWei(amount, 'ether'));

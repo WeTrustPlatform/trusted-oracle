@@ -17,6 +17,7 @@ import { useMyAnswersQuery } from '../oracle/useMyAnswersQuery';
 import { useMyQuestionsQuery } from '../oracle/useMyQuestionsQuery';
 import { Background } from './Background';
 import { Tabs } from './CustomTabs';
+import { Link } from './Link';
 import { Notification } from './Notifications';
 
 const Claimable = () => {
@@ -148,7 +149,9 @@ const MyAnswers = () => {
     <Box>
       {answeredQuestions.map(question => (
         <Box key={question.id} paddingBottom={24}>
-          <QuestionCard question={question} />
+          <Link to={`/question/${question.id}`}>
+            <QuestionCard question={question} />
+          </Link>
         </Box>
       ))}
     </Box>
@@ -164,7 +167,9 @@ const MyQuestions = () => {
     <Box>
       {questions.map(question => (
         <Box key={question.id} paddingBottom={24}>
-          <QuestionCard question={question} />
+          <Link to={`/question/${question.id}`}>
+            <QuestionCard question={question} />
+          </Link>
         </Box>
       ))}
     </Box>
