@@ -138,7 +138,7 @@ export const Web3Provider = (props: Web3ProviderProps) => {
     getWeb3State(web3, fallbackRPCEndpoint).then(web3State => {
       dispatch({ type: 'load', payload: web3State });
     });
-  }, [fallbackRPCEndpoint]);
+  }, [fallbackRPCEndpoint, web3]);
 
   // Subscribe
   React.useEffect(() => {
@@ -165,7 +165,7 @@ export const Web3Provider = (props: Web3ProviderProps) => {
     if (currentProvider.publicConfigStore) {
       currentProvider.publicConfigStore.on('update', updateWeb3State);
     }
-  }, [account, networkId, fallbackRPCEndpoint]);
+  }, [account, networkId, fallbackRPCEndpoint, web3]);
 
   return (
     <Web3Context.Provider

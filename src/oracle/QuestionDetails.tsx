@@ -549,7 +549,6 @@ export const QuestionAddReward = (props: QuestionProps) => {
 
 export const QuestionPostAnswer = (props: QuestionProps) => {
   const { question } = props;
-  const theme = useTheme();
   const { realitio } = useOracle();
   const { account } = useWeb3();
   const { currency, approve } = useCurrency();
