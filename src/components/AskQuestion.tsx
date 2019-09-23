@@ -61,34 +61,41 @@ export const AskQuestion = withRouter(props => {
   const { ensureHasConnected } = useWeb3Dialogs();
 
   const { value: arbitratorListWithFees } = useAsync(async () => {
-    if (!arbitratorContract || !realitio) {
-      return arbitratorList.map(a => ({
-        ...a,
-        fee: new BigNumber(0),
-      })) as ArbitratorWithFee[];
-    }
+    try {
+      if (!arbitratorContract || !realitio) {
+        return arbitratorList.map(a => ({
+          ...a,
+          fee: new BigNumber(0),
+        })) as ArbitratorWithFee[];
+      }
 
-    const arbitratorListWithFees = (await Promise.all(
-      arbitratorList.map(async arbitrator => {
-        const arbitratorInstance = await arbitratorContract.at(
-          arbitrator.address,
-        );
-
-        const realitioAddress = await arbitratorInstance.realitio.call();
-
-        if (realitio.address.toLowerCase() === realitioAddress.toLowerCase()) {
-          const fee = await realitio.arbitrator_question_fees.call(
+      const arbitratorListWithFees = (await Promise.all(
+        arbitratorList.map(async arbitrator => {
+          const arbitratorInstance = await arbitratorContract.at(
             arbitrator.address,
           );
 
-          return { ...arbitrator, fee };
-        }
+          const realitioAddress = await arbitratorInstance.realitio.call();
 
-        return arbitrator;
-      }),
-    )) as ArbitratorWithFee[];
+          if (
+            realitio.address.toLowerCase() === realitioAddress.toLowerCase()
+          ) {
+            const fee = await realitio.arbitrator_question_fees.call(
+              arbitrator.address,
+            );
 
-    return arbitratorListWithFees;
+            return { ...arbitrator, fee };
+          }
+
+          return arbitrator;
+        }),
+      )) as ArbitratorWithFee[];
+
+      return arbitratorListWithFees;
+    } catch (error) {
+      console.log(error);
+      return;
+    }
   }, [arbitratorList, arbitratorContract, realitio]);
 
   const {
