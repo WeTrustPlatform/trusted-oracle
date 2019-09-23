@@ -61,41 +61,34 @@ export const AskQuestion = withRouter(props => {
   const { ensureHasConnected } = useWeb3Dialogs();
 
   const { value: arbitratorListWithFees } = useAsync(async () => {
-    try {
-      if (!arbitratorContract || !realitio) {
-        return arbitratorList.map(a => ({
-          ...a,
-          fee: new BigNumber(0),
-        })) as ArbitratorWithFee[];
-      }
+    if (!arbitratorContract || !realitio) {
+      return arbitratorList.map(a => ({
+        ...a,
+        fee: new BigNumber(0),
+      })) as ArbitratorWithFee[];
+    }
 
-      const arbitratorListWithFees = (await Promise.all(
-        arbitratorList.map(async arbitrator => {
-          const arbitratorInstance = await arbitratorContract.at(
+    const arbitratorListWithFees = (await Promise.all(
+      arbitratorList.map(async arbitrator => {
+        const arbitratorInstance = await arbitratorContract.at(
+          arbitrator.address,
+        );
+
+        const realitioAddress = await arbitratorInstance.realitio.call();
+
+        if (realitio.address.toLowerCase() === realitioAddress.toLowerCase()) {
+          const fee = await realitio.arbitrator_question_fees.call(
             arbitrator.address,
           );
 
-          const realitioAddress = await arbitratorInstance.realitio.call();
+          return { ...arbitrator, fee };
+        }
 
-          if (
-            realitio.address.toLowerCase() === realitioAddress.toLowerCase()
-          ) {
-            const fee = await realitio.arbitrator_question_fees.call(
-              arbitrator.address,
-            );
+        return arbitrator;
+      }),
+    )) as ArbitratorWithFee[];
 
-            return { ...arbitrator, fee };
-          }
-
-          return arbitrator;
-        }),
-      )) as ArbitratorWithFee[];
-
-      return arbitratorListWithFees;
-    } catch (error) {
-      console.log(error);
-      return;
-    }
+    return arbitratorListWithFees;
   }, [arbitratorList, arbitratorContract, realitio]);
 
   const {
@@ -122,6 +115,8 @@ export const AskQuestion = withRouter(props => {
         category?: string;
         questionTitle?: string;
         arbitrator?: string;
+        bounty?: string;
+        openingDate?: string;
       } = {};
 
       if (values.category === 'UNSELECTED') {
@@ -136,11 +131,22 @@ export const AskQuestion = withRouter(props => {
         errors.questionTitle = 'Please enter your question';
       }
 
+      if (
+        currency === 'TRST' &&
+        values.bounty &&
+        toBigNumber(values.bounty, currency).lte(new BigNumber(0))
+      ) {
+        errors.bounty = 'Bounty for TRST must be greater than 0';
+      }
+
       return errors;
     },
 
     onSubmit: async (values, { setSubmitting, setErrors }) => {
-      if (!ensureHasConnected()) return;
+      if (!(await ensureHasConnected())) {
+        setSubmitting(false);
+        return;
+      }
 
       const { category, questionTitle, type } = values;
 

@@ -10,14 +10,14 @@ interface Web3DialogsContext {
   setShowRequireMetamaskSetup: (isVisible: boolean) => void;
   setShowRequireWalletSignIn: (isVisible: boolean) => void;
   setShowRequireMetamaskPrivacyApproval: (isVisible: boolean) => void;
-  ensureHasConnected: () => boolean;
+  ensureHasConnected: () => Promise<boolean>;
 }
 
 export const Web3DialogsContext = React.createContext<Web3DialogsContext>({
   setShowRequireMetamaskSetup: (isVisible: boolean) => {},
   setShowRequireWalletSignIn: (isVisible: boolean) => {},
   setShowRequireMetamaskPrivacyApproval: (isVisible: boolean) => {},
-  ensureHasConnected: () => false,
+  ensureHasConnected: async () => false,
 });
 
 export const useWeb3Dialogs = () => {
@@ -30,7 +30,7 @@ export interface Web3DialogsProviderProps {
 
 export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
   const { children } = props;
-  const { account, hasWallet, isConnected } = useWeb3();
+  const { account, hasWallet, isConnected, providerName } = useWeb3();
   const [
     showRequireMetamaskSetup,
     setShowRequireMetamaskSetup,
@@ -46,27 +46,38 @@ export const Web3DialogsProvider = (props: Web3DialogsProviderProps) => {
   React.useEffect(() => {
     if (account) {
       setShowRequireWalletSignIn(false);
+      setShowRequireMetamaskPrivacyApproval(false);
+      setShowRequireMetamaskSetup(false);
     }
   }, [account]);
 
-  const ensureHasConnected = React.useCallback(() => {
+  const ensureHasConnected = React.useCallback(async () => {
     if (!hasWallet) {
       setShowRequireMetamaskSetup(true);
       return false;
     }
 
     if (!isConnected) {
-      setShowRequireMetamaskPrivacyApproval(true);
+      if (providerName === 'metamask') {
+        setShowRequireMetamaskPrivacyApproval(true);
+        // @ts-ignore
+        await window.ethereum.enable();
+      }
+
       return false;
     }
 
     if (!account) {
       setShowRequireWalletSignIn(true);
+      if (providerName === 'metamask') {
+        // @ts-ignore
+        await window.ethereum.enable();
+      }
       return false;
     }
 
     return true;
-  }, [account, hasWallet, isConnected]);
+  }, [account, providerName, hasWallet, isConnected]);
 
   return (
     <Web3DialogsContext.Provider

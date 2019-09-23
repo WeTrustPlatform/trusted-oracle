@@ -3,13 +3,13 @@ import React from 'react';
 
 export const RequireMetamaskPrivacyApproval = () => {
   return (
-    <Box padding={48} alignItems="center">
-      <Heading size="xxxlarge" color="secondary">
-        Connect to MetaMask
+    <Box padding={24} alignItems="center">
+      <Heading size="xxxlarge" color="secondary" align="center">
+        Connect with Metamask
       </Heading>
       <Box paddingBottom={24}>
         <Text size="large" align="center">
-          To continue, please enable the application to connect with Metamask.
+          To continue, sign in Metamask and allow the application to connect.
         </Text>
       </Box>
     </Box>

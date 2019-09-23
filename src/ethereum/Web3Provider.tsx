@@ -63,8 +63,8 @@ const getWeb3State = async (web3: Web3): Promise<State> => {
   const providerName = await getProviderName(web3);
 
   let isConnected = false;
-  // @ts-ignore
-  if (window.ethereum && window.ethereum._metamask) {
+
+  if (providerName === 'metamask') {
     // @ts-ignore
     isConnected = await window.ethereum._metamask.isApproved();
   }

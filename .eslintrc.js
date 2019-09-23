@@ -8,5 +8,6 @@ module.exports = {
   ],
   rules: {
     '@typescript-eslint/ban-ts-ignore': 0,
+    '@typescript-eslint/no-unused-vars': 0,
   },
 };

@@ -19,11 +19,12 @@ export const RequireMetamaskSetup = () => {
           size="xxxlarge"
           color="secondary"
         >
-          Metamask wallet required
+          Wallet required
         </Heading>
         <Box paddingVertical={24}>
           <Text size="large" align="center">
-            Use your browser and install{' '}
+            To continue, please attach a wallet to the session. You can use your
+            browser and install{' '}
             <a
               style={{ textDecoration: 'none' }}
               href={isFirefox ? METAMASK_FIREFOX_LINK : METAMASK_CHROME_LINK}

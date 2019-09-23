@@ -177,8 +177,16 @@ const MyQuestions = () => {
 };
 
 export const MyAccount = () => {
+  const { account } = useWeb3();
   const [tab, setTab] = React.useState(MyAccountTab.QUESTION);
   const { getResponsiveValue } = useLayout();
+
+  if (!account)
+    return (
+      <Box>
+        <Text>Account required</Text>
+      </Box>
+    );
 
   return (
     <Box>

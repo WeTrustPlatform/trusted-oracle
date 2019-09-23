@@ -13,8 +13,8 @@ export const BlockchainAccountStatus = withRouter(props => {
   const { ensureHasConnected } = useWeb3Dialogs();
   const theme = React.useContext(ThemeContext);
 
-  const handlePress = React.useCallback(() => {
-    if (ensureHasConnected()) history.push('/my-account');
+  const handlePress = React.useCallback(async () => {
+    if (await ensureHasConnected()) history.push('/my-account');
   }, [ensureHasConnected, history]);
 
   return (

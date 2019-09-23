@@ -479,27 +479,23 @@ export const QuestionAddReward = (props: QuestionProps) => {
     },
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      if (ensureHasConnected()) {
+      if (await ensureHasConnected()) {
         const bounty = toBigNumber(values.bounty, currency);
 
-        try {
-          if (currency === 'ETH') {
-            await realitio.fundAnswerBounty(question.id, {
-              from: account,
-              value: bounty,
-            });
-          } else {
-            await approve(realitio.address, bounty);
-            await realitio.fundAnswerBountyERC20(question.id, bounty, {
-              from: account,
-            });
-          }
-
-          await refetch(question.id);
-          resetForm();
-        } catch (error) {
-          console.log(error);
+        if (currency === 'ETH') {
+          await realitio.fundAnswerBounty(question.id, {
+            from: account,
+            value: bounty,
+          });
+        } else {
+          await approve(realitio.address, bounty);
+          await realitio.fundAnswerBountyERC20(question.id, bounty, {
+            from: account,
+          });
         }
+
+        await refetch(question.id);
+        resetForm();
       }
 
       setSubmitting(false);
@@ -608,35 +604,31 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
     },
 
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      if (ensureHasConnected()) {
+      if (await ensureHasConnected()) {
         if (values.answer === 'UNSELECTED') throw new Error('Answer required');
 
-        try {
-          const bond = toBigNumber(values.bond, currency);
+        const bond = toBigNumber(values.bond, currency);
 
-          if (currency === 'ETH') {
-            await realitio.submitAnswer.sendTransaction(
-              question.id,
-              values.answer,
-              question.bond,
-              { from: account, value: bond },
-            );
-          } else {
-            await approve(realitio.address, bond);
-            await realitio.submitAnswerERC20.sendTransaction(
-              question.id,
-              values.answer,
-              question.bond,
-              bond,
-              { from: account },
-            );
-          }
-
-          resetForm();
-          await refetch(question.id);
-        } catch (error) {
-          console.log(error);
+        if (currency === 'ETH') {
+          await realitio.submitAnswer.sendTransaction(
+            question.id,
+            values.answer,
+            question.bond,
+            { from: account, value: bond },
+          );
+        } else {
+          await approve(realitio.address, bond);
+          await realitio.submitAnswerERC20.sendTransaction(
+            question.id,
+            values.answer,
+            question.bond,
+            bond,
+            { from: account },
+          );
         }
+
+        resetForm();
+        await refetch(question.id);
       }
 
       setSubmitting(false);
@@ -779,16 +771,16 @@ export const QuestionApplyForArbitration = (props: QuestionProps) => {
   const { refetch } = useStore();
 
   const [{ loading }, handleApplyForArbitration] = useAsyncFn(async () => {
-    if (!ensureHasConnected()) return;
+    if (await ensureHasConnected()) {
+      const arbitrator = await arbitratorContract.at(question.arbitrator);
 
-    const arbitrator = await arbitratorContract.at(question.arbitrator);
+      await arbitrator.requestArbitration(question.id, question.bond, {
+        from: account,
+        value: question.disputeFee,
+      });
 
-    await arbitrator.requestArbitration(question.id, question.bond, {
-      from: account,
-      value: question.disputeFee,
-    });
-
-    await refetch(question.id);
+      await refetch(question.id);
+    }
   }, [arbitratorContract, question, account]);
 
   return (

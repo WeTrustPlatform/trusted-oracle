@@ -9,18 +9,13 @@ export const trimAddress = (address: string, front = 6, end = 6) => {
 };
 
 export const getGasPrice = async () => {
-  let price = 20;
+  const defaultPrice = 20;
 
-  try {
-    const req = await fetch('https://ethgasstation.info/json/ethgasAPI.json');
-    const json = await req.json();
-    // oracle return gwei * 10
-    price = Math.ceil(json.fast / 10);
-  } catch (e) {
-    console.log(e);
-  }
+  const req = await fetch('https://ethgasstation.info/json/ethgasAPI.json');
+  const json = await req.json();
 
-  return price;
+  // oracle return gwei * 10
+  return Math.ceil(json.fast / 10) || defaultPrice;
 };
 
 const WEI_IN_ETH = 1000000000000000000;

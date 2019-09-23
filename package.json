@@ -16,6 +16,7 @@
   "dependencies": {
     "@realitio/realitio-contracts": "^2.1.0",
     "@realitio/realitio-lib": "^2.0.1",
+    "@sentry/browser": "^5.6.3",
     "date-fns": "^2.0.1",
     "formik": "^2.0.1-rc.13",
     "gh-pages": "^2.1.1",
