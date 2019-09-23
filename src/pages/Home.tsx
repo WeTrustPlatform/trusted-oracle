@@ -37,6 +37,14 @@ const HeroSection = withRouter(props => {
               </Text>
               <Link to="/how-it-works">See how it works</Link>
             </Box>
+            <Box paddingBottom={40}>
+              <Text>
+                Powered by{' '}
+                <Link to="https://realit.io" isExternal>
+                  Realitio
+                </Link>
+              </Text>
+            </Box>
             <Box alignItems="flex-start" paddingBottom={24}>
               <CTAButton
                 title="Ask a question"

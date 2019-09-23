@@ -16,8 +16,18 @@ export const Tooltip = (props: TooltipProps) => {
   return (
     <Hoverable>
       {isHovered => (
-        <TouchableOpacity>
-          <Popover position={position} isVisible={isHovered} content={content}>
+        // @ts-ignore
+        <TouchableOpacity disabled style={{ userSelect: 'auto' }}>
+          <Popover
+            position={position}
+            isVisible={isHovered}
+            content={content}
+            getStyles={() => ({
+              positionerStyle: {
+                top: 0,
+              },
+            })}
+          >
             {children}
           </Popover>
         </TouchableOpacity>

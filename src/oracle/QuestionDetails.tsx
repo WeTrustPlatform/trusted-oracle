@@ -773,7 +773,6 @@ export const QuestionApplyForArbitration = (props: QuestionProps) => {
   const { question } = props;
   const { account } = useWeb3();
   const { ensureHasConnected } = useWeb3Dialogs();
-  const { currency } = useCurrency();
   const { arbitratorContract } = useOracle();
   const { refetch } = useStore();
 
@@ -802,7 +801,7 @@ export const QuestionApplyForArbitration = (props: QuestionProps) => {
       </Box>
       <Box>
         <Text size="small" isItalic align="center">
-          *Applying fee: {formatCurrency(question.disputeFee, currency)}
+          *Applying fee: {formatCurrency(question.disputeFee, 'ETH')}
         </Text>
       </Box>
     </Box>
