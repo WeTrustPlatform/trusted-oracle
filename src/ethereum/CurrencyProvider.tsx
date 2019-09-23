@@ -73,7 +73,9 @@ export const CurrencyProvider = (props: CurrencyProviderProps) => {
         }
 
         tokenInstance.approve
-          .sendTransaction(spender, amount.sub(allowance), { from: account })
+          .sendTransaction(spender, amount.sub(allowance).toString(), {
+            from: account,
+          })
           .once('transactionHash', () => {
             // At this point we have received the approval's transaction hash and can proceed with next transaction.
             // However, Metamask may need some time to pick up this transaction,

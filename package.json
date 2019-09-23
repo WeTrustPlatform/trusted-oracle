@@ -17,6 +17,7 @@
     "@realitio/realitio-contracts": "^2.1.0",
     "@realitio/realitio-lib": "^2.0.1",
     "@sentry/browser": "^5.6.3",
+    "@truffle/contract": "^4.0.33",
     "date-fns": "^2.0.1",
     "formik": "^2.0.1-rc.13",
     "gh-pages": "^2.1.1",
@@ -28,7 +29,7 @@
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
     "react-use": "^12.2.0",
-    "truffle-contract": "^4.0.31"
+    "web3": "^1.2.1"
   },
   "devDependencies": {
     "@types/jest": "24.0.18",

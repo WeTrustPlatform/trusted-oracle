@@ -1,5 +1,5 @@
+import makeTruffleContract from '@truffle/contract';
 import { useAsync } from 'react-use';
-import makeTruffleContract from 'truffle-contract';
 
 import { useWeb3 } from './Web3Provider';
 
@@ -9,6 +9,7 @@ export const useSmartContract = (contractData: any | null) => {
   const state = useAsync(async () => {
     if (web3IsLoading || !contractData) return;
 
+    // @ts-ignore
     const contract = makeTruffleContract(contractData);
     contract.setProvider(web3.currentProvider);
 

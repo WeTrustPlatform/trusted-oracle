@@ -218,6 +218,7 @@ export const AskQuestion = withRouter(props => {
         setErrors({ arbitrator: `Fee has changed to ${fee}` });
         return;
       }
+      const cost = bounty.add(fee);
 
       if (currency === 'ETH') {
         await realitio.askQuestion.sendTransaction(
@@ -229,12 +230,10 @@ export const AskQuestion = withRouter(props => {
           0,
           {
             from: account,
-            value: bounty.add(fee),
+            value: cost.toString(),
           },
         );
       } else {
-        const cost = bounty.add(fee);
-
         await approve(realitio.address, cost);
 
         await realitio.askQuestionERC20.sendTransaction(
@@ -244,7 +243,7 @@ export const AskQuestion = withRouter(props => {
           timeout,
           openingDate,
           0,
-          cost,
+          cost.toString(),
           { from: account },
         );
       }

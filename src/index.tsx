@@ -8,9 +8,11 @@ import ReactDOM from 'react-dom';
 import { App } from './App';
 import * as serviceWorker from './serviceWorker';
 
-Sentry.init({
-  dsn: 'https://563bcac3488649bf9d5bee18dd6a4e98@sentry.io/1757838',
-});
+if (process.env.NODE_ENV === 'production') {
+  Sentry.init({
+    dsn: 'https://563bcac3488649bf9d5bee18dd6a4e98@sentry.io/1757838',
+  });
+}
 
 ReactDOM.render(<App />, document.getElementById('root'));
 

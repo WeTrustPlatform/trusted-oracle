@@ -52,7 +52,7 @@ const Claimable = () => {
       claimArguments.answerLengths,
       claimArguments.historyHashes,
       claimArguments.answerers,
-      claimArguments.bonds,
+      claimArguments.bonds.map(bond => bond.toString()),
       claimArguments.answers,
       { from: account, gas },
     );

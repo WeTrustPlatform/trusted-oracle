@@ -2,4 +2,4 @@
 
 declare module '@realitio/realitio-lib/*';
 declare module '@realitio/realitio-contracts/*';
-declare module 'truffle-contract';
+declare module '@truffle/contract';

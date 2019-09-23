@@ -483,13 +483,15 @@ export const QuestionAddReward = (props: QuestionProps) => {
           if (currency === 'ETH') {
             await realitio.fundAnswerBounty(question.id, {
               from: account,
-              value: bounty,
+              value: bounty.toString(),
             });
           } else {
             await approve(realitio.address, bounty);
-            await realitio.fundAnswerBountyERC20(question.id, bounty, {
-              from: account,
-            });
+            await realitio.fundAnswerBountyERC20(
+              question.id,
+              bounty.toString(),
+              { from: account },
+            );
           }
 
           await refetch(question.id);
@@ -615,16 +617,16 @@ export const QuestionPostAnswer = (props: QuestionProps) => {
             await realitio.submitAnswer.sendTransaction(
               question.id,
               values.answer,
-              question.bond,
-              { from: account, value: bond },
+              question.bond.toString(),
+              { from: account, value: bond.toString() },
             );
           } else {
             await approve(realitio.address, bond);
             await realitio.submitAnswerERC20.sendTransaction(
               question.id,
               values.answer,
-              question.bond,
-              bond,
+              question.bond.toString(),
+              bond.toString(),
               { from: account },
             );
           }
@@ -781,7 +783,7 @@ export const QuestionApplyForArbitration = (props: QuestionProps) => {
 
       await arbitrator.requestArbitration(question.id, question.bond, {
         from: account,
-        value: question.disputeFee,
+        value: question.disputeFee.toString(),
       });
 
       await refetch(question.id);
