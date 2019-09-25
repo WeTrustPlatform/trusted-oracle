@@ -76,7 +76,7 @@ const DesktopNavigationBar = () => {
           </DesktopNavigationBarLink>
           <DesktopNavigationBarDivider />
           <DesktopNavigationBarLink
-            to="https://blog.wetrust.io/cryptounlocked-oracle-upgrade-5c8b22e3375b"
+            to="https://uniswap.exchange/swap"
             isExternal
           >
             Get TRST
@@ -130,7 +130,7 @@ const MobileNavigationMenu = (props: MobileNavigationMenuProps) => {
       </MobileNavigationMenuLink>
       <MobileNavigationMenuLink
         onClick={onClick}
-        to="https://blog.wetrust.io/cryptounlocked-oracle-upgrade-5c8b22e3375b"
+        to="https://uniswap.exchange/swap"
         isExternal
       >
         Get TRST

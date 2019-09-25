@@ -182,26 +182,30 @@ const GetTRSTSection = () => {
                 })}
               >
                 <Box paddingBottom={24}>
-                  <CTAButton
-                    appearance="outline"
-                    icon={
-                      <WebImage
-                        alt="get trst via banchor"
-                        src={require('../assets/images/banchor.png')}
-                      />
-                    }
-                  />
+                  <Link to="https://www.bancor.network" isExternal>
+                    <CTAButton
+                      appearance="outline"
+                      icon={
+                        <WebImage
+                          alt="get trst via banchor"
+                          src={require('../assets/images/banchor.png')}
+                        />
+                      }
+                    />
+                  </Link>
                 </Box>
                 <Box paddingBottom={24}>
-                  <CTAButton
-                    appearance="outline"
-                    icon={
-                      <WebImage
-                        alt="get trst via uniswap"
-                        src={require('../assets/images/uniswap.png')}
-                      />
-                    }
-                  />
+                  <Link to="https://uniswap.exchange/swap" isExternal>
+                    <CTAButton
+                      appearance="outline"
+                      icon={
+                        <WebImage
+                          alt="get trst via uniswap"
+                          src={require('../assets/images/uniswap.png')}
+                        />
+                      }
+                    />
+                  </Link>
                 </Box>
               </Box>
             </Column>
