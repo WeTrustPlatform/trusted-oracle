@@ -1,3 +1,4 @@
+import ERC20TRST from '@realitio/realitio-contracts/truffle/build/contracts/ERC20.TRST.json';
 import { LayoutProvider, ThemeProvider, ToastProvider } from 'paramount-ui';
 import React from 'react';
 import { Route, RouteChildrenProps } from 'react-router';
@@ -58,6 +59,11 @@ const AskQuestionDialog = (props: RouteChildrenProps) => {
       <AskQuestion />
     </CustomDialog>
   );
+};
+
+const ercContracts = {
+  TRST: ERC20TRST,
+  ETH: null,
 };
 
 export const App = () => {
@@ -124,7 +130,10 @@ export const App = () => {
           <ToastProvider>
             <Web3Provider>
               <Web3DialogsProvider>
-                <CurrencyProvider initialCurrency="TRST">
+                <CurrencyProvider
+                  contracts={ercContracts}
+                  initialCurrency="TRST"
+                >
                   <OracleProvider>
                     <StoreProvider>
                       <NavigationBar />

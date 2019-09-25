@@ -1,4 +1,3 @@
-import ERC20TRST from '@realitio/realitio-contracts/truffle/build/contracts/ERC20.TRST.json';
 import BigNumber from 'bn.js';
 import React from 'react';
 import { useAsync } from 'react-use';
@@ -7,13 +6,6 @@ import { useSmartContract } from './useSmartContract';
 import { useWeb3 } from './Web3Provider';
 
 export type Currency = 'ETH' | 'TRST';
-
-const currencyToSmartContractMap: {
-  [currency in Currency]: any;
-} = {
-  TRST: ERC20TRST,
-  ETH: null,
-};
 
 export interface CurrencyContext {
   currency: Currency;
@@ -26,6 +18,9 @@ export interface CurrencyContext {
 interface CurrencyProviderProps {
   children?: React.ReactNode;
   initialCurrency: Currency;
+  contracts: {
+    [currency in Currency]: any;
+  };
 }
 
 const CurrencyContext = React.createContext<CurrencyContext>({
@@ -41,12 +36,12 @@ export const useCurrency = () => {
 };
 
 export const CurrencyProvider = (props: CurrencyProviderProps) => {
-  const { children, initialCurrency } = props;
+  const { children, initialCurrency, contracts } = props;
   const [currency, setCurrency] = React.useState(initialCurrency);
   const { account } = useWeb3();
 
   const { contract, loading: smartContractLoading } = useSmartContract(
-    currencyToSmartContractMap[currency],
+    contracts[currency],
   );
 
   const {
@@ -60,24 +55,13 @@ export const CurrencyProvider = (props: CurrencyProviderProps) => {
 
   const approve = React.useCallback(
     (spender: string, amount: BigNumber) => {
-      if (!currencyToSmartContractMap[currency]) {
+      if (!contracts[currency]) {
         throw new Error(`${currency} does not have corresponding contract`);
       }
 
       return new Promise<void>(async (resolve, reject) => {
-        const allowance = (await tokenInstance.allowance.call(
-          account,
-          spender,
-        )) as BigNumber;
-
-        // already got enough, continuing
-        if (allowance.gte(amount)) {
-          resolve();
-          return;
-        }
-
         tokenInstance.approve
-          .sendTransaction(spender, amount.sub(allowance).toString(), {
+          .sendTransaction(spender, amount.toString(), {
             from: account,
           })
           .once('transactionHash', () => {
@@ -90,7 +74,7 @@ export const CurrencyProvider = (props: CurrencyProviderProps) => {
           .on('error', (error: any) => reject(error));
       });
     },
-    [tokenInstance, account, currency],
+    [tokenInstance, account, currency, contracts],
   );
 
   return (
