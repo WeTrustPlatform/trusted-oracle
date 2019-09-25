@@ -94,9 +94,12 @@ export const AskQuestion = withRouter(props => {
       return arbitratorListWithFees;
     } catch (error) {
       console.log(error);
-      return;
+      return arbitratorList.map(a => ({
+        ...a,
+        fee: new BigNumber(0),
+      })) as ArbitratorWithFee[];
     }
-  }, [arbitratorList, arbitratorContract, realitio]);
+  }, []);
 
   const {
     values,
