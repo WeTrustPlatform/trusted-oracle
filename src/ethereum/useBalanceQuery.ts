@@ -11,7 +11,7 @@ export const useFetchBalanceQuery = () => {
   const { account, web3 } = useWeb3();
   const { currency, tokenInstance } = useCurrency();
 
-  const [_, fetch] = useAsyncFn(async () => {
+  const [, fetch] = useAsyncFn(async () => {
     if (!account) return null;
 
     const balance = await (currency === 'ETH'

@@ -119,7 +119,7 @@ export const useFetchNotificationsQuery = () => {
   const fetchQuestion = useFetchQuestionQuery();
   const fetchBlock = useFetchBlock();
 
-  const [_, fetch] = useAsyncFn(async () => {
+  const [, fetch] = useAsyncFn(async () => {
     if (!realitio) return [];
 
     const events = (await realitio.getPastEvents('allEvents', {
@@ -575,7 +575,7 @@ export const StoreProvider = (props: StoreProviderProps) => {
     [fetchQuestion, state],
   );
 
-  const [_, fetch] = useAsyncFn(async () => {
+  const [, fetch] = useAsyncFn(async () => {
     const notifications = await fetchNotifications();
 
     dispatch({ type: 'loadNotifications', payload: { notifications } });

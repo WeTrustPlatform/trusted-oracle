@@ -60,6 +60,10 @@ export const CurrencyProvider = (props: CurrencyProviderProps) => {
 
   const approve = React.useCallback(
     (spender: string, amount: BigNumber) => {
+      if (!currencyToSmartContractMap[currency]) {
+        throw new Error(`${currency} does not have corresponding contract`);
+      }
+
       return new Promise<void>(async (resolve, reject) => {
         const allowance = (await tokenInstance.allowance.call(
           account,
@@ -86,7 +90,7 @@ export const CurrencyProvider = (props: CurrencyProviderProps) => {
           .on('error', (error: any) => reject(error));
       });
     },
-    [tokenInstance, account],
+    [tokenInstance, account, currency],
   );
 
   return (
