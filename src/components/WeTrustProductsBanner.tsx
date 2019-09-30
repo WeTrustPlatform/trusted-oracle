@@ -69,6 +69,22 @@ export const WeTrustProductsBanner = () => {
           />
         </ProductLink>
       </Box>
+      <Box paddingRight={40} paddingBottom={paddingBottom}>
+        <ProductLink to="https://trustedoracle.wetrust.io" isExternal>
+          <img
+            alt="TrustedOracle"
+            src="https://d1pzjb43ehhiia.cloudfront.net/logo-images/trusted-oracle-global-logo.svg"
+          />
+        </ProductLink>
+      </Box>
+      <Box paddingRight={40} paddingBottom={paddingBottom}>
+        <ProductLink to="https://grants.wetrust.io" isExternal>
+          <img
+            alt="Grants"
+            src="https://d1pzjb43ehhiia.cloudfront.net/logo-images/wetrust-grants-global-logo.svg"
+          />
+        </ProductLink>
+      </Box>
     </>
   );
 };
