@@ -2,7 +2,7 @@
   "name": "@wetrustplatform/trusted-oracle",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://wetrustplatform.github.io/trusted-oracle",
+  "homepage": "https://trusted-oracle.wetrust.io",
   "scripts": {
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
