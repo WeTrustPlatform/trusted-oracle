@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/WeTrustPlatform/trusted-oracle.svg?branch=master)](https://travis-ci.com/WeTrustPlatform/trusted-oracle)
 
-Crowd-source verification for smart contract, powered by Realit.io
+Crowd-sourced Oracle for Smart Contracts, powered by Realit.io
 
 ## Development
 

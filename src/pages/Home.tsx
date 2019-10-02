@@ -27,7 +27,7 @@ const HeroSection = withRouter(props => {
         <Row>
           <Column medium={6}>
             <Heading size="xxxlarge" color="primary">
-              Crowd-sourced veriFication for smart contracts
+              Crowd-sourced Oracle for Smart Contracts
             </Heading>
             <Box paddingBottom={40}>
               <Text>
@@ -35,7 +35,12 @@ const HeroSection = withRouter(props => {
                 off-chain events on-chain, so data is easily accessible by smart
                 contracts.
               </Text>
-              <Link to="/how-it-works">See how it works</Link>
+              <Link
+                to="https://blog.wetrust.io/how-trusted-oracle-works-621546b587ad"
+                isExternal
+              >
+                See how it works
+              </Link>
             </Box>
             <Box paddingBottom={40}>
               <Text>
@@ -143,7 +148,12 @@ const HowItWorksSection = () => {
           <Row>
             <Column medium={6} offsetMedium={3}>
               <Box alignItems="center">
-                <CTAButton appearance="outline" title="More details" />
+                <Link
+                  to="https://blog.wetrust.io/how-trusted-oracle-works-621546b587ad"
+                  isExternal
+                >
+                  <CTAButton appearance="outline" title="More details" />
+                </Link>
               </Box>
             </Column>
           </Row>

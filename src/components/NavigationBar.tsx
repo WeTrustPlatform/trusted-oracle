@@ -71,7 +71,10 @@ const DesktopNavigationBar = () => {
             Ask a Question
           </DesktopNavigationBarLink>
           <DesktopNavigationBarDivider />
-          <DesktopNavigationBarLink to="/how-it-works">
+          <DesktopNavigationBarLink
+            to="https://blog.wetrust.io/how-trusted-oracle-works-621546b587ad"
+            isExternal
+          >
             How it works
           </DesktopNavigationBarLink>
           <DesktopNavigationBarDivider />
@@ -125,7 +128,11 @@ const MobileNavigationMenu = (props: MobileNavigationMenuProps) => {
       <MobileNavigationMenuLink onClick={onClick} to="/ask-question">
         Ask a Question
       </MobileNavigationMenuLink>
-      <MobileNavigationMenuLink onClick={onClick} to="/how-it-works" isExternal>
+      <MobileNavigationMenuLink
+        onClick={onClick}
+        to="https://blog.wetrust.io/how-trusted-oracle-works-621546b587ad"
+        isExternal
+      >
         How it works
       </MobileNavigationMenuLink>
       <MobileNavigationMenuLink
