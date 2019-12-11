@@ -1177,10 +1177,15 @@
     shell-quote "1.6.1"
     ws "^1.1.0"
 
-"@realitio/realitio-contracts@^2.0.0", "@realitio/realitio-contracts@^2.1.0":
+"@realitio/realitio-contracts@^2.0.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@realitio/realitio-contracts/-/realitio-contracts-2.1.0.tgz#da468e0efc3d032a1fd14b616bee298cf6e6e575"
   integrity sha512-00VL7s7sc5wyz1S/zxGvDrC9ZCMqyI7EMKQTSHjI0+s1EmKLJI1K+M7fffZnu7kKPYqx9SwB4CsxQRtsUR/w5g==
+
+"@realitio/realitio-contracts@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@realitio/realitio-contracts/-/realitio-contracts-2.1.1.tgz#070a3a27a98fae6b9066056316d446ee637c10e4"
+  integrity sha512-4Hlvix6/8bgN4yd/iSIaOxY/cyFF1Yy0zuTMNy2UUZvkVOetGowEcApD+wDNKelx7PtfehSV3kx3fP/AtpC48A==
 
 "@realitio/realitio-lib@^2.0.1":
   version "2.0.1"
