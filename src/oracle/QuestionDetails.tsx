@@ -779,11 +779,16 @@ export const QuestionApplyForArbitration = (props: QuestionProps) => {
   const [{ loading }, handleApplyForArbitration] = useAsyncFn(async () => {
     if (await ensureHasConnected()) {
       const arbitrator = await arbitratorContract.at(question.arbitrator);
+      const lastSeenBondHex = '0x' + question.bond.toString(16);
 
-      await arbitrator.requestArbitration(question.id, question.bond, {
-        from: account,
-        value: question.disputeFee.toString(),
-      });
+      await arbitrator.requestArbitration(
+        question.id,
+        new BigNumber(lastSeenBondHex, 16),
+        {
+          from: account,
+          value: question.disputeFee,
+        },
+      );
 
       await refetch(question.id);
     }
