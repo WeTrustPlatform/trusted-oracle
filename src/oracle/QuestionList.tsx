@@ -25,6 +25,7 @@ import {
   useAnswerColor,
 } from './QuestionDetails';
 import { QuestionCategory, useQuestionsQuery } from './useQuestionsQuery';
+import { compareDesc } from 'date-fns';
 
 export interface QuestionCardProps {
   question: Question;
@@ -37,7 +38,10 @@ export const QuestionCard = (props: QuestionCardProps) => {
   const answerColor = useAnswerColor();
   const { question } = props;
 
-  const answers = question.answers.slice().reverse();
+  const answers = question.answers.sort((a, b) =>
+    compareDesc(a.createdAtDate, b.createdAtDate),
+  );
+  const [currentAnswer] = answers;
   const myAnswer = answers.find(answer => answer.user === account);
 
   return (
@@ -119,9 +123,9 @@ export const QuestionCard = (props: QuestionCardProps) => {
                   <Text
                     size="large"
                     weight="bold"
-                    color={answerColor(answers[0])}
+                    color={answerColor(currentAnswer)}
                   >
-                    {toBinaryAnswer(answers[0].answer).toUpperCase()}
+                    {toBinaryAnswer(currentAnswer.answer).toUpperCase()}
                   </Text>
                 </Text>
               ) : isEmpty(answers) ? null : (
