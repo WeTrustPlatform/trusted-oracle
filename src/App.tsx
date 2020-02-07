@@ -1,3 +1,4 @@
+import '@wetrustplatform/wetrust-ui/wetrust-ui.css';
 import ERC20TRST from '@realitio/realitio-contracts/truffle/build/contracts/ERC20.TRST.json';
 import { LayoutProvider, ThemeProvider, ToastProvider } from 'paramount-ui';
 import React from 'react';

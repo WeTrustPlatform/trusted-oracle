@@ -1528,6 +1528,11 @@
   resolved "https://registry.yarnpkg.com/@truffle/blockchain-utils/-/blockchain-utils-0.0.12.tgz#ad75c7eb7ef65ee954850470745873de59392309"
   integrity sha512-Khoc0zxksDL3xEHg4j0qpD7+4xyRdRS1Sa5ghwwBCa23I6ofQUmntEoQasZsXo7g6PDkErrJzxOWxTs8gpHQnA==
 
+"@truffle/blockchain-utils@^0.0.13":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@truffle/blockchain-utils/-/blockchain-utils-0.0.13.tgz#2b6302586248fe2068ba160be53855c3c923a4e2"
+  integrity sha512-58PNluLrJ967BjoBymWmfa+j9tfDa2GpAjEOiKkQav94aVbrBecDwmd3jOTl3gAhJA21AB3UZxri50mKVHopKw==
+
 "@truffle/contract-schema@^3.0.16":
   version "3.0.19"
   resolved "https://registry.yarnpkg.com/@truffle/contract-schema/-/contract-schema-3.0.19.tgz#32e2a81501efc19c7567748877810a5e90f230bb"
@@ -1553,12 +1558,28 @@
     web3-eth-abi "1.2.1"
     web3-utils "1.2.1"
 
+"@truffle/contract@4.0.36":
+  version "4.0.36"
+  resolved "https://registry.yarnpkg.com/@truffle/contract/-/contract-4.0.36.tgz#9c5d22034f034866f7566eb1ff6d46af0404090d"
+  integrity sha512-Bhgpd45ZB+o01fKS35xJbvz+ipBWBtE6fzSEEEF6nQvW+OR1jZJ2eKoVSfPU1h3wV5jSzBbQuLbWCtNA+RrNqg==
+  dependencies:
+    "@truffle/blockchain-utils" "^0.0.13"
+    "@truffle/contract-schema" "^3.0.16"
+    "@truffle/error" "^0.0.7"
+    "@truffle/interface-adapter" "^0.2.7"
+    bignumber.js "^7.2.1"
+    ethers "^4.0.0-beta.1"
+    web3 "1.2.1"
+    web3-core-promievent "1.2.1"
+    web3-eth-abi "1.2.1"
+    web3-utils "1.2.1"
+
 "@truffle/error@^0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.7.tgz#e9db39885575647ef08bf624b0c13fe46d41a209"
   integrity sha512-UIfVKsXSXocKnn5+RNklUXNoGd/JVj7V8KmC48TQzmjU33HQI86PX0JDS7SpHMHasI3w9X//1q7Lu7nZtj3Zzg==
 
-"@truffle/interface-adapter@^0.2.6":
+"@truffle/interface-adapter@^0.2.6", "@truffle/interface-adapter@^0.2.7":
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/@truffle/interface-adapter/-/interface-adapter-0.2.7.tgz#43331d29539e09432a70cfb9fb614b8afaa7b290"
   integrity sha512-GJF0V7VAX+8MQOt/kWGXaQu44QpoKUu4wJpqHxmBMaeVxU9LWB7i7Opa1cR/7rjRnLam2+mCxB5cjoQ9pHD4eQ==
@@ -2044,6 +2065,18 @@
     "@webassemblyjs/ast" "1.8.5"
     "@webassemblyjs/wast-parser" "1.8.5"
     "@xtuc/long" "4.2.2"
+
+"@wetrustplatform/wetrust-ui@1.9.3":
+  version "1.9.3"
+  resolved "https://registry.yarnpkg.com/@wetrustplatform/wetrust-ui/-/wetrust-ui-1.9.3.tgz#73a550553d1e5ac6fe390e212d674ffa204325d7"
+  integrity sha512-PK3iQ54OSKdvy232xw0bz7CFbOUNKDpF06jXFWeh2iPFb/zdN6MwpfASyYI8kSRgFlnuwt3KrPhu+QAIr1bAcQ==
+  dependencies:
+    "@truffle/contract" "4.0.36"
+    bn.js "5.0.0"
+    date-fns "2.4.1"
+    lodash "^4.17.15"
+    paramount-ui "1.86.3"
+    react-use "12.5.0"
 
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
@@ -2830,6 +2863,11 @@ bn.js@4.11.8, bn.js@^4.0.0, bn.js@^4.1.0, bn.js@^4.1.1, bn.js@^4.11.0, bn.js@^4.
   version "4.11.8"
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.11.8.tgz#2cde09eb5ee341f484746bb0309b3253b1b1442f"
   integrity sha512-ItfYfPLkWHUjckQCk8xC+LwxgK8NYcXywGigJgSwOP8Y2iyWT4f2vsZnoOXTTbo+o5yXmIUJ4gn5538SO5S3gA==
+
+bn.js@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-5.0.0.tgz#5c3d398021b3ddb548c1296a16f857e908f35c70"
+  integrity sha512-bVwDX8AF+72fIUNuARelKAlQUNtPOfG2fRxorbVvFk4zpHbqLrPdOGfVg5vrKwVzLLePqPBiATaOZNELQzmS0A==
 
 body-parser@1.19.0, body-parser@^1.16.0:
   version "1.19.0"
@@ -4106,6 +4144,11 @@ date-fns@2.0.1:
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.0.1.tgz#c5f30e31d3294918e6b6a82753a4e719120e203d"
   integrity sha512-C14oTzTZy8DH1Eq8N78owrCWvf3+cnJw88BTK/N3DYWVxDJuJzPaNdplzYxDYuuXXGvqBcO4Vy5SOrwAooXSWw==
 
+date-fns@2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.4.1.tgz#b53f9bb65ae6bd9239437035710e01cf383b625e"
+  integrity sha512-2RhmH/sjDSCYW2F3ZQxOUx/I7PvzXpi89aQL2d3OAxSTwLx6NilATeUbe0menFE3Lu5lFkOFci36ivimwYHHxw==
+
 date-fns@^1.27.2:
   version "1.30.1"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-1.30.1.tgz#2e71bf0b119153dbb4cc4e88d9ea5acfb50dc05c"
@@ -4427,6 +4470,11 @@ dir-glob@^3.0.1:
   integrity sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==
   dependencies:
     path-type "^4.0.0"
+
+dlv@1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/dlv/-/dlv-1.1.3.tgz#5c198a8a11453596e751494d49874bc7732f2e79"
+  integrity sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==
 
 dns-equal@^1.0.0:
   version "1.0.0"
@@ -5687,6 +5735,14 @@ focus-trap@5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/focus-trap/-/focus-trap-5.0.1.tgz#285f9df2cd9f5ef82dd1abb5d8a70e66cd4f99e3"
   integrity sha512-vU7zEdL3y+kfkuwBbT9456JH8QfyemdcdZ2gKMfmgLyAs9NQAkSVQBSZmb9nlb1cVMo+iCsddqeGJog00pd2EQ==
+  dependencies:
+    tabbable "^4.0.0"
+    xtend "^4.0.1"
+
+focus-trap@5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/focus-trap/-/focus-trap-5.0.2.tgz#31ee8a1933b972ce24577462eacefc6a09833c8f"
+  integrity sha512-jQf4ZkX9qOhiNrga4pRh9N2vMqYLRuGM7RZ6VRDLgti04cbG8m7XD4xlU/N0M0cqwDYtXbdzSBQDbRIwqn0FIg==
   dependencies:
     tabbable "^4.0.0"
     xtend "^4.0.1"
@@ -9541,6 +9597,21 @@ paramount-ui@1.76.2:
     react-spring "9.0.0-beta.1"
     ts-essentials "2.0.12"
 
+paramount-ui@1.86.3:
+  version "1.86.3"
+  resolved "https://registry.yarnpkg.com/paramount-ui/-/paramount-ui-1.86.3.tgz#a6c6a9fd5f92c9769fd9f0fea4a8aaa19b39a7cb"
+  integrity sha512-pCTJqvfNLAenWjrSsBdN4fKuVhKb2QEJtBX8QLlkQU8MXEzEDVYHF+bokc6Dut6fddCpNF4n4durWjG7eLDaWQ==
+  dependencies:
+    deepmerge "4.0.0"
+    dlv "1.1.3"
+    exenv "1.2.2"
+    focus-trap "5.0.2"
+    react-icons "3.7.0"
+    react-native-svg "9.11.1"
+    react-native-vector-icons "6.6.0"
+    react-native-web "0.11.5"
+    react-spring "9.0.0-beta.1"
+
 parent-module@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/parent-module/-/parent-module-1.0.1.tgz#691d2709e78c79fae3a156622452d00762caaaa2"
@@ -10891,6 +10962,11 @@ react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1, react-is@^16.8.4:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.12.0.tgz#2cc0fe0fba742d97fd527c42a13bec4eeb06241c"
   integrity sha512-rPCkf/mWBtKc97aLL9/txD8DZdemK0vkA3JMLShjlJB3Pj3s+lpf1KaBzMfQrAmhMQB0n1cU/SUGgKKBCe837Q==
 
+react-native-svg@9.11.1:
+  version "9.11.1"
+  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-9.11.1.tgz#b1ccf48de413ff8c4f476f202aaa3893f4c8b59a"
+  integrity sha512-BmNCM81SSzhj1+N5rYiy7sxrkmybgiT8Cu8yVRB7zVoWze/i1lbCWJah+Gk0OHHwR35ZA31oVKf5jtO4G1n94Q==
+
 react-native-svg@9.5.3:
   version "9.5.3"
   resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-9.5.3.tgz#2389f3ffd700c6441166496a1aeade31ead89c59"
@@ -11086,6 +11162,22 @@ react-use@12.2.0:
     react-wait "^0.3.0"
     resize-observer-polyfill "^1.5.1"
     screenfull "^4.1.0"
+    set-harmonic-interval "^1.0.0"
+    throttle-debounce "^2.0.1"
+    ts-easing "^0.2.0"
+
+react-use@12.5.0:
+  version "12.5.0"
+  resolved "https://registry.yarnpkg.com/react-use/-/react-use-12.5.0.tgz#92dcb5f5c9477ab769bbfb88a35c86553c9ed74a"
+  integrity sha512-C7ccCfP40QsbdoxNmleprc1wp+8wUYd5xSkDXMQEDpIeQRYlgnUIf+l+kC75fJ1kEY8AHoTw9Ihw6MG4ufsCHA==
+  dependencies:
+    "@types/react-wait" "^0.3.0"
+    copy-to-clipboard "^3.1.0"
+    nano-css "^5.1.0"
+    react-fast-compare "^2.0.4"
+    react-wait "^0.3.0"
+    resize-observer-polyfill "^1.5.1"
+    screenfull "^5.0.0"
     set-harmonic-interval "^1.0.0"
     throttle-debounce "^2.0.1"
     ts-easing "^0.2.0"
@@ -11692,6 +11784,11 @@ screenfull@^4.1.0:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/screenfull/-/screenfull-4.2.1.tgz#3245b7bc73d2b7c9a15bd8caaf6965db7cbc7f04"
   integrity sha512-PLSp6f5XdhvjCCCO8OjavRfzkSGL3Qmdm7P82bxyU8HDDDBhDV3UckRaYcRa/NDNTYt8YBpzjoLWHUAejmOjLg==
+
+screenfull@^5.0.0:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/screenfull/-/screenfull-5.0.1.tgz#873052411eb9096bc1c8e615f5badad119e6e42c"
+  integrity sha512-NgQH4KKh2V3zlj2u90l7TUcSFxr9qL/64QEvhAvCN/fu1YS39YLTBKIqZqiS3STj3QD8sN6XnsK/8jk3hRq4WA==
 
 scrypt-js@2.0.3:
   version "2.0.3"
