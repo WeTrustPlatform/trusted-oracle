@@ -8,13 +8,13 @@ import {
   Text,
   Visible,
 } from 'paramount-ui';
+import { WeTrustProductsBanner } from '@wetrustplatform/wetrust-ui';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 
 import { BlockchainAccountStatus } from './BlockchainAccountStatus';
 import { Link, LinkProps } from './Link';
 import { Logo } from './Logo';
-import { WeTrustProductsBanner } from './WeTrustProductsBanner';
 
 const DesktopNavigationBarDivider = () => (
   <Divider
@@ -46,16 +46,6 @@ const DesktopNavigationBarLink = (props: LinkProps) => {
 const DesktopNavigationBar = () => {
   return (
     <>
-      <Box
-        flexDirection="row"
-        justifyContent="center"
-        alignItems="center"
-        backgroundColor="#222222"
-        flexWrap="wrap"
-        height={55}
-      >
-        <WeTrustProductsBanner />
-      </Box>
       <Box
         flexDirection="row"
         height={80}
@@ -186,11 +176,6 @@ const MobileNavigationBar = () => {
           <Box paddingBottom={100}>
             <MobileNavigationMenu onClick={() => setIsMenuOpen(false)} />
           </Box>
-          <Box paddingTop={48} backgroundColor="#222222" height="100%">
-            <Box flexWrap="wrap" flexDirection="row" justifyContent="center">
-              <WeTrustProductsBanner />
-            </Box>
-          </Box>
         </Modal>
       </Container>
       <Divider />
@@ -201,6 +186,7 @@ const MobileNavigationBar = () => {
 export const NavigationBar = () => {
   return (
     <>
+      <WeTrustProductsBanner />
       <Visible xsmall small medium>
         <MobileNavigationBar />
       </Visible>
